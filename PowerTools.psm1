@@ -1,0 +1,804 @@
+<# 
+    File Name  : powertools.ps1m  
+    Author     : Rob Holme (rob@holme.com.au) 
+
+Copyright (c) 2018 Robert Holme (rob@holme.com.au)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
+files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
+modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+is furnished to do so, subject to the following conditions:
+
+1) The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+2) THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR 
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#>
+
+#----------------------------------------------------
+function Set-ProcessorAffinity {
+<#
+Function Name   : Set-ProcessorAffinity
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (08/07/2016)
+Requires        : PowerShell V2  
+
+.SYNOPSIS 
+Limits the number of processor cores (incl hyper-threaded 'core') that a process can run on.
+.DESCRIPTION 
+Limits the number of processor cores (incl hyper-threaded 'core') that a process can run on.
+.EXAMPLE 
+Set-ProcessorAffinity -ProcessName "DCMWin" -Cores 2
+.EXAMPLE 
+Set-ProcessorAffinity -ProcessID 6048 -Cores 4
+.PARAMETER ProcessName 
+The name of the process to set the processor affinity for. 
+.PARAMETER ProcessID
+The ID of the process to set the processor affinity for. 
+.PARAMETER Cores 
+The number of cpu cores to limit the process to. This includes hyper threaded cores. Set to 0 to use normal processor scheduling.
+#>
+    [CmdletBinding(DefaultParametersetName = "ProcessName")]
+    Param(
+        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "ProcessName")] [string] $ProcessName,
+        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "ProcessID")] [Alias("Id")] [int] $ProcessID,
+        [Parameter(Position = 1, Mandatory = $False)] [int] $Cores
+    )
+
+    # set the affinity for each process macthing the process name
+    process { 
+        if ($ProcessName) {
+            $processes = Get-Process -Name $ProcessName
+        }
+        elseif ($ProcessID) {
+            $processes = Get-Process -Id $ProcessID
+        }
+        foreach ($process in $processes) {
+            try {
+                # ProcessorAffinity is a bit mask. 1 core = 1, 2 cores = 3, 3 cores = 7, 4 cores = 15, 5 cores = 31, 6 cores = 63, 7 cores = 127, 8 cores = 255 
+                $process.ProcessorAffinity = [int][math]::pow(2, $cores) - 1
+                $properties = @{
+                    ProcessName = $process.ProcessName
+                    ProcessID   = $process.Id
+                    Cores       = $cores
+                }
+                $outputObject = New-Object -TypeName PSObject -Property $properties
+                $outputObject.PSObject.TypeNames.Insert(0, "Powertools.SetProcessorAffinity.Result")
+                write-output $outputObject
+            }
+            catch {
+                Write-Error -Exception $_.Exception  -Message  "Failed to set the processor affinity for process $($process.Name)"
+            }   
+        }
+    }
+}
+
+#----------------------------------------------------
+function Get-ProcessorAffinity {
+    <#
+Function Name   : Get-ProcessorAffinity
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (08/07/2016)
+                : 1.1 (29/09/2016) - Updated parameters to accept ValueFromPipelineByPropertyName, allows get-process to be piped to the function
+Requires        : PowerShell V2  
+
+.SYNOPSIS 
+Reports the number of processor cores (incl hyper-threaded 'core') that a process can run on.
+.DESCRIPTION 
+Reports the number of processor cores (incl hyper-threaded 'core') that a process can run on.
+.EXAMPLE 
+Get-ProcessorAffinity -Process "DCMWin" -Cores 2
+.PARAMETER ProcessName 
+The name of the process to query the processor affinity for. 
+.PARAMETER ProcessID
+The ID of the process to query the processor affinity for. 
+#>
+    [CmdletBinding(DefaultParametersetName = "ProcessName")]
+    Param(
+        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True, ParameterSetName = "ProcessName")] [string] $ProcessName,
+        [Parameter(Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "ProcessID")] [Alias("Id")] [int] $ProcessID
+    )
+
+    # set the affinity for each process macthing the process name
+    process { 
+        if ($ProcessName) {
+            $processes = Get-Process -Name $ProcessName
+        }
+        elseif ($ProcessID) {
+            $processes = Get-Process -Id $ProcessID
+        }
+        foreach ($process in $processes) {
+            # ProcessorAffinity is a bit mask. 1 core = 1, 2 cores = 3, 3 cores = 7, 4 cores = 15, 5 cores = 31, 6 cores = 63, 7 cores = 127, 8 cores = 255 
+            $properties = @{
+                ProcessName = $process.ProcessName
+                ProcessID   = $process.Id
+                Cores       = [math]::Log($process.ProcessorAffinity + 1, 2)
+            }
+            $outputObject = New-Object -TypeName PSObject -Property $properties
+            $outputObject.PSObject.TypeNames.Insert(0, "Powertools.SetProcessorAffinity.Result")
+            write-output $outputObject
+        }
+    }
+}
+
+#----------------------------------------------------
+function Show-WordMetadata {
+    <#
+Function Name   : Show-WordMetadata
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (16/08/2016)
+Requires        : PowerShell V2  
+
+.SYNOPSIS 
+Displays document properties for a MS Word Document
+.DESCRIPTION 
+Displays document properties for a MS Word Document
+.EXAMPLE 
+Show-WordMetadata -Path c:\test.doc
+.PARAMETER Path 
+The name of the word document
+#>
+
+    Param(
+        [Parameter(
+            Position = 0, 
+            Mandatory = $True, 
+            ValueFromPipeline = $True,
+            ValueFromPipelineByPropertyName = $True
+        )]
+        [Alias('FullName')] 
+        [string] $Path)
+
+    process {
+        $application = New-Object -ComObject word.application
+        $application.Visible = $false
+        # open the document as read only.
+        $document = $application.documents.open($Path, $false, $true)
+        $binding = "System.Reflection.BindingFlags" -as [type]
+        $properties = $document.BuiltInDocumentProperties
+        $customProperties = $document.CustomDocumentProperties
+        # display built-in properties
+        foreach ($property in $properties) {
+            $propertyName = [System.__ComObject].invokemember("name", $binding::GetProperty, $null, $property, $null)
+            Write-Verbose $propertyName
+            trap [system.exception] {
+                continue
+            }
+            # create a hash table to save properties for output as an object
+            $value = [System.__ComObject].invokemember("value", $binding::GetProperty, $null, $property, $null)
+            $properties = @{
+                PropertyName = $propertyName.ToString()
+                Value        = $value.ToString()
+                Filename     = $path
+            }
+            $outputObject = New-Object -TypeName PSObject -Property $properties
+            $outputObject.PSObject.TypeNames.Insert(0, "Powertools.ShowWordMetatdata.Result")
+            write-output $outputObject
+        }
+        # display custom properties
+        foreach ($property in $customProperties) {
+            $propertyName = [System.__ComObject].invokemember("name", $binding::GetProperty, $null, $property, $null)
+            Write-Verbose $propertyName
+            trap [system.exception] {
+                continue
+            }
+            # create a hash table to save properties for output as an object
+            $value = [System.__ComObject].invokemember("value", $binding::GetProperty, $null, $property, $null)
+            $properties = @{
+                PropertyName = $propertyName.ToString()
+                Value        = $value.ToString()
+                Filename     = $path
+            }
+            $outputObject = New-Object -TypeName PSObject -Property $properties
+            $outputObject.PSObject.TypeNames.Insert(0, "Powertools.ShowWordMetatdata.Result")
+            write-output $outputObject
+        }
+        $application.documents.close($false)
+        $application.quit()
+    }
+}
+
+#----------------------------------------------------
+function Remove-WordMetadata {
+    <#
+Function Name   : Remmove-WordMetadata
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (16/08/2016)
+Requires        : PowerShell V2  
+
+.SYNOPSIS 
+Removes document properties for a MS Word Document
+.DESCRIPTION 
+Removes all document properties for a MS Word Document, including templates, ink annotations, comments, custome properties, etc.
+.EXAMPLE 
+Show-WordMetadata -Path c:\test.doc
+.PARAMETER Path 
+The name of the word document
+.PARAMETER KeepTemplate
+Leave the template attached to the document 
+.PARAMETER KeepInkAnnotations
+Leave the template attached to the document 
+#>
+
+    Param(
+        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)] [Alias('FullName')] [string] $Path,
+        [Parameter(Mandatory = $False)] [switch] $KeepTemplate,
+        [Parameter(Mandatory = $False)] [switch] $KeepInkAnnotations,
+        [Parameter(Mandatory = $False)] [switch] $KeepComments,
+        [Parameter(Mandatory = $False)] [switch] $KeepRevisionInformation
+    )
+
+    process {
+        #     # resolve relative paths to the full path name 
+        #     $path = resolve-path $path
+        Add-Type -AssemblyName Microsoft.Office.Interop.Word
+        $application = New-Object -ComObject word.application
+        $document = $application.documents.open($Path)
+        $application.Visible = $false
+        # suppress warnings to save when comments or ink annotations are present
+        $application.Options.WarnBeforeSavingPrintingSendingMarkup = $false
+        $WdRemoveDocType = "Microsoft.Office.Interop.Word.WdRemoveDocInfoType" -as [type]
+        # remove individual properties from the document. 
+        Write-Verbose "Removing document properties from $path" 
+        #$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIAll) # remove all properties - not used as I need to provide the option of retaining some properties
+        $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIVersions)
+        Write-Verbose "Version information removed"
+        $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIRemovePersonalInformation)
+        Write-Verbose "Personal information removed"
+        $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIEmailHeader)
+        Write-Verbose "Email header removed"
+        $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIRoutingSlip)
+        Write-Verbose "Routing slip removed"
+        $document.RemoveDocumentInformation($WdRemoveDocType::wdRDISendForReview)
+        Write-Verbose "Send for review removed"
+        $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIDocumentProperties)
+        Write-Verbose "Document properties removed"
+        $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIDocumentServerProperties)
+        Write-Verbose "Document Server properties removed"
+        $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIDocumentManagementPolicy)
+        Write-Verbose "Document management policy removed"
+        $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIContentType)
+        Write-Verbose "Content Type information removed"
+        $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIDocumentWorkspace)
+        Write-Verbose "Document Workspace information removed"
+        $document.RemoveDocumentInformation($WdRemoveDocType::wdRDITaskpaneWebExtensions)
+        Write-Verbose "Task pane web extension removed"
+        # preserve the document template if the -KeepTemplate switch is set
+        if (!$KeepTemplate) {
+            $document.RemoveDocumentInformation($WdRemoveDocType::wdRDITemplate)
+            Write-Verbose "Document template removed"
+        }
+        # preserve ink annotations if the -KeepInkAnnotations switch is set  
+        if (!$KeepInkAnnotations) {
+            $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIInkAnnotations)
+            Write-Verbose "Ink Annotations removed"
+        }
+        # preserve comments if the -KeepComments is set  
+        if (!$KeepComments) {
+            $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIComments)
+            Write-Verbose "Comments removed"
+        }
+        # preserve revision information (change tracking) if the -KeepRevisionInformation switch is set  
+        if (!$KeepRevisionInformation) {
+            $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIRevisions)
+            Write-Verbose "Revision information removed"
+        }
+        # if the document doesn't include task pan web extensions or document workspace information, an exception is thrown. Is so just continue.
+        trap [system.exception] {
+            continue
+        }
+        # save and close the document, close down MS Word. 
+        $document.Save() 
+        $application.documents.close() 
+        $application.quit()
+    }
+}
+
+
+#----------------------------------------------------
+function Convert-ADTimestamp {
+    <#
+Function Name   : Convert-ADTimestamp
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (06/10/2016)
+Requires        : PowerShell V2  
+
+.SYNOPSIS 
+Converts a integer timestamp (e.g. from LDIFDE or some AD CmdLets) to a datetime value.
+.DESCRIPTION 
+Converts a integer timestamp (e.g. from LDIFDE or some AD CmdLets) to a datetime value.
+.EXAMPLE 
+Convert-ADTimestamp -Value 131200456520442703
+.PARAMETER Value 
+The timestamp to convert
+#>
+
+    Param(
+        [Parameter(
+            Position = 0, 
+            Mandatory = $True, 
+            ValueFromPipeline = $True
+        )]
+        [string] $Value)
+
+    process {
+        $convertedDateTime = [datetime]::FromFileTime($Value)
+        write-output $convertedDateTime
+    }
+}
+
+
+#----------------------------------------------------
+function Get-ProcessorUtilisation {
+    <#
+Function Name   : Get-ProcessorUtilisation
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (16/10/2016)
+Requires        : PowerShell V2  
+
+.SYNOPSIS 
+Display the overall processor utilisation and process utilisation stats
+.DESCRIPTION 
+Display the overall processor utilisation and process utilisation stats
+.EXAMPLE 
+Get-ProcessorUtilisation -top 10
+.PARAMETER Top 
+Limit the results to the top results
+#>
+
+    [CmdletBinding(DefaultParametersetName = "TopProcesses")]
+    Param(
+        # limit query to Top x processes 
+        [Parameter(
+            Mandatory = $False,
+            ParameterSetName = "TopProcesses"
+        )]
+        [ValidateRange(1, 1000)] [int] $Top,
+
+        # only display utilisation for specific processes
+        [Parameter(
+            Mandatory = $False, 
+            ParameterSetName = "ProcessName",
+            ValueFromPipeline = $True, 
+            ValueFromPipelineByPropertyName = $True
+        )]
+        [string[]] $ProcessName
+    )
+
+    begin {
+        $uniqueProcesses = @()
+        # get number of processor cores
+        $cpus = Get-WmiObject win32_Processor
+        foreach ($cpu in $cpus) {
+            $totalCpuCores += $cpu.NumberOfLogicalProcessors
+        }
+        Write-Verbose "Total CPU cores: $totalCpuCores"
+        # get the process and CPU utiltisation
+        $counters = (Get-Counter '\Process(*)\% Processor Time').CounterSamples
+    }
+
+    # process each item form the pipeline
+    process {
+        $sortedCounters = @()
+        # display specific processes only if the ProcessName parameter provided
+        If ($ProcessName) {
+            foreach ($process in $ProcessName) {
+                # if the process list is piped in, there may be multiple instances of the same process names. Since each iteration returns all matching processes this would result in duplication, so only search for unique process names.
+                if ($uniqueProcesses -notcontains $process) {
+                    $uniqueProcesses += $process
+                    $sortedCounters += $counters | where-object -FilterScript {$_.InstanceName -eq $process}
+                }    
+            }
+        }
+        
+        # display utilisation of all (or top) processes
+        else {
+            if ($Top) {
+                $sortedCounters = $counters | Sort-Object -Property CookedValue -Descending | Select-Object -First $Top 
+            }
+            else {
+                $sortedCounters = $counters | Sort-Object -Property CookedValue -Descending
+            }
+        }
+
+        # Get-Process requires elevated rights to get the path for all processes
+        if (!(IsAdmin)) {
+            write-warning "Run-as Administrator rights needed to list the path for all processes. Some paths will not be displayed."
+        }
+        $processPaths = @{}
+        $allProcesses = Get-Process
+        foreach ($process in $allProcesses) {
+            if (!$processPaths.ContainsKey($process.Name)) {
+                $processPaths.Add($process.Name, $process.Path)
+            }
+        }
+
+        # display the CPU and process utilisation (need to divide the utilisation by the number of cores. eg idle returned on a 8 core system is 800% )
+        foreach ($counter in $sortedCounters) {
+            $properties = @{
+                ProcessName = $counter.InstanceName
+                CPU         = (($counter.Cookedvalue / 100) / $totalCpuCores).toString('P')
+                Path        = ($processPaths[$counter.InstanceName])
+            }
+            $outputObject = New-Object -TypeName PSObject -Property $properties
+            $outputObject.PSObject.TypeNames.Insert(0, "Powertools.ProcessorUtilisation.Result")
+            write-output $outputObject
+        }
+    }
+}
+
+#----------------------------------------------------
+function Export-Credential {
+    <#
+.NOTES
+Function Name   : Export-Credential
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (24/01/2017)   - Initial version.
+Requires        : PowerShell V3  
+
+.SYNOPSIS 
+Exports a password to a file (as a secure string)
+.DESCRIPTION 
+Exports a password to a file (as a secure string). The file format is XML. The password is encrypted, requiring the same user and host to be able to read the password.
+The exported password can not be transported between hosts or users, it will fail to import. Use Import-Password to return the PS Credential object from file.
+.EXAMPLE 
+Export-Credential -Path c:\temp\password.xml
+# user is prompted to enter password
+.EXAMPLE
+Export-Credential -Path c:\temp\password.xml -Password $SecurePassword -Username testdomain\testuser
+# store the username associated with the password to the file
+.EXAMPLE
+Export-Credential -Path c:\temp\password.xml -Credential (Get-Credential)
+# store the credential object
+.PARAMETER Path 
+The Hostname or IP address of the SQL server to connect to. If connecting to a named instance, include the instance name e.g. server\instance 
+.PARAMETER Password 
+The password (as a securestring)
+.PARAMETER Username 
+The (optional) username to store with the password
+#> 
+    [CmdletBinding(DefaultParameterSetName = "Password")]
+    param(
+        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $true)] 
+        [ValidateNotNullorEmpty()] 
+        [string] $Path,
+        
+        [Parameter(Position = 1, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "Password")] 
+        [Security.SecureString] $Password,
+        
+        [Parameter(Position = 2, Mandatory = $False, ValueFromPipeline = $True, ParameterSetName = "Password")] 
+        [string] $Username,
+        
+        [Parameter(Position = 1, Mandatory = $False, ValueFromPipeline = $True, ParameterSetName = "Credential")] 
+        [PSCredential] $Credential,
+        
+        [Parameter(Mandatory = $False)]
+        [Switch]$NoClobber
+    )
+
+    process {
+        # exit if the fidle exists, and the -NoClobber switch was set
+        if ($NoClobber -AND (Test-Path -Path $Path)) {
+            Write-Warning "The file '$Path' already exists. Ommit the '-NoClobber' switch to force overwrite."
+            Return
+        }
+
+        # convert the secure string to text. Only the current user on the current host will be able to condvert the text back to a readabsle password.
+        if ($PSCmdlet.ParameterSetName -eq "Credential") {
+            $Username = $Credential.UserName
+            $passwordText = $Credential.Password | ConvertFrom-SecureString
+        }
+        else {
+            $passwordText = $Password | ConvertFrom-SecureString
+        }
+
+        # save the credentials to file, along with meta data on who saved the crentails.
+        $result = [ORDERED]@{
+            Username   = $Username
+            Password   = $passwordText
+            ExportUser = "$env:USERDOMAIN\$env:USERNAME"
+            ExportHost = "$env:COMPUTERNAME"
+            ExportDate = Get-Date
+        }            
+        $outputObject = New-Object -Property $Result -TypeName psobject
+        $outputObject.PSObject.TypeNames.Insert(0, "Powertools.ExportedCredentials")
+        $outputObject | Export-clixml -Path $Path
+    }
+}
+
+
+#----------------------------------------------------
+function Import-Credential {
+    <#
+.NOTES
+Function Name   : Import-Credential
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (24/01/2017)   - Initial version.
+Requires        : PowerShell V3  
+
+.SYNOPSIS 
+Imports a credential from file (exported by Export-Credential)
+.DESCRIPTION 
+Imports a PSCredentail object from a file (previously exported by Export-Credential). The file format is XML. The password is encrypted, requiring the same user and host to be able to read the password.
+The exported password can not be transported between hosts or users, it will fail to import. Use Export-Password to create a file with stored credentials.
+.EXAMPLE 
+$Cred = Import-Credential -Path c:\temp\credential.xml
+$Cred.Username  # this is the domain\username
+$Cred.GetNetworkCredential().Password  # this is the plain text Password
+.PARAMETER Path 
+This is the name of the XML file that contains cretentails previously exported by Export-Credential. Must be the same user and don the same host to import the credentals. 
+The XML file will contain metas data indicating the username and the host when the export was performed. 
+#> 
+    [CmdletBinding(DefaultParameterSetName = "Password")]
+    param(
+        [Parameter (Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $true)] 
+        [ValidateNotNullorEmpty()]
+        [ValidateScript( {
+                if (Test-Path $_) {
+                    $True
+                }
+                else {
+                    Throw "Path not valid: $_"
+                } 
+            })]
+        [string] $Path
+    )
+
+    process {
+
+        # import the xml file containing the credentials
+        $savedCredentials = Import-Clixml -Path $Path
+        # [-Verbose] display the metat data from when the file was saved
+        Write-Verbose "Credentials saved by      : $($savedCredentials.ExportUser)"
+        Write-Verbose "Credentials saved on host : $($savedCredentials.ExportHost)"
+        Write-Verbose "Credentials saved at      : $($savedCredentials.ExportDate)"
+        # construct and return a PSCredentail object
+        try {
+            $securePassword = ConvertTo-SecureString $savedCredentials.Password -ErrorAction Stop
+            $credentail = New-Object -typename PSCredential -ArgumentList @($savedCredentials.Username, $securePassword)
+            return $credentail
+        }
+        catch {
+            Write-Warning $_.exception.message
+            return $null
+        }
+    }
+}
+
+
+# returns true if the powershell session is runninging under elevated permissions
+function IsAdmin() {
+    # confirm the powershell console is running under loacl admin credentials.
+    If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {    
+        return $false
+    }
+    else {
+        return $true
+    }
+}
+
+
+function Get-Screenshot {
+    <#
+.NOTES
+Function Name   : Get-Screenshot
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (19/05/2017)  - Initial version.
+				: 1.1 (25/02/2018)	- Updated to use the new v2 API. only the first 5 characters of the password hash are now sent (instead of the full hash). 
+									All hashes starting with the same 5 characters are returned and compared.
+Requires        : PowerShell V3  
+
+.SYNOPSIS 
+Captures a screenshot.
+.DESCRIPTION 
+Simulates a press press of the Print Screen key. Optionally capture the active window only (Alt-PrtScn).
+The screenshot will be saved to the clipboard by default, unless there is a 3rd party application mapped to the PrtScn key - in which
+case the behavior of the 3rd party app will apply (e.g. Greenshot defaults to capturing a region on PrtScn, and prompt the user for action after 
+the screenshot has been taken).
+This script is intended for situations where the PrtScn button is not mapped (e.g. Using Apple keyboard with Windows).
+.PARAMETER CaptureActiveWindow 
+Switch to specify that the active window is captured instead of the full screen.
+.PARAMETER Delay 
+The time in seconds to delay before the screenshot is taken. Defaults to 5 seconds.
+#> 
+    [CmdletBinding()]
+    param(
+        [parameter(Mandatory=$false, ValueFromPipeline=$true, Position=1)]
+        [int]$Delay = 5,
+        [Parameter(Mandatory = $False)]
+        [Switch]$CaptureActiveWindow
+    )
+
+    process {
+
+        Add-Type -Assembly System.Windows.Forms
+
+        for ($i = 0; $i++ -lt $Delay) {
+            $secondsRemaining = ($Delay - $i) + 1 
+            write-host "Screen capture in $secondsRemaining seconds"
+            start-sleep -seconds 1
+        }
+        if ($CaptureActiveWindow) {
+            ## Capture the active window
+            [System.Windows.Forms.Sendkeys]::SendWait("%{PrtSc}")
+        }
+        else {
+            ## Capture the entire screen
+            [System.Windows.Forms.Sendkeys]::SendWait("{PrtSc}")
+        }
+    }
+}
+
+
+#--------------------------------------------------
+# report the uptime and last boot time for the local host
+function Get-Uptime
+{
+	 Get-CimInstance -ClassName win32_operatingsystem | select-object @{Name="Hostname";Expression={$_.csname}}, @{Name="Uptime (days)";Expression={[math]::round(((((Get-DAte) - $_.LastBootUpTime).TotalHours)/24),1)}}, LastBootUpTime
+}
+
+function Get-Hash {
+    <#
+.NOTES
+Function Name   : Get-Hash
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (04/08/2017)   - Initial version.
+Requires        :   
+
+.SYNOPSIS 
+Generate the hash of a string or file.
+.DESCRIPTION 
+Generate the hash of a string or file. Defaults to MD5.
+.PARAMETER String 
+The string to hash
+.PARAMETER Path
+The file to hash
+.PARAMETER Algorithm
+The type of hash to calculate. Accepted values include "SHA1","SHA","MD5","SHA256","SHA-256","SHA384","SHA-384","SHA512","SHA-512"
+#> 
+    [CmdletBinding(DefaultParametersetName="String")]
+    param(
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=1, ParameterSetName="String")]
+        [Alias("PlainText")]
+        [string]$String,
+        
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=1, ParameterSetName="File")]
+        [Alias("Filename")]
+        [System.IO.FileInfo]$Path,
+
+        [parameter(Mandatory=$false, ValueFromPipeline=$true,Position=2)]
+        [ValidateSet("SHA1","SHA","MD5","SHA256","SHA-256","SHA384","SHA-384","SHA512","SHA-512")] 
+        [string] $Algorithm = "MD5"
+    )
+
+    process {
+        $StringBuilder = New-Object System.Text.StringBuilder
+
+        if ($PSCmdlet.ParameterSetName -eq "String") {
+            [System.Security.Cryptography.HashAlgorithm]::Create($Algorithm).ComputeHash([System.Text.Encoding]::UTF8.GetBytes($String)) | ForEach-Object {
+                [Void]$StringBuilder.Append($_.ToString("x2"))
+                
+            }
+            $properties = @{
+                Algorithm = $Algorithm
+                Hash  = $StringBuilder.ToString()
+            }
+            $outputObject = New-Object -TypeName PSObject -Property $properties
+            $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetHash.Result")
+            write-output $outputObject
+            
+        }
+        
+        if ($PSCmdlet.ParameterSetName -eq "File") {
+            if (!(Test-Path -LiteralPath $Path -PathType Leaf)) {
+                write-error "The file $Path does not exist"
+                return
+            }
+            $file = Get-Item -LiteralPath $Path
+            [System.Security.Cryptography.HashAlgorithm]::Create($Algorithm).ComputeHash([System.Text.Encoding]::UTF8.GetBytes([System.IO.File]::ReadAllBytes($file))) | ForEach-Object {
+            [Void]$StringBuilder.Append($_.ToString("x2"))
+            }
+            $properties = @{
+                Algorithm = $Algorithm
+                Hash  = $StringBuilder.ToString()
+                Filename = $file.Name
+            }
+            $outputObject = New-Object -TypeName PSObject -Property $properties
+            $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetHash.Result")
+            write-output $outputObject
+        }
+    }
+}
+
+function Test-IsPasswordPwned {
+<#
+.NOTES
+Function Name   : Test-IsPasswordPwned
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (06/02/2018)   - Initial version.
+Requires        : PowerShell V3  
+
+.SYNOPSIS 
+Returns $true if the password is included in the list of known breached passwords (via haveibeenpwned.com).
+Returns $false if the password is not listed. All passwords are converted to SHA1 hash when submitted to haveibeenpwned.com
+.DESCRIPTION 
+.PARAMETER SecureString
+A copy of the password as a securestring
+.PARAMETER Password
+The password in plain text
+.PARAMETER PasswordHash
+The SHA1 hash of the password
+#> 
+    [CmdletBinding()]
+    param(
+		[Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "SecureString")] 
+		[Security.SecureString] $SecureStringPassword,
+		[Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "Password")] 
+		[string] $PlainTextPassword,
+		[Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "PasswordHash")] 
+        [string] $PasswordHashSHA1
+    )
+
+    process {
+		if ($IsCoreCLR) {
+			write-warning "Not currently supported on .net core. No supoprt for [System.Security.Cryptography.HashAlgorithm]"
+			return
+		}
+
+		# .Net Framework doens't support TLS1.2 by default. .Net Core is OK by default, and doesn't support [System.Net.ServicePointManager]
+		if (!$IsCoreCLR) {
+			[System.Net.ServicePointManager]::SecurityProtocol = @("Tls12","Tls11","Tls","Ssl3")
+		}
+        
+		# convert secure string to plain text password
+		if ($PSCmdlet.ParameterSetName -eq "SecureString") {
+			$BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureStringPassword)
+			$PlainTextPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+        }
+        	
+		# calculate the SHA1 hash of the plaintext password
+		if (($PSCmdlet.ParameterSetName -eq "SecureString") -or ($PSCmdlet.ParameterSetName -eq "Password"))   {
+            $StringBuilder = New-Object System.Text.StringBuilder
+            [System.Security.Cryptography.HashAlgorithm]::Create("SHA1").ComputeHash([System.Text.Encoding]::UTF8.GetBytes($PlainTextPassword)) | ForEach-Object {
+				[Void]$StringBuilder.Append($_.ToString("x2"))
+			}
+			$PasswordHash  = $StringBuilder.ToString()
+		}
+		
+		try {
+			[bool] $match = $false
+			# get the first 5 characters of the hash and submit this to the pwnedpasswords range API. All macthing hashed will be returned (minus the 5 char prefix submitted)
+            $passwordHashPrefix = $PasswordHash.Substring(0,5)
+            $response = Invoke-WebRequest -Uri https://api.pwnedpasswords.com/range/$passwordHashPrefix -UseBasicParsing
+			if ($response.StatusCode -eq 200) {
+				Write-Verbose "Password hash: $PasswordHash"
+				# Remove the first character (substring(1)) that is prefixed to the actual content.
+				# Split each line of the content, compare the partial hashes returned against the password hash. 
+                foreach ($responseString in $response.Content.Substring(1) -Split "`n") {
+					# hashes are sufixed with a colon and a number indicating the number of times the password appears in breaches. The number of occurrances is discarded.
+					$hash = (($responseString -Split ":")[0])
+                    Write-Verbose "hash received: $hash"
+                    if ($PasswordHash -match $hash) {
+                        $match = $true
+                        break
+                    }
+                }
+                Write-Output $match
+			}
+			# a HTTP repsonse other than 200 indicates something unexpected has happened.
+			else {
+                Write-Error "Unable to query pwned passwords at this time."
+                Write-Error "Status Code returned: $($response.StatusCode)"
+			}
+		}
+		# fatal response codes will generally trigger an exception. 
+		catch {
+
+				Write-Error "Unable to query pwned passwords at this time."
+				Write-Error $_
+		}
+	}
+}
+

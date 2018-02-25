@@ -1,0 +1,539 @@
+<#
+Copyright (c) 2016 Robert Holme (rob@holme.com.au)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
+files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
+modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+is furnished to do so, subject to the following conditions:
+
+1) The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+2) THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR 
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#>
+
+#----------------------------------------------------
+function Select-Top() {
+    <#
+Function Name  : Select-Top
+Author     : Rob Holme (rob@holme.com.au)
+Version    : 1.0 
+Requires   : PowerShell V2  
+
+.SYNOPSIS 
+Display the top most lines of a log file
+.DESCRIPTION 
+Display the top most lines of a log file
+.EXAMPLE 
+Select-Top c:\log.txt -count 20
+.PARAMETER Filename 
+The name of the file to display. 
+.PARAMETER Count 
+The number of lines to display. Default to 10. 
+#>
+    Param(
+        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $true)] [Alias('FullName')] [string] $Filename,
+        [Parameter(Position = 1, Mandatory = $False)] [int] $Count = 10
+    )
+    
+    process {
+        Get-Content $Filename -TotalCount $Count
+    }
+}
+
+#----------------------------------------------------
+function Select-Tail() {
+    <#
+Function Name  : Select-Tail
+Author     : Rob Holme (rob@holme.com.au)
+Version    : 1.0 
+Requires   : PowerShell V2  
+
+.SYNOPSIS 
+Display the last lines of a log file
+.DESCRIPTION 
+Display the last lines of a log file
+.EXAMPLE 
+Select-Tail -Path c:\log.txt -count 20
+.EXAMPLE 
+Select-Tail -Path c:\log.txt -Wait
+.PARAMETER Filename 
+The name of the file to display. 
+.PARAMETER Count 
+The number of lines to display. Default to 10. 
+.PARAMETER WAIT
+Keep waiting to display additional lines added to end of file.
+#>
+    Param(
+        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $true)] [Alias('FullName')] [string] $Path,
+        [Parameter(Position = 1, Mandatory = $False)] [int] $Count = 10,
+        [Parameter(Position = 2, Mandatory = $False)] [switch] $Wait
+    )
+
+    process {
+        # if the -Wait switch is set, keep waiting to display additional lines added to end of file.
+        if ($Wait) {
+            Get-Content -Path $Path -Tail $Count -Wait
+        }
+        # don;t wait, just display the current tail of the file and exit.
+        else {
+            Get-Content -Path $Path -Tail $Count
+        }
+    }
+}
+
+
+#----------------------------------------------------
+# Set the value of a INI file property (or create it if it doesn't exist)
+Function Set-IniValue { 
+    <#
+.NOTES
+Function Name   : Set-IniValue
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (14/09/2016) - initial version
+                  1.1 (20/09/2016) - Updated regex match to handle whitespace after the section name and property name
+                  1.2 (21/09/2016) - fixed issue where a property wasn't added if it was to be added to the last section of the ini file
+Requires        : PowerShell V2  
+
+.SYNOPSIS 
+Sets the value of an item in a INI file
+.DESCRIPTION 
+Sets the value of an item in a INI file
+.EXAMPLE 
+Give an example of how to use it 
+.PARAMETER  Path
+The literal path and filename of the INI file to edit
+.PARAMETER  Section
+The name of the section that contains the property to edit. If the property is not found a new property will be created
+.PARAMETER  Property
+The name of the property to change
+.PARAMETER  Value
+The new value of the property to set
+#> 
+
+    [CmdletBinding(SupportsShouldProcess = $True)] 
+    param 
+    ( 
+        # -Path parameter
+        [Parameter(
+            Mandatory = $True, 
+            ValueFromPipeline = $True,    
+            ValueFromPipelineByPropertyName = $True, 
+            HelpMessage = 'Which ini file would you like to update?'
+        )] 
+        [Alias('FullName')] 
+        [string]$Path,
+    
+        # -Section parameter
+        [Parameter(
+            Mandatory = $true 
+        )] 
+        [string]$Section,
+
+        # -Property parameter
+        [Parameter(
+            Mandatory = $True, 
+            HelpMessage = 'Which ini file property would you like to update?'
+        )] 
+        [string]$Property,
+
+        # -Value parameter
+        [Parameter(
+            Mandatory = $True, 
+            HelpMessage = 'The value of the property to set'
+        )] 
+        [string]$Value
+    ) 
+
+    # process each file from the pipeline 
+    process {
+        foreach ($iniFile in $Path) {
+            # confirm the path exists (and is a file, not a directory)
+            if (!(Test-Path -LiteralPath $iniFile -PathType Leaf)) {
+                write-error "The file $iniFile does not exist"
+                return
+            }
+            $sectionMatch = $false
+            $propertyFound = $false
+            $sectionExists = $false
+            $content = get-content -LiteralPath $iniFile
+            $newContent = New-Object System.Collections.ArrayList
+            # Update values within the section specified only
+            foreach ($line in $content) {
+                if ($line -match "^\[$section\](\s+)?$") {
+                    $sectionMatch = $true
+                    $sectionExists = $true
+                    $newContent += $line 
+                    continue
+                }
+                elseif ($line -match "^\[.*\](\s+)?$") {
+                    # if the end of the section was found without a match, add the property and value to the end of th section
+                    if (($sectionMatch -eq $True) -and ($propertyFound -eq $false)) {
+                        $newContent += "$Property=$Value"
+                        $newContent += $line 
+                        # create an object for the result to the pipeline
+                        $Result = @{
+                            Filename = $iniFile
+                            Section  = $Section
+                            Property = $Property
+                            OldValue = ""
+                            NewValue = $Value
+                        }
+                    }
+                    else {
+                        $newContent += $line 
+                    }
+                    $sectionMatch = $false
+                    continue
+                }
+            
+                # check each line only if within the Section specified by the users
+                if ($sectionMatch) {
+                    # If a matching property is found update the value
+                    if ($line -match "$Property(\s+)?=(\s+)?\w?") {
+                        $newContent += "$Property=$Value"
+                        $propertyFound = $True
+                        # create an object for the result to the pipeline
+                        $Result = @{
+                            Filename = $iniFile
+                            Section  = $Section
+                            Property = $Property
+                            OldValue = $line.Split("=")[1]
+                            NewValue = $Value
+                        }
+                    }
+                    else {
+                        $newContent += $line 
+                    }
+                }
+                else {
+                    $newContent += $line 
+                }
+            }
+            
+            # if the section was found, and it was the last section, and the property wasn't found
+            if (($sectionMatch -eq $True) -and ($propertyFound -eq $false)) {
+                $newContent += "$Property=$Value"
+                # create an object for the result to the pipeline
+                $Result = @{
+                    Filename = $iniFile
+                    Section  = $Section
+                    Property = $Property
+                    OldValue = ""
+                    NewValue = $Value
+                }
+            }
+
+            # if the section was not found, create a new section
+            if (!$sectionExists) {
+                $newContent += "[$Section]`r`n$Property=$Value"
+                # create an object for the result to the pipeline
+                $Result = @{
+                    Filename = $iniFile
+                    Section  = $Section
+                    Property = $Property
+                    OldValue = ""
+                    NewValue = $Value
+                }
+            }
+
+            # write changes to the ini file
+            if ($PSCmdlet.ShouldProcess($iniFile, "Set-Content")) {
+                Set-Content -LiteralPath $iniFile -Value $newContent -Confirm:$false
+            }
+            # return the results as an object
+            $outputObject = New-Object -Property $Result -TypeName psobject
+            $outputObject.PSObject.TypeNames.Insert(0, "Powertools.SetIniValue.Result")
+            write-output $outputObject 
+        }
+    }    
+}
+
+
+#----------------------------------------------------
+# Gets the value of a INI file property
+Function Get-IniValue { 
+    <#
+.NOTES
+Function Name   : Get-IniValue
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (14/09/2016) - initial version
+                  1.1 (20/09/2016) - Updated regex match to handle whitespace after the section name and property name
+Requires        : PowerShell V2  
+
+.SYNOPSIS 
+Gets the value of an item in a INI file
+.DESCRIPTION 
+Gets the value of an item in a INI file
+.EXAMPLE 
+Give an example of how to use it 
+.PARAMETER  Path
+The literal path and filename of the INI file to edit
+.PARAMETER  Section
+The name of the section that contains the property to edit. If the property is not found a new property will be created
+.PARAMETER  Property
+The name of the property to change
+#> 
+
+    [CmdletBinding()] 
+    param 
+    ( 
+        # -Path parameter
+        [Parameter(
+            Mandatory = $True, 
+            ValueFromPipeline = $True,    
+            ValueFromPipelineByPropertyName = $True, 
+            HelpMessage = 'Which ini file would you like to search?'
+        )] 
+        [Alias('FullName')] 
+        [string]$Path,
+    
+        # -Section parameter
+        [Parameter(
+            Mandatory = $true 
+        )] 
+        [string]$Section,
+
+        # -Property parameter
+        [Parameter(
+            Mandatory = $True, 
+            HelpMessage = 'Which ini file property would you like to view?'
+        )] 
+        [string]$Property
+    ) 
+
+    # process each file from the pipeline 
+    process {
+        foreach ($iniFile in $Path) {
+            # confirm the path exists (and is a file, not a directory)
+            if (!(Test-Path -LiteralPath $iniFile -PathType Leaf)) {
+                write-error "The file $iniFile does not exist"
+                return
+            }
+            $sectionMatch = $false
+            $propertyFound = $false
+            $content = get-content -LiteralPath $iniFile
+            # Update values within the section specified only
+            foreach ($line in $content) {
+                if ($line -match "^\[$section\](\s+)?$") {
+                    $sectionMatch = $true
+                    continue
+                }
+                elseif ($line -match "^\[.*\](\s+)?$") {
+                    # The end of the section was found without a match
+                    $sectionMatch = $false
+                    continue
+                }
+            
+                # check each line only if within the Section specified by the user
+                if ($sectionMatch) {
+                    # If a matching property is found update the value
+                    if ($line -match "$Property(\s+)?=(\s+)?\w?") {
+                        $propertyFound = $True
+                        # create an object for the result to the pipeline
+                        $Result = @{
+                            Filename = $iniFile
+                            Section  = $Section
+                            Property = $line.Split("=")[0]
+                            Value    = $line.Split("=")[1]
+                        }
+                    }
+                }
+            }
+
+            # if the section was not found, create a new section
+            if (!$propertyFound) {
+                write-warning "The property '$Property' could not be located in the '$Section' section."
+            }
+
+            # return the results as an object
+            $outputObject = New-Object -Property $Result -TypeName psobject
+            $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetIniValue.Result")
+            write-output $outputObject 
+        }
+    }    
+}
+
+#----------------------------------------------------
+# Removes a property from a INI file
+Function Remove-IniValue { 
+    <#
+.NOTES
+Function Name   : Remove-IniValue
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (14/09/2016) - initial version
+                  1.1 (20/09/2016) - Updated regex match to handle whitespace after the section name and property name
+Requires        : PowerShell V2  
+
+.SYNOPSIS 
+Gets the value of an item in a INI file
+.DESCRIPTION 
+Gets the value of an item in a INI file
+.EXAMPLE 
+Give an example of how to use it 
+.PARAMETER  Path
+The literal path and filename of the INI file to edit
+.PARAMETER  Section
+The name of the section that contains the property to delete.
+.PARAMETER  Property
+The name of the property to delete
+#> 
+
+    [CmdletBinding(SupportsShouldProcess = $True)] 
+    param 
+    ( 
+        # -Path parameter
+        [Parameter(
+            Mandatory = $True, 
+            ValueFromPipeline = $True,    
+            ValueFromPipelineByPropertyName = $True, 
+            HelpMessage = 'Which ini file would you like to search?'
+        )] 
+        [Alias('FullName')] 
+        [string]$Path,
+    
+        # -Section parameter
+        [Parameter(
+            Mandatory = $true 
+        )] 
+        [string]$Section,
+
+        # -Property parameter
+        [Parameter(
+            Mandatory = $True, 
+            HelpMessage = 'Which ini file property would you like to view?'
+        )] 
+        [string]$Property
+    ) 
+
+    # process each file from the pipeline 
+    process {
+        foreach ($iniFile in $Path) {
+            # confirm the path exists (and is a file, not a directory)
+            if (!(Test-Path -LiteralPath $iniFile -PathType Leaf)) {
+                write-error "The file $iniFile does not exist"
+                return
+            }
+            $sectionMatch = $false
+            $propertyFound = $false
+            $sectionExists = $false
+            $content = get-content -LiteralPath $iniFile
+            $newContent = New-Object System.Collections.ArrayList
+            # Update values within the section specified only
+            foreach ($line in $content) {
+                if ($line -match "^\[$section\](\s+)?$") {
+                    $sectionMatch = $true
+                    $sectionExists = $true
+                    $newContent += $line 
+                    continue
+                }
+                elseif ($line -match "^\[.*\](\s+)?$") {
+                    # if the end of the section was found without a match, add the property and value to the end of th section
+                    $newContent += $line 
+                    $sectionMatch = $false
+                    continue
+                }
+            
+                # check each line only if within the Section specified by the users
+                if ($sectionMatch) {
+                    # If a matching property is found discard the current line
+                    if ($line -match "$Property(\s+)?=(\s+)?\w?") {
+                        $propertyFound = $True
+                        # create an object for the result to the pipeline
+                        $Result = @{
+                            Filename        = $iniFile
+                            Section         = $Section
+                            DeletedProperty = $line.Split("=")[0]
+                            DeletedValue    = $line.Split("=")[1]
+                        }
+                    }
+                    else {
+                        $newContent += $line 
+                    }
+                }
+                else {
+                    $newContent += $line 
+                }
+            }
+
+            # if the property was not found write a warning
+            if (!$propertyFound) {
+                Write-Warning "The property '$Property' was not found in the '$Section' section of the file $iniFile"
+            }
+            else {
+                # write changes to the ini file
+                if ($PSCmdlet.ShouldProcess($iniFile, "Set-Content")) {
+                    Set-Content -LiteralPath $iniFile -Value $newContent -Confirm:$false
+                }
+                # return the results as an object
+                $outputObject = New-Object -Property $Result -TypeName psobject
+                $outputObject.PSObject.TypeNames.Insert(0, "Powertools.RemoveIniValue.Result")
+                write-output $outputObject 
+            }
+        }
+    }    
+}
+
+function Rename-FileExtension {
+<#
+.NOTES
+Function Name   : Remove-IniValue
+Author          : Rob Holme (rob@holme.com.au)
+Version         : 1.0 (19/05/2017) - initial version
+Requires        : PowerShell V2  
+
+.SYNOPSIS 
+Renames the extension of a filename
+.DESCRIPTION 
+Renames the extension of a filename
+.EXAMPLE 
+ls *.temp | Rename-FileExtension -NewExtension txt 
+.EXAMPLE 
+Rename-FileExtension -Filename .\somefile.temp -NewExtension txt 
+.PARAMETER  Filename
+The file to rename
+.PARAMETER  NewExtension
+The new file extension
+#> 
+
+    [CmdletBinding(SupportsShouldProcess = $True)] 
+    param 
+    ( 
+        # -NewExtension parameter
+        [Parameter(
+            Mandatory = $True, 
+            ValueFromPipeline = $True,    
+            ValueFromPipelineByPropertyName = $True, 
+            HelpMessage = 'Which file is to be renamed?'
+        )] 
+        [Alias('FullName')] 
+        [string]$Filename,
+    
+        # -NewExtension parameter
+        [Parameter(
+            Mandatory = $true 
+        )] 
+        [string]$NewExtension
+    ) 
+
+    # process each file from the pipeline 
+    process {
+        if (!(Test-Path -LiteralPath $Filename -PathType Leaf)) {
+            write-error "The file $Filename does not exist"
+            return
+        }
+        $file = Get-Item -LiteralPath $Filename
+        $Result = @{
+            OldFilename = $file.Name 
+            NewFilename = $file.BaseName + ".$NewExtension"
+        }
+        if ($PSCmdlet.ShouldProcess($Filename, "Set-Content")) {
+            Rename-Item -LiteralPath $Filename -NewName "$($file.BaseName).$NewExtension"
+        }
+        $outputObject = New-Object -Property $Result -TypeName psobject
+        $outputObject.PSObject.TypeNames.Insert(0, "Powertools.RenameExtension.Result")
+        write-output $outputObject 
+    }
+}
