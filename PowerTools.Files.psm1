@@ -33,13 +33,70 @@ The name of the file to display.
 .PARAMETER Count 
 The number of lines to display. Default to 10. 
 #>
+    [CmdletBinding(DefaultParameterSetName = 'Path')]
     Param(
-        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $true)] [Alias('FullName')] [string] $Filename,
-        [Parameter(Position = 1, Mandatory = $False)] [int] $Count = 10
+        [Parameter(
+            Position = 0, 
+            Mandatory = $True, 
+            ParameterSetName = "Path",
+            ValueFromPipeline = $True, 
+            ValueFromPipelineByPropertyName = $true)] 
+        [ValidateNotNullOrEmpty()]
+        [Alias('PSPath')] [string[]] $Path,
+
+        [Parameter(
+            Position = 0,
+            Mandatory = $True, 
+            ParameterSetName = "LiteralPath",
+            ValueFromPipeline = $False,
+            ValueFromPipelineByPropertyName = $true,
+            HelpMessage = "Literal path to one or more locations.")]
+        [ValidateNotNullOrEmpty()]
+        [string[]] $LiteralPath,
+
+        [Parameter(
+            Position = 1, 
+            Mandatory = $False)] 
+        [int] $Count = 10
     )
     
     process {
-        Get-Content $Filename -TotalCount $Count
+        $paths = @()
+        # check and expand wildcard paths
+        if ($psCmdlet.ParameterSetName -eq 'Path') {
+            foreach ($aPath in $Path) {
+                if (!(Test-Path -Path $aPath)) {
+                    $ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+                    $category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                    $errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+                    $psCmdlet.WriteError($errRecord)
+                    continue
+                }
+            
+                # Resolve any wildcards that might be in the path
+                $provider = $null
+                $paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
+            }
+        }
+        # check and expand literal paths
+        else {
+            foreach ($aPath in $LiteralPath) {
+                if (!(Test-Path -LiteralPath $aPath)) {
+                    $ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+                    $category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                    $errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+                    $psCmdlet.WriteError($errRecord)
+                    continue
+                }
+            
+                # Resolve any relative paths
+                $paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
+            }
+        }
+
+        foreach ($aPath in $paths) {      
+            Get-Content -LiteralPath $aPath -TotalCount $Count
+        }
     }
 }
 
@@ -66,20 +123,82 @@ The number of lines to display. Default to 10.
 .PARAMETER WAIT
 Keep waiting to display additional lines added to end of file.
 #>
+    [CmdletBinding(DefaultParameterSetName = 'Path')]
     Param(
-        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $true)] [Alias('FullName')] [string] $Path,
-        [Parameter(Position = 1, Mandatory = $False)] [int] $Count = 10,
-        [Parameter(Position = 2, Mandatory = $False)] [switch] $Wait
+        [Parameter(
+            Position = 0, 
+            Mandatory = $True, 
+            ParameterSetName = "Path",
+            ValueFromPipeline = $True, 
+            ValueFromPipelineByPropertyName = $true)] 
+        [ValidateNotNullOrEmpty()]
+        [Alias('PSPath')] [string[]] $Path,
+
+        [Parameter(
+            Position = 0,
+            Mandatory = $True, 
+            ParameterSetName = "LiteralPath",
+            ValueFromPipeline = $False,
+            ValueFromPipelineByPropertyName = $true,
+            HelpMessage = "Literal path to one or more locations.")]
+        [ValidateNotNullOrEmpty()]
+        [string[]] $LiteralPath,
+    
+        [Parameter(
+            Position = 1, 
+            Mandatory = $False)] 
+        [int] $Count = 10,
+        
+        [Parameter(
+            Position = 2, 
+            Mandatory = $False)] 
+        [switch] $Wait
     )
 
     process {
-        # if the -Wait switch is set, keep waiting to display additional lines added to end of file.
-        if ($Wait) {
-            Get-Content -Path $Path -Tail $Count -Wait
+
+        $paths = @()
+        # check and expand wildcard paths
+        if ($psCmdlet.ParameterSetName -eq 'Path') {
+            foreach ($aPath in $Path) {
+                if (!(Test-Path -Path $aPath)) {
+                    $ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+                    $category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                    $errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+                    $psCmdlet.WriteError($errRecord)
+                    continue
+                }
+            
+                # Resolve any wildcards that might be in the path
+                $provider = $null
+                $paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
+            }
         }
-        # don;t wait, just display the current tail of the file and exit.
+        # check and expand literal paths
         else {
-            Get-Content -Path $Path -Tail $Count
+            foreach ($aPath in $LiteralPath) {
+                if (!(Test-Path -LiteralPath $aPath)) {
+                    $ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+                    $category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                    $errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+                    $psCmdlet.WriteError($errRecord)
+                    continue
+                }
+            
+                # Resolve any relative paths
+                $paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
+            }
+        }
+
+        foreach ($aPath in $paths) {      
+            # if the -Wait switch is set, keep waiting to display additional lines added to end of file.
+            if ($Wait) {
+                Get-Content -LiteralPath $aPath -Tail $Count -Wait
+            }
+            # don't wait, just display the current tail of the file and exit.
+            else {
+                Get-Content -LiteralPath $aPath -Tail $Count
+            }
         }
     }
 }
@@ -88,7 +207,7 @@ Keep waiting to display additional lines added to end of file.
 #----------------------------------------------------
 # Set the value of a INI file property (or create it if it doesn't exist)
 Function Set-IniValue { 
-    <#
+<#
 .NOTES
 Function Name   : Set-IniValue
 Author          : Rob Holme (rob@holme.com.au)
@@ -477,7 +596,7 @@ The name of the property to delete
 }
 
 function Rename-FileExtension {
-<#
+    <#
 .NOTES
 Function Name   : Remove-IniValue
 Author          : Rob Holme (rob@holme.com.au)
