@@ -1,5 +1,5 @@
 Version History
-	1.0 (31/07/2016) - Intial version
+	1.0 (31/07/2016) - Initial version
 	1.1 (03/08/2016) - added Get-Netstat CmdLet
     1.2 (08/07/2016) - added *-ProcessorAffinity CmdLets. Updated Tail to include -Wait.
     1.3 (16/08/2016) - added Show-WordMetadata and Remove-WordMetadata
@@ -7,10 +7,11 @@ Version History
     1.5 (16/10/2016) - added Get-ProcessorUtilisation
     1.6              - minor fixes
     1.7 (17/10/2016) - fixed Get-NetStat issue where UDP connections not displaying the associated process
-	1.8 (19/10/2016) - added Protect-PdfFile and UnProtect-PdfFile (now moved to seperate module - PDFTools)
+	1.8 (19/10/2016) - added Protect-PdfFile and UnProtect-PdfFile (now moved to separate module - PDFTools)
 	1.9 (21/12/2016) - added Get-FirewallStatus
 	2.0 (24/01/2017) - added Export-Credentials and Import-Credentials
 	2.1 (19/05/2017) - added Rename-FileExtension, Get-Uptime, Get-Screenshot
 	2.2 (04/08/2017) - added Get-Hash
-	2.3 (06/02/2017) - added Test-IsPasswordPwnedd
-	
+	2.3 (06/02/2017) - added Test-IsPasswordPwned
+	2.4 (06/03/2018) - updated path parameters to be consistent across all functions (where possible). Standardise on -Path and -LiteralPath.
+	2.5 (07/03/2018) - added Rename-Filename

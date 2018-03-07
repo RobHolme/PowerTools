@@ -16,10 +16,9 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #----------------------------------------------------
 function Select-Top() {
-    <#
+	<#
 Function Name  : Select-Top
 Author     : Rob Holme (rob@holme.com.au)
-Version    : 1.0 
 Requires   : PowerShell V2  
 
 .SYNOPSIS 
@@ -33,79 +32,78 @@ The name of the file to display.
 .PARAMETER Count 
 The number of lines to display. Default to 10. 
 #>
-    [CmdletBinding(DefaultParameterSetName = 'Path')]
-    Param(
-        [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
-            ParameterSetName = "Path",
-            ValueFromPipeline = $True, 
-            ValueFromPipelineByPropertyName = $true)] 
-        [ValidateNotNullOrEmpty()]
-        [Alias('PSPath')] [string[]] $Path,
+	[CmdletBinding(DefaultParameterSetName = 'Path')]
+	Param(
+		[Parameter(
+			Position = 0, 
+			Mandatory = $True, 
+			ParameterSetName = "Path",
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $true)] 
+		[ValidateNotNullOrEmpty()]
+		[Alias('PSPath')] [string[]] $Path,
 
-        [Parameter(
-            Position = 0,
-            Mandatory = $True, 
-            ParameterSetName = "LiteralPath",
-            ValueFromPipeline = $False,
-            ValueFromPipelineByPropertyName = $true,
-            HelpMessage = "Literal path to one or more locations.")]
-        [ValidateNotNullOrEmpty()]
-        [string[]] $LiteralPath,
+		[Parameter(
+			Position = 0,
+			Mandatory = $True, 
+			ParameterSetName = "LiteralPath",
+			ValueFromPipeline = $False,
+			ValueFromPipelineByPropertyName = $true,
+			HelpMessage = "Literal path to one or more locations.")]
+		[ValidateNotNullOrEmpty()]
+		[string[]] $LiteralPath,
 
-        [Parameter(
-            Position = 1, 
-            Mandatory = $False)] 
-        [int] $Count = 10
-    )
+		[Parameter(
+			Position = 1, 
+			Mandatory = $False)] 
+		[int] $Count = 10
+	)
     
-    process {
-        $paths = @()
-        # check and expand wildcard paths
-        if ($psCmdlet.ParameterSetName -eq 'Path') {
-            foreach ($aPath in $Path) {
-                if (!(Test-Path -Path $aPath)) {
-                    $ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
-                    $category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                    $errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
-                    $psCmdlet.WriteError($errRecord)
-                    continue
-                }
+	process {
+		$paths = @()
+		# check and expand wildcard paths
+		if ($psCmdlet.ParameterSetName -eq 'Path') {
+			foreach ($aPath in $Path) {
+				if (!(Test-Path -Path $aPath)) {
+					$ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+					$category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+					$errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+					$psCmdlet.WriteError($errRecord)
+					continue
+				}
             
-                # Resolve any wildcards that might be in the path
-                $provider = $null
-                $paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
-            }
-        }
-        # check and expand literal paths
-        else {
-            foreach ($aPath in $LiteralPath) {
-                if (!(Test-Path -LiteralPath $aPath)) {
-                    $ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
-                    $category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                    $errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
-                    $psCmdlet.WriteError($errRecord)
-                    continue
-                }
+				# Resolve any wildcards that might be in the path
+				$provider = $null
+				$paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
+			}
+		}
+		# check and expand literal paths
+		else {
+			foreach ($aPath in $LiteralPath) {
+				if (!(Test-Path -LiteralPath $aPath)) {
+					$ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+					$category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+					$errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+					$psCmdlet.WriteError($errRecord)
+					continue
+				}
             
-                # Resolve any relative paths
-                $paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
-            }
-        }
+				# Resolve any relative paths
+				$paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
+			}
+		}
 
-        foreach ($aPath in $paths) {      
-            Get-Content -LiteralPath $aPath -TotalCount $Count
-        }
-    }
+		foreach ($aPath in $paths) {      
+			Get-Content -LiteralPath $aPath -TotalCount $Count
+		}
+	}
 }
 
 #----------------------------------------------------
 function Select-Tail() {
-    <#
+	<#
 Function Name  : Select-Tail
 Author     : Rob Holme (rob@holme.com.au)
-Version    : 1.0 
 Requires   : PowerShell V2  
 
 .SYNOPSIS 
@@ -123,91 +121,91 @@ The number of lines to display. Default to 10.
 .PARAMETER WAIT
 Keep waiting to display additional lines added to end of file.
 #>
-    [CmdletBinding(DefaultParameterSetName = 'Path')]
-    Param(
-        [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
-            ParameterSetName = "Path",
-            ValueFromPipeline = $True, 
-            ValueFromPipelineByPropertyName = $true)] 
-        [ValidateNotNullOrEmpty()]
-        [Alias('PSPath')] [string[]] $Path,
+	[CmdletBinding(DefaultParameterSetName = 'Path')]
+	Param(
+		[Parameter(
+			Position = 0, 
+			Mandatory = $True, 
+			ParameterSetName = "Path",
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $true)] 
+		[ValidateNotNullOrEmpty()]
+		[Alias('PSPath')] [string[]] $Path,
 
-        [Parameter(
-            Position = 0,
-            Mandatory = $True, 
-            ParameterSetName = "LiteralPath",
-            ValueFromPipeline = $False,
-            ValueFromPipelineByPropertyName = $true,
-            HelpMessage = "Literal path to one or more locations.")]
-        [ValidateNotNullOrEmpty()]
-        [string[]] $LiteralPath,
+		[Parameter(
+			Position = 0,
+			Mandatory = $True, 
+			ParameterSetName = "LiteralPath",
+			ValueFromPipeline = $False,
+			ValueFromPipelineByPropertyName = $true,
+			HelpMessage = "Literal path to one or more locations.")]
+		[ValidateNotNullOrEmpty()]
+		[string[]] $LiteralPath,
     
-        [Parameter(
-            Position = 1, 
-            Mandatory = $False)] 
-        [int] $Count = 10,
+		[Parameter(
+			Position = 1, 
+			Mandatory = $False)] 
+		[int] $Count = 10,
         
-        [Parameter(
-            Position = 2, 
-            Mandatory = $False)] 
-        [switch] $Wait
-    )
+		[Parameter(
+			Position = 2, 
+			Mandatory = $False)] 
+		[switch] $Wait
+	)
 
-    process {
+	process {
 
-        $paths = @()
-        # check and expand wildcard paths
-        if ($psCmdlet.ParameterSetName -eq 'Path') {
-            foreach ($aPath in $Path) {
-                if (!(Test-Path -Path $aPath)) {
-                    $ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
-                    $category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                    $errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
-                    $psCmdlet.WriteError($errRecord)
-                    continue
-                }
+		$paths = @()
+		# check and expand wildcard paths
+		if ($psCmdlet.ParameterSetName -eq 'Path') {
+			foreach ($aPath in $Path) {
+				if (!(Test-Path -Path $aPath)) {
+					$ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+					$category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+					$errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+					$psCmdlet.WriteError($errRecord)
+					continue
+				}
             
-                # Resolve any wildcards that might be in the path
-                $provider = $null
-                $paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
-            }
-        }
-        # check and expand literal paths
-        else {
-            foreach ($aPath in $LiteralPath) {
-                if (!(Test-Path -LiteralPath $aPath)) {
-                    $ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
-                    $category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                    $errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
-                    $psCmdlet.WriteError($errRecord)
-                    continue
-                }
+				# Resolve any wildcards that might be in the path
+				$provider = $null
+				$paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
+			}
+		}
+		# check and expand literal paths
+		else {
+			foreach ($aPath in $LiteralPath) {
+				if (!(Test-Path -LiteralPath $aPath)) {
+					$ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+					$category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+					$errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+					$psCmdlet.WriteError($errRecord)
+					continue
+				}
             
-                # Resolve any relative paths
-                $paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
-            }
-        }
+				# Resolve any relative paths
+				$paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
+			}
+		}
 
-        foreach ($aPath in $paths) {      
-            # if the -Wait switch is set, keep waiting to display additional lines added to end of file.
-            if ($Wait) {
-                Get-Content -LiteralPath $aPath -Tail $Count -Wait
-            }
-            # don't wait, just display the current tail of the file and exit.
-            else {
-                Get-Content -LiteralPath $aPath -Tail $Count
-            }
-        }
-    }
+		foreach ($aPath in $paths) {      
+			# if the -Wait switch is set, keep waiting to display additional lines added to end of file.
+			if ($Wait) {
+				Get-Content -LiteralPath $aPath -Tail $Count -Wait
+			}
+			# don't wait, just display the current tail of the file and exit.
+			else {
+				Get-Content -LiteralPath $aPath -Tail $Count
+			}
+		}
+	}
 }
 
 
 #----------------------------------------------------
 # Set the value of a INI file property (or create it if it doesn't exist)
 Function Set-IniValue { 
-<#
+	<#
 .NOTES
 Function Name   : Set-IniValue
 Author          : Rob Holme (rob@holme.com.au)
@@ -232,149 +230,149 @@ The name of the property to change
 The new value of the property to set
 #> 
 
-    [CmdletBinding(SupportsShouldProcess = $True)] 
-    param 
-    ( 
-        # -Path parameter
-        [Parameter(
-            Mandatory = $True, 
-            ValueFromPipeline = $True,    
-            ValueFromPipelineByPropertyName = $True, 
-            HelpMessage = 'Which ini file would you like to update?'
-        )] 
-        [Alias('FullName')] 
-        [string]$Path,
+	[CmdletBinding(SupportsShouldProcess = $True)] 
+	param 
+	( 
+		# -Path parameter
+		[Parameter(
+			Mandatory = $True, 
+			ValueFromPipeline = $True,    
+			ValueFromPipelineByPropertyName = $True, 
+			HelpMessage = 'Which ini file would you like to update?'
+		)] 
+		[Alias('FullName')] 
+		[string]$Path,
     
-        # -Section parameter
-        [Parameter(
-            Mandatory = $true 
-        )] 
-        [string]$Section,
+		# -Section parameter
+		[Parameter(
+			Mandatory = $true 
+		)] 
+		[string]$Section,
 
-        # -Property parameter
-        [Parameter(
-            Mandatory = $True, 
-            HelpMessage = 'Which ini file property would you like to update?'
-        )] 
-        [string]$Property,
+		# -Property parameter
+		[Parameter(
+			Mandatory = $True, 
+			HelpMessage = 'Which ini file property would you like to update?'
+		)] 
+		[string]$Property,
 
-        # -Value parameter
-        [Parameter(
-            Mandatory = $True, 
-            HelpMessage = 'The value of the property to set'
-        )] 
-        [string]$Value
-    ) 
+		# -Value parameter
+		[Parameter(
+			Mandatory = $True, 
+			HelpMessage = 'The value of the property to set'
+		)] 
+		[string]$Value
+	) 
 
-    # process each file from the pipeline 
-    process {
-        foreach ($iniFile in $Path) {
-            # confirm the path exists (and is a file, not a directory)
-            if (!(Test-Path -LiteralPath $iniFile -PathType Leaf)) {
-                write-error "The file $iniFile does not exist"
-                return
-            }
-            $sectionMatch = $false
-            $propertyFound = $false
-            $sectionExists = $false
-            $content = get-content -LiteralPath $iniFile
-            $newContent = New-Object System.Collections.ArrayList
-            # Update values within the section specified only
-            foreach ($line in $content) {
-                if ($line -match "^\[$section\](\s+)?$") {
-                    $sectionMatch = $true
-                    $sectionExists = $true
-                    $newContent += $line 
-                    continue
-                }
-                elseif ($line -match "^\[.*\](\s+)?$") {
-                    # if the end of the section was found without a match, add the property and value to the end of th section
-                    if (($sectionMatch -eq $True) -and ($propertyFound -eq $false)) {
-                        $newContent += "$Property=$Value"
-                        $newContent += $line 
-                        # create an object for the result to the pipeline
-                        $Result = @{
-                            Filename = $iniFile
-                            Section  = $Section
-                            Property = $Property
-                            OldValue = ""
-                            NewValue = $Value
-                        }
-                    }
-                    else {
-                        $newContent += $line 
-                    }
-                    $sectionMatch = $false
-                    continue
-                }
+	# process each file from the pipeline 
+	process {
+		foreach ($iniFile in $Path) {
+			# confirm the path exists (and is a file, not a directory)
+			if (!(Test-Path -LiteralPath $iniFile -PathType Leaf)) {
+				write-error "The file $iniFile does not exist"
+				return
+			}
+			$sectionMatch = $false
+			$propertyFound = $false
+			$sectionExists = $false
+			$content = get-content -LiteralPath $iniFile
+			$newContent = New-Object System.Collections.ArrayList
+			# Update values within the section specified only
+			foreach ($line in $content) {
+				if ($line -match "^\[$section\](\s+)?$") {
+					$sectionMatch = $true
+					$sectionExists = $true
+					$newContent += $line 
+					continue
+				}
+				elseif ($line -match "^\[.*\](\s+)?$") {
+					# if the end of the section was found without a match, add the property and value to the end of th section
+					if (($sectionMatch -eq $True) -and ($propertyFound -eq $false)) {
+						$newContent += "$Property=$Value"
+						$newContent += $line 
+						# create an object for the result to the pipeline
+						$Result = @{
+							Filename = $iniFile
+							Section  = $Section
+							Property = $Property
+							OldValue = ""
+							NewValue = $Value
+						}
+					}
+					else {
+						$newContent += $line 
+					}
+					$sectionMatch = $false
+					continue
+				}
             
-                # check each line only if within the Section specified by the users
-                if ($sectionMatch) {
-                    # If a matching property is found update the value
-                    if ($line -match "$Property(\s+)?=(\s+)?\w?") {
-                        $newContent += "$Property=$Value"
-                        $propertyFound = $True
-                        # create an object for the result to the pipeline
-                        $Result = @{
-                            Filename = $iniFile
-                            Section  = $Section
-                            Property = $Property
-                            OldValue = $line.Split("=")[1]
-                            NewValue = $Value
-                        }
-                    }
-                    else {
-                        $newContent += $line 
-                    }
-                }
-                else {
-                    $newContent += $line 
-                }
-            }
+				# check each line only if within the Section specified by the users
+				if ($sectionMatch) {
+					# If a matching property is found update the value
+					if ($line -match "$Property(\s+)?=(\s+)?\w?") {
+						$newContent += "$Property=$Value"
+						$propertyFound = $True
+						# create an object for the result to the pipeline
+						$Result = @{
+							Filename = $iniFile
+							Section  = $Section
+							Property = $Property
+							OldValue = $line.Split("=")[1]
+							NewValue = $Value
+						}
+					}
+					else {
+						$newContent += $line 
+					}
+				}
+				else {
+					$newContent += $line 
+				}
+			}
             
-            # if the section was found, and it was the last section, and the property wasn't found
-            if (($sectionMatch -eq $True) -and ($propertyFound -eq $false)) {
-                $newContent += "$Property=$Value"
-                # create an object for the result to the pipeline
-                $Result = @{
-                    Filename = $iniFile
-                    Section  = $Section
-                    Property = $Property
-                    OldValue = ""
-                    NewValue = $Value
-                }
-            }
+			# if the section was found, and it was the last section, and the property wasn't found
+			if (($sectionMatch -eq $True) -and ($propertyFound -eq $false)) {
+				$newContent += "$Property=$Value"
+				# create an object for the result to the pipeline
+				$Result = @{
+					Filename = $iniFile
+					Section  = $Section
+					Property = $Property
+					OldValue = ""
+					NewValue = $Value
+				}
+			}
 
-            # if the section was not found, create a new section
-            if (!$sectionExists) {
-                $newContent += "[$Section]`r`n$Property=$Value"
-                # create an object for the result to the pipeline
-                $Result = @{
-                    Filename = $iniFile
-                    Section  = $Section
-                    Property = $Property
-                    OldValue = ""
-                    NewValue = $Value
-                }
-            }
+			# if the section was not found, create a new section
+			if (!$sectionExists) {
+				$newContent += "[$Section]`r`n$Property=$Value"
+				# create an object for the result to the pipeline
+				$Result = @{
+					Filename = $iniFile
+					Section  = $Section
+					Property = $Property
+					OldValue = ""
+					NewValue = $Value
+				}
+			}
 
-            # write changes to the ini file
-            if ($PSCmdlet.ShouldProcess($iniFile, "Set-Content")) {
-                Set-Content -LiteralPath $iniFile -Value $newContent -Confirm:$false
-            }
-            # return the results as an object
-            $outputObject = New-Object -Property $Result -TypeName psobject
-            $outputObject.PSObject.TypeNames.Insert(0, "Powertools.SetIniValue.Result")
-            write-output $outputObject 
-        }
-    }    
+			# write changes to the ini file
+			if ($PSCmdlet.ShouldProcess($iniFile, "Set-Content")) {
+				Set-Content -LiteralPath $iniFile -Value $newContent -Confirm:$false
+			}
+			# return the results as an object
+			$outputObject = New-Object -Property $Result -TypeName psobject
+			$outputObject.PSObject.TypeNames.Insert(0, "Powertools.SetIniValue.Result")
+			write-output $outputObject 
+		}
+	}    
 }
 
 
 #----------------------------------------------------
 # Gets the value of a INI file property
 Function Get-IniValue { 
-    <#
+	<#
 .NOTES
 Function Name   : Get-IniValue
 Author          : Rob Holme (rob@holme.com.au)
@@ -396,89 +394,89 @@ The name of the section that contains the property to edit. If the property is n
 The name of the property to change
 #> 
 
-    [CmdletBinding()] 
-    param 
-    ( 
-        # -Path parameter
-        [Parameter(
-            Mandatory = $True, 
-            ValueFromPipeline = $True,    
-            ValueFromPipelineByPropertyName = $True, 
-            HelpMessage = 'Which ini file would you like to search?'
-        )] 
-        [Alias('FullName')] 
-        [string]$Path,
+	[CmdletBinding()] 
+	param 
+	( 
+		# -Path parameter
+		[Parameter(
+			Mandatory = $True, 
+			ValueFromPipeline = $True,    
+			ValueFromPipelineByPropertyName = $True, 
+			HelpMessage = 'Which ini file would you like to search?'
+		)] 
+		[Alias('FullName')] 
+		[string]$Path,
     
-        # -Section parameter
-        [Parameter(
-            Mandatory = $true 
-        )] 
-        [string]$Section,
+		# -Section parameter
+		[Parameter(
+			Mandatory = $true 
+		)] 
+		[string]$Section,
 
-        # -Property parameter
-        [Parameter(
-            Mandatory = $True, 
-            HelpMessage = 'Which ini file property would you like to view?'
-        )] 
-        [string]$Property
-    ) 
+		# -Property parameter
+		[Parameter(
+			Mandatory = $True, 
+			HelpMessage = 'Which ini file property would you like to view?'
+		)] 
+		[string]$Property
+	) 
 
-    # process each file from the pipeline 
-    process {
-        foreach ($iniFile in $Path) {
-            # confirm the path exists (and is a file, not a directory)
-            if (!(Test-Path -LiteralPath $iniFile -PathType Leaf)) {
-                write-error "The file $iniFile does not exist"
-                return
-            }
-            $sectionMatch = $false
-            $propertyFound = $false
-            $content = get-content -LiteralPath $iniFile
-            # Update values within the section specified only
-            foreach ($line in $content) {
-                if ($line -match "^\[$section\](\s+)?$") {
-                    $sectionMatch = $true
-                    continue
-                }
-                elseif ($line -match "^\[.*\](\s+)?$") {
-                    # The end of the section was found without a match
-                    $sectionMatch = $false
-                    continue
-                }
+	# process each file from the pipeline 
+	process {
+		foreach ($iniFile in $Path) {
+			# confirm the path exists (and is a file, not a directory)
+			if (!(Test-Path -LiteralPath $iniFile -PathType Leaf)) {
+				write-error "The file $iniFile does not exist"
+				return
+			}
+			$sectionMatch = $false
+			$propertyFound = $false
+			$content = get-content -LiteralPath $iniFile
+			# Update values within the section specified only
+			foreach ($line in $content) {
+				if ($line -match "^\[$section\](\s+)?$") {
+					$sectionMatch = $true
+					continue
+				}
+				elseif ($line -match "^\[.*\](\s+)?$") {
+					# The end of the section was found without a match
+					$sectionMatch = $false
+					continue
+				}
             
-                # check each line only if within the Section specified by the user
-                if ($sectionMatch) {
-                    # If a matching property is found update the value
-                    if ($line -match "$Property(\s+)?=(\s+)?\w?") {
-                        $propertyFound = $True
-                        # create an object for the result to the pipeline
-                        $Result = @{
-                            Filename = $iniFile
-                            Section  = $Section
-                            Property = $line.Split("=")[0]
-                            Value    = $line.Split("=")[1]
-                        }
-                    }
-                }
-            }
+				# check each line only if within the Section specified by the user
+				if ($sectionMatch) {
+					# If a matching property is found update the value
+					if ($line -match "$Property(\s+)?=(\s+)?\w?") {
+						$propertyFound = $True
+						# create an object for the result to the pipeline
+						$Result = @{
+							Filename = $iniFile
+							Section  = $Section
+							Property = $line.Split("=")[0]
+							Value    = $line.Split("=")[1]
+						}
+					}
+				}
+			}
 
-            # if the section was not found, create a new section
-            if (!$propertyFound) {
-                write-warning "The property '$Property' could not be located in the '$Section' section."
-            }
+			# if the section was not found, create a new section
+			if (!$propertyFound) {
+				write-warning "The property '$Property' could not be located in the '$Section' section."
+			}
 
-            # return the results as an object
-            $outputObject = New-Object -Property $Result -TypeName psobject
-            $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetIniValue.Result")
-            write-output $outputObject 
-        }
-    }    
+			# return the results as an object
+			$outputObject = New-Object -Property $Result -TypeName psobject
+			$outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetIniValue.Result")
+			write-output $outputObject 
+		}
+	}    
 }
 
 #----------------------------------------------------
 # Removes a property from a INI file
 Function Remove-IniValue { 
-    <#
+	<#
 .NOTES
 Function Name   : Remove-IniValue
 Author          : Rob Holme (rob@holme.com.au)
@@ -500,103 +498,103 @@ The name of the section that contains the property to delete.
 The name of the property to delete
 #> 
 
-    [CmdletBinding(SupportsShouldProcess = $True)] 
-    param 
-    ( 
-        # -Path parameter
-        [Parameter(
-            Mandatory = $True, 
-            ValueFromPipeline = $True,    
-            ValueFromPipelineByPropertyName = $True, 
-            HelpMessage = 'Which ini file would you like to search?'
-        )] 
-        [Alias('FullName')] 
-        [string]$Path,
+	[CmdletBinding(SupportsShouldProcess = $True)] 
+	param 
+	( 
+		# -Path parameter
+		[Parameter(
+			Mandatory = $True, 
+			ValueFromPipeline = $True,    
+			ValueFromPipelineByPropertyName = $True, 
+			HelpMessage = 'Which ini file would you like to search?'
+		)] 
+		[Alias('FullName')] 
+		[string]$Path,
     
-        # -Section parameter
-        [Parameter(
-            Mandatory = $true 
-        )] 
-        [string]$Section,
+		# -Section parameter
+		[Parameter(
+			Mandatory = $true 
+		)] 
+		[string]$Section,
 
-        # -Property parameter
-        [Parameter(
-            Mandatory = $True, 
-            HelpMessage = 'Which ini file property would you like to view?'
-        )] 
-        [string]$Property
-    ) 
+		# -Property parameter
+		[Parameter(
+			Mandatory = $True, 
+			HelpMessage = 'Which ini file property would you like to view?'
+		)] 
+		[string]$Property
+	) 
 
-    # process each file from the pipeline 
-    process {
-        foreach ($iniFile in $Path) {
-            # confirm the path exists (and is a file, not a directory)
-            if (!(Test-Path -LiteralPath $iniFile -PathType Leaf)) {
-                write-error "The file $iniFile does not exist"
-                return
-            }
-            $sectionMatch = $false
-            $propertyFound = $false
-            $sectionExists = $false
-            $content = get-content -LiteralPath $iniFile
-            $newContent = New-Object System.Collections.ArrayList
-            # Update values within the section specified only
-            foreach ($line in $content) {
-                if ($line -match "^\[$section\](\s+)?$") {
-                    $sectionMatch = $true
-                    $sectionExists = $true
-                    $newContent += $line 
-                    continue
-                }
-                elseif ($line -match "^\[.*\](\s+)?$") {
-                    # if the end of the section was found without a match, add the property and value to the end of th section
-                    $newContent += $line 
-                    $sectionMatch = $false
-                    continue
-                }
+	# process each file from the pipeline 
+	process {
+		foreach ($iniFile in $Path) {
+			# confirm the path exists (and is a file, not a directory)
+			if (!(Test-Path -LiteralPath $iniFile -PathType Leaf)) {
+				write-error "The file $iniFile does not exist"
+				return
+			}
+			$sectionMatch = $false
+			$propertyFound = $false
+			$sectionExists = $false
+			$content = get-content -LiteralPath $iniFile
+			$newContent = New-Object System.Collections.ArrayList
+			# Update values within the section specified only
+			foreach ($line in $content) {
+				if ($line -match "^\[$section\](\s+)?$") {
+					$sectionMatch = $true
+					$sectionExists = $true
+					$newContent += $line 
+					continue
+				}
+				elseif ($line -match "^\[.*\](\s+)?$") {
+					# if the end of the section was found without a match, add the property and value to the end of th section
+					$newContent += $line 
+					$sectionMatch = $false
+					continue
+				}
             
-                # check each line only if within the Section specified by the users
-                if ($sectionMatch) {
-                    # If a matching property is found discard the current line
-                    if ($line -match "$Property(\s+)?=(\s+)?\w?") {
-                        $propertyFound = $True
-                        # create an object for the result to the pipeline
-                        $Result = @{
-                            Filename        = $iniFile
-                            Section         = $Section
-                            DeletedProperty = $line.Split("=")[0]
-                            DeletedValue    = $line.Split("=")[1]
-                        }
-                    }
-                    else {
-                        $newContent += $line 
-                    }
-                }
-                else {
-                    $newContent += $line 
-                }
-            }
+				# check each line only if within the Section specified by the users
+				if ($sectionMatch) {
+					# If a matching property is found discard the current line
+					if ($line -match "$Property(\s+)?=(\s+)?\w?") {
+						$propertyFound = $True
+						# create an object for the result to the pipeline
+						$Result = @{
+							Filename        = $iniFile
+							Section         = $Section
+							DeletedProperty = $line.Split("=")[0]
+							DeletedValue    = $line.Split("=")[1]
+						}
+					}
+					else {
+						$newContent += $line 
+					}
+				}
+				else {
+					$newContent += $line 
+				}
+			}
 
-            # if the property was not found write a warning
-            if (!$propertyFound) {
-                Write-Warning "The property '$Property' was not found in the '$Section' section of the file $iniFile"
-            }
-            else {
-                # write changes to the ini file
-                if ($PSCmdlet.ShouldProcess($iniFile, "Set-Content")) {
-                    Set-Content -LiteralPath $iniFile -Value $newContent -Confirm:$false
-                }
-                # return the results as an object
-                $outputObject = New-Object -Property $Result -TypeName psobject
-                $outputObject.PSObject.TypeNames.Insert(0, "Powertools.RemoveIniValue.Result")
-                write-output $outputObject 
-            }
-        }
-    }    
+			# if the property was not found write a warning
+			if (!$propertyFound) {
+				Write-Warning "The property '$Property' was not found in the '$Section' section of the file $iniFile"
+			}
+			else {
+				# write changes to the ini file
+				if ($PSCmdlet.ShouldProcess($iniFile, "Set-Content")) {
+					Set-Content -LiteralPath $iniFile -Value $newContent -Confirm:$false
+				}
+				# return the results as an object
+				$outputObject = New-Object -Property $Result -TypeName psobject
+				$outputObject.PSObject.TypeNames.Insert(0, "Powertools.RemoveIniValue.Result")
+				write-output $outputObject 
+			}
+		}
+	}    
 }
 
 function Rename-FileExtension {
-    <#
+	<#
 .NOTES
 Function Name   : Remove-IniValue
 Author          : Rob Holme (rob@holme.com.au)
@@ -617,42 +615,157 @@ The file to rename
 The new file extension
 #> 
 
-    [CmdletBinding(SupportsShouldProcess = $True)] 
-    param 
-    ( 
-        # -NewExtension parameter
-        [Parameter(
-            Mandatory = $True, 
-            ValueFromPipeline = $True,    
-            ValueFromPipelineByPropertyName = $True, 
-            HelpMessage = 'Which file is to be renamed?'
-        )] 
-        [Alias('FullName')] 
-        [string]$Filename,
+	[CmdletBinding(SupportsShouldProcess = $True)] 
+	param 
+	( 
+		# -NewExtension parameter
+		[Parameter(
+			Mandatory = $True, 
+			ValueFromPipeline = $True,    
+			ValueFromPipelineByPropertyName = $True, 
+			HelpMessage = 'Which file is to be renamed?'
+		)] 
+		[Alias('FullName')] 
+		[string]$Filename,
     
-        # -NewExtension parameter
-        [Parameter(
-            Mandatory = $true 
-        )] 
-        [string]$NewExtension
-    ) 
+		# -NewExtension parameter
+		[Parameter(
+			Mandatory = $true 
+		)] 
+		[string]$NewExtension
+	) 
 
-    # process each file from the pipeline 
-    process {
-        if (!(Test-Path -LiteralPath $Filename -PathType Leaf)) {
-            write-error "The file $Filename does not exist"
-            return
-        }
-        $file = Get-Item -LiteralPath $Filename
-        $Result = @{
-            OldFilename = $file.Name 
-            NewFilename = $file.BaseName + ".$NewExtension"
-        }
-        if ($PSCmdlet.ShouldProcess($Filename, "Set-Content")) {
-            Rename-Item -LiteralPath $Filename -NewName "$($file.BaseName).$NewExtension"
-        }
-        $outputObject = New-Object -Property $Result -TypeName psobject
-        $outputObject.PSObject.TypeNames.Insert(0, "Powertools.RenameExtension.Result")
-        write-output $outputObject 
-    }
+	# process each file from the pipeline 
+	process {
+		if (!(Test-Path -LiteralPath $Filename -PathType Leaf)) {
+			write-error "The file $Filename does not exist"
+			return
+		}
+		$file = Get-Item -LiteralPath $Filename
+		$Result = @{
+			OldFilename = $file.Name 
+			NewFilename = $file.BaseName + ".$NewExtension"
+		}
+		if ($PSCmdlet.ShouldProcess($Filename, "Set-Content")) {
+			Rename-Item -LiteralPath $Filename -NewName "$($file.BaseName).$NewExtension"
+		}
+		$outputObject = New-Object -Property $Result -TypeName psobject
+		$outputObject.PSObject.TypeNames.Insert(0, "Powertools.RenameExtension.Result")
+		write-output $outputObject 
+	}
+}
+
+
+#----------------------------------------------------
+# Renames part of a filename, based on search string to match and replace.
+Function Rename-Filename { 
+	<#
+.NOTES
+Function Name   : Update-Filename
+Author          : Rob Holme (rob@holme.com.au)
+Requires        : PowerShell V2  
+
+.SYNOPSIS 
+Renames/removes part of a filename based on a search string. Only renames the base filename, not the path or extension. Can use regular expressions for the search string. 
+.DESCRIPTION 
+Renames/removes part of a filename based on a search string. Only renames the base filename, not the path or extension. Can use regular expressions for the search string. 
+.EXAMPLE 
+Give an example of how to use it 
+.PARAMETER  Path
+The path and of the file(s) to rename
+.PARAMETER  SearchString
+The string in the filename to change
+.PARAMETER  ReplacementString
+The string to replace the value of the -SearchString parameter with. Leave blank ot omit this parameter to delete -SearchString from the file name.
+#> 
+
+	[CmdletBinding(SupportsShouldProcess = $True, DefaultParameterSetName = 'Path')]
+	Param(
+		[Parameter(
+			Position = 0, 
+			Mandatory = $True, 
+			ParameterSetName = "Path",
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $true)] 
+		[ValidateNotNullOrEmpty()]
+		[Alias('PSPath')] [string[]] $Path,
+
+		[Parameter(
+			Position = 0,
+			Mandatory = $True, 
+			ParameterSetName = "LiteralPath",
+			ValueFromPipeline = $False,
+			ValueFromPipelineByPropertyName = $true,
+			HelpMessage = "Literal path to one or more locations.")]
+		[ValidateNotNullOrEmpty()]
+		[string[]] $LiteralPath,
+
+		[Parameter(
+			Position = 1,
+			Mandatory = $true)]
+		[ValidateNotNullOrEmpty()]
+		[string] $SearchString,
+		
+		[Parameter(
+			Position = 1,
+			Mandatory = $false)]
+		[string] $ReplacementString
+	)
+	
+	begin {
+		if (!$ReplacementString) {
+			$ReplacementString = ""
+		}
+	}
+
+	process {
+		$paths = @()
+		# check and expand wildcard paths
+		if ($psCmdlet.ParameterSetName -eq 'Path') {
+			foreach ($aPath in $Path) {
+				if (!(Test-Path -Path $aPath)) {
+					$ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+					$category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+					$errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+					$psCmdlet.WriteError($errRecord)
+					continue
+				}
+            
+				# Resolve any wildcards that might be in the path
+				$provider = $null
+				$paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
+			}
+		}
+		# check and expand literal paths
+		else {
+			foreach ($aPath in $LiteralPath) {
+				if (!(Test-Path -LiteralPath $aPath)) {
+					$ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+					$category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+					$errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+					$psCmdlet.WriteError($errRecord)
+					continue
+				}
+            
+				# Resolve any relative paths
+				$paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
+			}
+		}
+
+		foreach ($aPath in $paths) {      
+			$file = Get-Item -LiteralPath $aPath
+			$newFilename = $file.BaseName -replace $SearchString, $ReplacementString
+			
+			$Result = @{
+				OldFilename = $file.Name 
+				NewFilename = $newFilename + "." + $file.Extension
+			}
+			if ($PSCmdlet.ShouldProcess($Filename, "Set-Content")) {
+				Rename-Item -LiteralPath $Filename -NewName $newFilename + "." + $file.Extension
+			}
+			$outputObject = New-Object -Property $Result -TypeName psobject
+			$outputObject.PSObject.TypeNames.Insert(0, "Powertools.RenameExtension.Result")
+			write-output $outputObject 
+		}
+	}
 }
