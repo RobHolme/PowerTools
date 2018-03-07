@@ -755,13 +755,12 @@ The string to replace the value of the -SearchString parameter with. Leave blank
 		foreach ($aPath in $paths) {      
 			$file = Get-Item -LiteralPath $aPath
 			$newFilename = $file.BaseName -replace $SearchString, $ReplacementString
-			
 			$Result = @{
 				OldFilename = $file.Name 
-				NewFilename = $newFilename + "." + $file.Extension
+				NewFilename = "$newFilename$($file.Extension)"
 			}
-			if ($PSCmdlet.ShouldProcess($Filename, "Set-Content")) {
-				Rename-Item -LiteralPath $Filename -NewName $newFilename + "." + $file.Extension
+			if ($PSCmdlet.ShouldProcess($aPath, "Set-Content")) {
+				Rename-Item -LiteralPath $aPath -NewName "$newFilename$($file.Extension)"
 			}
 			$outputObject = New-Object -Property $Result -TypeName psobject
 			$outputObject.PSObject.TypeNames.Insert(0, "Powertools.RenameExtension.Result")

@@ -16,6 +16,7 @@ A module containing a random collection of functions that I use occasionally. Th
 - Remove-IniValue
 - Remove-WordMetadata
 - Rename-FileExtension
+- Rename-Filename
 - Select-Tail
 - Select-Top
 - Set-IniValue
