@@ -27,7 +27,7 @@ Display the top most lines of a log file
 Display the top most lines of a log file
 .EXAMPLE 
 Select-Top c:\log.txt -count 20
-.PARAMETER Filename 
+.PARAMETER Path 
 The name of the file to display. 
 .PARAMETER Count 
 The number of lines to display. Default to 10. 
@@ -114,11 +114,11 @@ Display the last lines of a log file
 Select-Tail -Path c:\log.txt -count 20
 .EXAMPLE 
 Select-Tail -Path c:\log.txt -Wait
-.PARAMETER Filename 
+.PARAMETER Path 
 The name of the file to display. 
 .PARAMETER Count 
 The number of lines to display. Default to 10. 
-.PARAMETER WAIT
+.PARAMETER Wait
 Keep waiting to display additional lines added to end of file.
 #>
 	[CmdletBinding(DefaultParameterSetName = 'Path')]
