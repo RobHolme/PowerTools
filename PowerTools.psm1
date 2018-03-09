@@ -19,7 +19,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #----------------------------------------------------
 function Set-ProcessorAffinity {
-<#
+    <#
 Function Name   : Set-ProcessorAffinity
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (08/07/2016)
@@ -605,10 +605,14 @@ The time in seconds to delay before the screenshot is taken. Defaults to 5 secon
 #> 
     [CmdletBinding()]
     param(
-        [parameter(Mandatory=$false, ValueFromPipeline=$true, Position=1)]
+        [parameter(Mandatory = $false, ValueFromPipeline = $true, Position = 1)]
         [int]$Delay = 5,
+
         [Parameter(Mandatory = $False)]
-        [Switch]$CaptureActiveWindow
+        [Switch]$CaptureActiveWindow,
+
+        [Parameter(Mandatory = $False)]
+        [string] $SaveAs
     )
 
     process {
@@ -628,15 +632,59 @@ The time in seconds to delay before the screenshot is taken. Defaults to 5 secon
             ## Capture the entire screen
             [System.Windows.Forms.Sendkeys]::SendWait("{PrtSc}")
         }
+
+        # copy image from clipboard
+        $clipboardContent = Get-Clipboard -Format Image
+        if ($clipboardContent) {
+            # Resolve any relative paths
+            $SaveAs = $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($SaveAs)
+            # Save the screenshot from the clipboard to file.
+            if ($SaveAs) {
+                $extension = GetFileExtension $SaveAs
+                switch -exact ($extension) {
+                    "png" {  
+                        $clipboardContent.Save($SaveAs, 'png')
+                        Write-Verbose "Clipboard image saved to $SaveAs"
+                        break
+                    }
+                    "jpg" {  
+                        $clipboardContent.Save($SaveAs, 'jpeg')
+                        Write-Verbose "Clipboard image saved to $SaveAs"
+                        break
+                    }
+                    "jpeg" {  
+                        $clipboardContent.Save($SaveAs, 'jpeg')
+                        Write-Verbose "Clipboard image saved to $SaveAs"
+                        break
+                    }
+                    "bmp" {  
+                        $clipboardContent.Save($SaveAs, 'bmp')
+                        Write-Verbose "Clipboard image saved to $SaveAs"
+                        break
+                    }
+                    "gif" {  
+                        $clipboardContent.Save($SaveAs, 'gif')
+                        Write-Verbose "Clipboard image saved to $SaveAs"
+                        break
+                    }
+                    # default to png format if file extension is missing or not recognised
+                    Default {
+                        $clipboardContent.Save($SaveAs + '.png', 'png')
+                        Write-Verbose "Clipboard image saved to $SaveAs.png"
+                        break
+                    }
+                }
+            }
+        }
+        Write-Warning "No image found in the clipboard"
     }
 }
 
 
 #--------------------------------------------------
 # report the uptime and last boot time for the local host
-function Get-Uptime
-{
-	 Get-CimInstance -ClassName win32_operatingsystem | select-object @{Name="Hostname";Expression={$_.csname}}, @{Name="Uptime (days)";Expression={[math]::round(((((Get-DAte) - $_.LastBootUpTime).TotalHours)/24),1)}}, LastBootUpTime
+function Get-Uptime {
+    Get-CimInstance -ClassName win32_operatingsystem | select-object @{Name = "Hostname"; Expression = {$_.csname}}, @{Name = "Uptime (days)"; Expression = {[math]::round(((((Get-DAte) - $_.LastBootUpTime).TotalHours) / 24), 1)}}, LastBootUpTime
 }
 
 function Get-Hash {
@@ -658,18 +706,18 @@ The file to hash
 .PARAMETER Algorithm
 The type of hash to calculate. Accepted values include "SHA1","SHA","MD5","SHA256","SHA-256","SHA384","SHA-384","SHA512","SHA-512"
 #> 
-    [CmdletBinding(DefaultParametersetName="String")]
+    [CmdletBinding(DefaultParametersetName = "String")]
     param(
-        [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=1, ParameterSetName="String")]
+        [parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 1, ParameterSetName = "String")]
         [Alias("PlainText")]
         [string]$String,
         
-        [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=1, ParameterSetName="File")]
+        [parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 1, ParameterSetName = "File")]
         [Alias("Filename")]
         [System.IO.FileInfo]$Path,
 
-        [parameter(Mandatory=$false, ValueFromPipeline=$true,Position=2)]
-        [ValidateSet("SHA1","SHA","MD5","SHA256","SHA-256","SHA384","SHA-384","SHA512","SHA-512")] 
+        [parameter(Mandatory = $false, ValueFromPipeline = $true, Position = 2)]
+        [ValidateSet("SHA1", "SHA", "MD5", "SHA256", "SHA-256", "SHA384", "SHA-384", "SHA512", "SHA-512")] 
         [string] $Algorithm = "MD5"
     )
 
@@ -683,7 +731,7 @@ The type of hash to calculate. Accepted values include "SHA1","SHA","MD5","SHA25
             }
             $properties = @{
                 Algorithm = $Algorithm
-                Hash  = $StringBuilder.ToString()
+                Hash      = $StringBuilder.ToString()
             }
             $outputObject = New-Object -TypeName PSObject -Property $properties
             $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetHash.Result")
@@ -698,12 +746,12 @@ The type of hash to calculate. Accepted values include "SHA1","SHA","MD5","SHA25
             }
             $file = Get-Item -LiteralPath $Path
             [System.Security.Cryptography.HashAlgorithm]::Create($Algorithm).ComputeHash([System.Text.Encoding]::UTF8.GetBytes([System.IO.File]::ReadAllBytes($file))) | ForEach-Object {
-            [Void]$StringBuilder.Append($_.ToString("x2"))
+                [Void]$StringBuilder.Append($_.ToString("x2"))
             }
             $properties = @{
                 Algorithm = $Algorithm
-                Hash  = $StringBuilder.ToString()
-                Filename = $file.Name
+                Hash      = $StringBuilder.ToString()
+                Filename  = $file.Name
             }
             $outputObject = New-Object -TypeName PSObject -Property $properties
             $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetHash.Result")
@@ -713,7 +761,7 @@ The type of hash to calculate. Accepted values include "SHA1","SHA","MD5","SHA25
 }
 
 function Test-IsPasswordPwned {
-<#
+    <#
 .NOTES
 Function Name   : Test-IsPasswordPwned
 Author          : Rob Holme (rob@holme.com.au)
@@ -733,52 +781,52 @@ The SHA1 hash of the password
 #> 
     [CmdletBinding()]
     param(
-		[Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "SecureString")] 
-		[Security.SecureString] $SecureStringPassword,
-		[Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "Password")] 
-		[string] $PlainTextPassword,
-		[Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "PasswordHash")] 
+        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "SecureString")] 
+        [Security.SecureString] $SecureStringPassword,
+        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "Password")] 
+        [string] $PlainTextPassword,
+        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "PasswordHash")] 
         [string] $PasswordHashSHA1
     )
 
     process {
-		if ($IsCoreCLR) {
-			write-warning "Not currently supported on .net core. No supoprt for [System.Security.Cryptography.HashAlgorithm]"
-			return
-		}
+        if ($IsCoreCLR) {
+            write-warning "Not currently supported on .net core. No supoprt for [System.Security.Cryptography.HashAlgorithm]"
+            return
+        }
 
-		# .Net Framework doens't support TLS1.2 by default. .Net Core is OK by default, and doesn't support [System.Net.ServicePointManager]
-		if (!$IsCoreCLR) {
-			[System.Net.ServicePointManager]::SecurityProtocol = @("Tls12","Tls11","Tls","Ssl3")
-		}
+        # .Net Framework doens't support TLS1.2 by default. .Net Core is OK by default, and doesn't support [System.Net.ServicePointManager]
+        if (!$IsCoreCLR) {
+            [System.Net.ServicePointManager]::SecurityProtocol = @("Tls12", "Tls11", "Tls", "Ssl3")
+        }
         
-		# convert secure string to plain text password
-		if ($PSCmdlet.ParameterSetName -eq "SecureString") {
-			$BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureStringPassword)
-			$PlainTextPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+        # convert secure string to plain text password
+        if ($PSCmdlet.ParameterSetName -eq "SecureString") {
+            $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureStringPassword)
+            $PlainTextPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
         }
         	
-		# calculate the SHA1 hash of the plaintext password
-		if (($PSCmdlet.ParameterSetName -eq "SecureString") -or ($PSCmdlet.ParameterSetName -eq "Password"))   {
+        # calculate the SHA1 hash of the plaintext password
+        if (($PSCmdlet.ParameterSetName -eq "SecureString") -or ($PSCmdlet.ParameterSetName -eq "Password")) {
             $StringBuilder = New-Object System.Text.StringBuilder
             [System.Security.Cryptography.HashAlgorithm]::Create("SHA1").ComputeHash([System.Text.Encoding]::UTF8.GetBytes($PlainTextPassword)) | ForEach-Object {
-				[Void]$StringBuilder.Append($_.ToString("x2"))
-			}
-			$PasswordHash  = $StringBuilder.ToString()
-		}
+                [Void]$StringBuilder.Append($_.ToString("x2"))
+            }
+            $PasswordHash = $StringBuilder.ToString()
+        }
 		
-		try {
-			[bool] $match = $false
-			# get the first 5 characters of the hash and submit this to the pwnedpasswords range API. All macthing hashed will be returned (minus the 5 char prefix submitted)
-            $passwordHashPrefix = $PasswordHash.Substring(0,5)
+        try {
+            [bool] $match = $false
+            # get the first 5 characters of the hash and submit this to the pwnedpasswords range API. All macthing hashed will be returned (minus the 5 char prefix submitted)
+            $passwordHashPrefix = $PasswordHash.Substring(0, 5)
             $response = Invoke-WebRequest -Uri https://api.pwnedpasswords.com/range/$passwordHashPrefix -UseBasicParsing
-			if ($response.StatusCode -eq 200) {
-				Write-Verbose "Password hash: $PasswordHash"
-				# Remove the first character (substring(1)) that is prefixed to the actual content.
-				# Split each line of the content, compare the partial hashes returned against the password hash. 
+            if ($response.StatusCode -eq 200) {
+                Write-Verbose "Password hash: $PasswordHash"
+                # Remove the first character (substring(1)) that is prefixed to the actual content.
+                # Split each line of the content, compare the partial hashes returned against the password hash. 
                 foreach ($responseString in $response.Content.Substring(1) -Split "`n") {
-					# hashes are sufixed with a colon and a number indicating the number of times the password appears in breaches. The number of occurrances is discarded.
-					$hash = (($responseString -Split ":")[0])
+                    # hashes are sufixed with a colon and a number indicating the number of times the password appears in breaches. The number of occurrances is discarded.
+                    $hash = (($responseString -Split ":")[0])
                     Write-Verbose "hash received: $hash"
                     if ($PasswordHash -match $hash) {
                         $match = $true
@@ -786,19 +834,29 @@ The SHA1 hash of the password
                     }
                 }
                 Write-Output $match
-			}
-			# a HTTP repsonse other than 200 indicates something unexpected has happened.
-			else {
+            }
+            # a HTTP repsonse other than 200 indicates something unexpected has happened.
+            else {
                 Write-Error "Unable to query pwned passwords at this time."
                 Write-Error "Status Code returned: $($response.StatusCode)"
-			}
-		}
-		# fatal response codes will generally trigger an exception. 
-		catch {
+            }
+        }
+        # fatal response codes will generally trigger an exception. 
+        catch {
 
-				Write-Error "Unable to query pwned passwords at this time."
-				Write-Error $_
-		}
-	}
+            Write-Error "Unable to query pwned passwords at this time."
+            Write-Error $_
+        }
+    }
 }
 
+# Return the file extension from a path string
+function GetFileExtension([string] $Path) {
+    $startOfExtension = $Path.LastIndexOf('.')
+    if (($startOfExtension -gt 0) -and ($startOfExtension -lt $Path.Length - 1)) {
+        return $Path.Substring($startOfExtension + 1, ($Path.Length - 1) - $startOfExtension)
+    }
+    else {
+        return $null
+    }
+}

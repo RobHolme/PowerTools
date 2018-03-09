@@ -15,3 +15,4 @@ Version History
 	2.3 (06/02/2017) - added Test-IsPasswordPwned
 	2.4 (06/03/2018) - updated path parameters to be consistent across all functions (where possible). Standardise on -Path and -LiteralPath.
 	2.5 (07/03/2018) - added Rename-Filename
+	2.6 (09/03/2018) - added -SaveAs parameter to Get-Screenshot
