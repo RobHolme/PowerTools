@@ -16,3 +16,4 @@ Version History
 	2.4 (06/03/2018) - updated path parameters to be consistent across all functions (where possible). Standardise on -Path and -LiteralPath.
 	2.5 (07/03/2018) - added Rename-Filename
 	2.6 (09/03/2018) - added -SaveAs parameter to Get-Screenshot
+	2.7 (10/03/2018) - rewrote get-Screenshot to capture the screen via win32 calls, instead of just sending a prt-screen key press.
