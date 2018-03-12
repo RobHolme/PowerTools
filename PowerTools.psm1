@@ -39,12 +39,30 @@ The name of the process to set the processor affinity for.
 The ID of the process to set the processor affinity for. 
 .PARAMETER Cores 
 The number of cpu cores to limit the process to. This includes hyper threaded cores. Set to 0 to use normal processor scheduling.
+.NOTES
+Works with linux, however not all processes support changing the processor affinity attribute.
 #>
 	[CmdletBinding(DefaultParametersetName = "ProcessName")]
 	Param(
-		[Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "ProcessName")] [string] $ProcessName,
-		[Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "ProcessID")] [Alias("Id")] [int] $ProcessID,
-		[Parameter(Position = 1, Mandatory = $False)] [int] $Cores
+		[Parameter(
+			Position = 0, 
+			Mandatory = $True, 
+			ValueFromPipeline = $True, 
+			ParameterSetName = "ProcessName")] 
+			[string] $ProcessName,
+
+		[Parameter(
+			Position = 0, 
+			Mandatory = $True, 
+			ValueFromPipeline = $True, 
+			ParameterSetName = "ProcessID")] 
+			[Alias("Id")] 
+			[int] $ProcessID,
+		
+		[Parameter(
+			Position = 1, 
+			Mandatory = $False)] 
+			[int] $Cores
 	)
 
 	# set the affinity for each process macthing the process name
@@ -97,8 +115,20 @@ The ID of the process to query the processor affinity for.
 #>
 	[CmdletBinding(DefaultParametersetName = "ProcessName")]
 	Param(
-		[Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True, ParameterSetName = "ProcessName")] [string] $ProcessName,
-		[Parameter(Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "ProcessID")] [Alias("Id")] [int] $ProcessID
+		[Parameter(
+			Position = 0, 
+			Mandatory = $True, 
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $True, 
+			ParameterSetName = "ProcessName")] 
+			[string] $ProcessName,
+
+		[Parameter(
+			Mandatory = $True, 
+			ValueFromPipeline = $True, 
+			ParameterSetName = "ProcessID")] 
+			[Alias("Id")] 
+			[int] $ProcessID
 	)
 
 	# set the affinity for each process macthing the process name
@@ -146,10 +176,10 @@ The name of the word document
 			Position = 0, 
 			Mandatory = $True, 
 			ValueFromPipeline = $True,
-			ValueFromPipelineByPropertyName = $True
-		)]
-		[Alias('FullName')] 
-		[string] $Path)
+			ValueFromPipelineByPropertyName = $True)]
+			[Alias('PSPath')] 
+			[string] $Path
+		)
 
 	process {
 		$application = New-Object -ComObject word.application
