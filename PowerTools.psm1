@@ -586,6 +586,7 @@ function Get-Screenshot {
 Function Name   : Get-Screenshot
 Author          : Rob Holme (rob@holme.com.au)
 Requires        : PowerShell V3  
+				: Windows Vista+
 
 .SYNOPSIS 
 Captures a screenshot.
@@ -662,47 +663,35 @@ Get-Screenshot -AllMonitors
 				public class UserWindows {
 					[DllImport("user32.dll")] 
 					public static extern IntPtr GetForegroundWindow();
-					[DllImport("user32.dll")]
-					[return: MarshalAs(UnmanagedType.Bool)]
-					public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-				  }
-				  public struct RECT
-				  {
+					[DllImport("dwmapi.dll")]
+    				public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out RECT pvAttribute, int cbAttribute);
+				}
+		
+				public struct RECT
+				{
 					public int Left;        // x position of upper-left corner
 					public int Top;         // y position of upper-left corner
 					public int Right;       // x position of lower-right corner
 					public int Bottom;      // y position of lower-right corner
-				  } 
+				} 
 "@
+			[int] $DWMWA_EXTENDED_FRAME_BOUNDS = 9
 
 			$foregroundWindowHandle = [UserWindows]::GetForegroundWindow()
 			$rectangle = New-Object RECT
-			$return = [UserWindows]::GetWindowRect($foregroundWindowHandle, [ref]$rectangle)
-			If ($return) {
-				Write-Verbose "Window rectangle dementions - Left:$($rectangle.Left) Top:$($rectangle.Top) Right:$($rectangle.Right) Bottom:$($rectangle.Bottom)"
-				# apply DPI scaling
-				$rectangle.Left = [convert]::ToInt32($rectangle.Left * $dpiScalingFactor)
-				$rectangle.Bottom = [convert]::ToInt32($rectangle.Bottom * $dpiScalingFactor)
-				$rectangle.Top = [convert]::ToInt32($rectangle.Top * $dpiScalingFactor)
-				$rectangle.Right = [convert]::ToInt32($rectangle.Right * $dpiScalingFactor)
-			   
-				# Adjust the window rectangle. Testing under Windows 10 (96 DPI display) indicated an extra 7 pixels where usually included to the left, right, and bottom borders. Also to the top border only if maximised.
-				# Apply DPI scalling to the 7 pixes of 'border' that are removed. The scaling could be applied once after the adjustment was made, but it was more accurate to round down the scaling of the 7 pixels seperately 
-				# to scaling the main co-ordinates (which round to the nearest number, instead of rounding down.) This difference is evident when scaling at >= 175%.
-				$rectangle.Left = $rectangle.Left + [Math]::Floor(7 * $dpiScalingFactor)  
-				$rectangle.Bottom = $rectangle.Bottom - [Math]::Floor(7 * $dpiScalingFactor) 
-				$rectangle.Right = $rectangle.Right - [Math]::Floor(7 * $dpiScalingFactor) 
-				# if the window is maximised, the top value will be negative (~ -7)
-				if ($rectangle.Top -lt 0) {
-					$rectangle.Top = $rectangle.Top + [Math]::Floor(7 * $dpiScalingFactor)
-				}
-				
+			$return = [UserWindows]::DwmGetWindowAttribute($foregroundWindowHandle, $DWMWA_EXTENDED_FRAME_BOUNDS, [ref]$rectangle, [Runtime.InteropServices.Marshal]::SizeOf($rectangle))
+			If ($return -eq 0) {
+				Write-Verbose "Window rectangle dimensions - Left:$($rectangle.Left) Top:$($rectangle.Top) Right:$($rectangle.Right) Bottom:$($rectangle.Bottom)"
+				# no DPI scaling needed for result from DwmGetWindowAttribute			
 				$height = ($rectangle.Bottom - $rectangle.Top)
 				$width = ($rectangle.Right - $rectangle.Left) 
 				$topLeft.X = $rectangle.Left 
 				$topLeft.Y = $rectangle.Top
 				$bottomRight.X = $rectangle.Right 				
 				$bottomRight.Y = $rectangle.Bottom 
+			}
+			else {
+				Write-Error "Unable to get the active window position"
 			}
 		}
 		# capture all monitors
