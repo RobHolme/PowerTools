@@ -41,7 +41,8 @@ The number of lines to display. Default to 10.
 			ValueFromPipeline = $True, 
 			ValueFromPipelineByPropertyName = $true)] 
 		[ValidateNotNullOrEmpty()]
-		[Alias('PSPath')] [string[]] $Path,
+		[Alias('PSPath')] 
+		[string[]] $Path,
 
 		[Parameter(
 			Position = 0,

@@ -171,62 +171,124 @@ Show-WordMetadata -Path c:\test.doc
 The name of the word document
 #>
 
+	[CmdletBinding(DefaultParameterSetName = 'Path')]
 	Param(
 		[Parameter(
 			Position = 0, 
 			Mandatory = $True, 
-			ValueFromPipeline = $True,
-			ValueFromPipelineByPropertyName = $True)]
-			[Alias('PSPath')] 
-			[string] $Path
-		)
+			ParameterSetName = "Path",
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $true)] 
+		[ValidateNotNullOrEmpty()]
+		[Alias('PSPath')] 
+		[string[]] $Path,
+
+		[Parameter(
+			Position = 0,
+			Mandatory = $True, 
+			ParameterSetName = "LiteralPath",
+			ValueFromPipeline = $False,
+			ValueFromPipelineByPropertyName = $true,
+			HelpMessage = "Literal path to one or more locations.")]
+		[ValidateNotNullOrEmpty()]
+		[string[]] $LiteralPath
+	)
+
+	begin {
+		# warn and exit if using powershell core, only supported on Windows Powershell v2, v3, v4 and v5.x
+		If ($IsCoreCLR) {
+			$abortProcessing = $true
+			write-warning "This function is not supported under PowerShell Core. This requires Windows PowerShell."
+		}
+		else {
+			$abortProcessing = $false
+		}
+	}
 
 	process {
-		$application = New-Object -ComObject word.application
-		$application.Visible = $false
-		# open the document as read only.
-		$document = $application.documents.open($Path, $false, $true)
-		$binding = "System.Reflection.BindingFlags" -as [type]
-		$properties = $document.BuiltInDocumentProperties
-		$customProperties = $document.CustomDocumentProperties
-		# display built-in properties
-		foreach ($property in $properties) {
-			$propertyName = [System.__ComObject].invokemember("name", $binding::GetProperty, $null, $property, $null)
-			Write-Verbose $propertyName
-			trap [system.exception] {
-				continue
+		if (!$abortProcessing) {
+			$paths = @()
+			# check and expand wildcard paths
+			if ($psCmdlet.ParameterSetName -eq 'Path') {
+				foreach ($aPath in $Path) {
+					if (!(Test-Path -Path $aPath)) {
+						$ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+						$category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+						$errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+						$psCmdlet.WriteError($errRecord)
+						continue
+					}
+	
+					# Resolve any wildcards that might be in the path
+					$provider = $null
+					$paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
+				}
 			}
-			# create a hash table to save properties for output as an object
-			$value = [System.__ComObject].invokemember("value", $binding::GetProperty, $null, $property, $null)
-			$properties = @{
-				PropertyName = $propertyName.ToString()
-				Value        = $value.ToString()
-				Filename     = $path
+			# check and expand literal paths
+			else {
+				foreach ($aPath in $LiteralPath) {
+					if (!(Test-Path -LiteralPath $aPath)) {
+						$ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+						$category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+						$errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+						$psCmdlet.WriteError($errRecord)
+						continue
+					}
+	
+					# Resolve any relative paths
+					$paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
+				}
 			}
-			$outputObject = New-Object -TypeName PSObject -Property $properties
-			$outputObject.PSObject.TypeNames.Insert(0, "Powertools.ShowWordMetatdata.Result")
-			write-output $outputObject
+		
+			$application = New-Object -ComObject word.application
+			$application.Visible = $false
+		
+			foreach ($aPath in $paths) { 
+				# open the document as read only.
+				$document = $application.documents.open($aPath, $false, $true)
+				$binding = "System.Reflection.BindingFlags" -as [type]
+				$properties = $document.BuiltInDocumentProperties
+				$customProperties = $document.CustomDocumentProperties
+				# display built-in properties
+				foreach ($property in $properties) {
+					$propertyName = [System.__ComObject].invokemember("name", $binding::GetProperty, $null, $property, $null)
+					Write-Verbose $propertyName
+					trap [system.exception] {
+						continue
+					}
+					# create a hash table to save properties for output as an object
+					$value = [System.__ComObject].invokemember("value", $binding::GetProperty, $null, $property, $null)
+					$properties = @{
+						PropertyName = $propertyName.ToString()
+						Value        = $value.ToString()
+						Filename     = $aPath
+					}
+					$outputObject = New-Object -TypeName PSObject -Property $properties
+					$outputObject.PSObject.TypeNames.Insert(0, "Powertools.ShowWordMetatdata.Result")
+					write-output $outputObject
+				}
+				# display custom properties
+				foreach ($property in $customProperties) {
+					$propertyName = [System.__ComObject].invokemember("name", $binding::GetProperty, $null, $property, $null)
+					Write-Verbose $propertyName
+					trap [system.exception] {
+						continue
+					}
+					# create a hash table to save properties for output as an object
+					$value = [System.__ComObject].invokemember("value", $binding::GetProperty, $null, $property, $null)
+					$properties = @{
+						PropertyName = $propertyName.ToString()
+						Value        = $value.ToString()
+						Filename     = $aPath
+					}
+					$outputObject = New-Object -TypeName PSObject -Property $properties
+					$outputObject.PSObject.TypeNames.Insert(0, "Powertools.ShowWordMetatdata.Result")
+					write-output $outputObject
+				}
+				$application.documents.close($false)
+			}
+			$application.quit()
 		}
-		# display custom properties
-		foreach ($property in $customProperties) {
-			$propertyName = [System.__ComObject].invokemember("name", $binding::GetProperty, $null, $property, $null)
-			Write-Verbose $propertyName
-			trap [system.exception] {
-				continue
-			}
-			# create a hash table to save properties for output as an object
-			$value = [System.__ComObject].invokemember("value", $binding::GetProperty, $null, $property, $null)
-			$properties = @{
-				PropertyName = $propertyName.ToString()
-				Value        = $value.ToString()
-				Filename     = $path
-			}
-			$outputObject = New-Object -TypeName PSObject -Property $properties
-			$outputObject.PSObject.TypeNames.Insert(0, "Powertools.ShowWordMetatdata.Result")
-			write-output $outputObject
-		}
-		$application.documents.close($false)
-		$application.quit()
 	}
 }
 
@@ -252,77 +314,154 @@ Leave the template attached to the document
 Leave the template attached to the document 
 #>
 
+	[CmdletBinding(DefaultParameterSetName = 'Path')]
 	Param(
-		[Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)] [Alias('FullName')] [string] $Path,
-		[Parameter(Mandatory = $False)] [switch] $KeepTemplate,
-		[Parameter(Mandatory = $False)] [switch] $KeepInkAnnotations,
-		[Parameter(Mandatory = $False)] [switch] $KeepComments,
-		[Parameter(Mandatory = $False)] [switch] $KeepRevisionInformation
+		[Parameter(
+			Position = 0, 
+			Mandatory = $True, 
+			ParameterSetName = "Path",
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $true)] 
+		[ValidateNotNullOrEmpty()]
+		[Alias('PSPath')] 
+		[string[]] $Path,
+
+		[Parameter(
+			Position = 0,
+			Mandatory = $True, 
+			ParameterSetName = "LiteralPath",
+			ValueFromPipeline = $False,
+			ValueFromPipelineByPropertyName = $true,
+			HelpMessage = "Literal path to one or more locations.")]
+		[ValidateNotNullOrEmpty()]
+		[string[]] $LiteralPath,
+
+		[Parameter(
+			Mandatory = $False)] 
+		[switch] $KeepTemplate,
+
+		[Parameter(
+			Mandatory = $False)] 
+		[switch] $KeepInkAnnotations,
+
+		[Parameter(
+			Mandatory = $False)] 
+		[switch] $KeepComments,
+
+		[Parameter(
+			Mandatory = $False)] 
+		[switch] $KeepRevisionInformation
 	)
 
+	begin {
+		# warn and exit if using powershell core, only supported on Windows Powershell v2, v3, v4 and v5.x
+		If ($IsCoreCLR) {
+			$abortProcessing = $true
+			write-warning "This function is not supported under PowerShell Core. This requires Windows PowerShell."
+		}
+		else {
+			$abortProcessing = $false
+		}
+	}
+
 	process {
-		#     # resolve relative paths to the full path name 
-		#     $path = resolve-path $path
-		Add-Type -AssemblyName Microsoft.Office.Interop.Word
-		$application = New-Object -ComObject word.application
-		$document = $application.documents.open($Path)
-		$application.Visible = $false
-		# suppress warnings to save when comments or ink annotations are present
-		$application.Options.WarnBeforeSavingPrintingSendingMarkup = $false
-		$WdRemoveDocType = "Microsoft.Office.Interop.Word.WdRemoveDocInfoType" -as [type]
-		# remove individual properties from the document. 
-		Write-Verbose "Removing document properties from $path" 
-		#$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIAll) # remove all properties - not used as I need to provide the option of retaining some properties
-		$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIVersions)
-		Write-Verbose "Version information removed"
-		$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIRemovePersonalInformation)
-		Write-Verbose "Personal information removed"
-		$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIEmailHeader)
-		Write-Verbose "Email header removed"
-		$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIRoutingSlip)
-		Write-Verbose "Routing slip removed"
-		$document.RemoveDocumentInformation($WdRemoveDocType::wdRDISendForReview)
-		Write-Verbose "Send for review removed"
-		$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIDocumentProperties)
-		Write-Verbose "Document properties removed"
-		$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIDocumentServerProperties)
-		Write-Verbose "Document Server properties removed"
-		$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIDocumentManagementPolicy)
-		Write-Verbose "Document management policy removed"
-		$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIContentType)
-		Write-Verbose "Content Type information removed"
-		$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIDocumentWorkspace)
-		Write-Verbose "Document Workspace information removed"
-		$document.RemoveDocumentInformation($WdRemoveDocType::wdRDITaskpaneWebExtensions)
-		Write-Verbose "Task pane web extension removed"
-		# preserve the document template if the -KeepTemplate switch is set
-		if (!$KeepTemplate) {
-			$document.RemoveDocumentInformation($WdRemoveDocType::wdRDITemplate)
-			Write-Verbose "Document template removed"
+		if (!$abortProcessing) {
+			$paths = @()
+			# check and expand wildcard paths
+			if ($psCmdlet.ParameterSetName -eq 'Path') {
+				foreach ($aPath in $Path) {
+					if (!(Test-Path -Path $aPath)) {
+						$ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+						$category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+						$errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+						$psCmdlet.WriteError($errRecord)
+						continue
+					}
+	
+					# Resolve any wildcards that might be in the path
+					$provider = $null
+					$paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
+				}
+			}
+			# check and expand literal paths
+			else {
+				foreach ($aPath in $LiteralPath) {
+					if (!(Test-Path -LiteralPath $aPath)) {
+						$ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+						$category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+						$errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+						$psCmdlet.WriteError($errRecord)
+						continue
+					}
+	
+					# Resolve any relative paths
+					$paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
+				}
+			}
+			Add-Type -AssemblyName Microsoft.Office.Interop.Word
+			$application = New-Object -ComObject word.application
+
+			foreach ($aPath in $paths) { 
+				$document = $application.documents.open($aPath)
+				$application.Visible = $false
+				# suppress warnings to save when comments or ink annotations are present
+				$application.Options.WarnBeforeSavingPrintingSendingMarkup = $false
+				$WdRemoveDocType = "Microsoft.Office.Interop.Word.WdRemoveDocInfoType" -as [type]
+				# remove individual properties from the document. 
+				Write-Verbose "Removing document properties from $aPath" 
+				#$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIAll) # remove all properties - not used as I need to provide the option of retaining some properties
+				$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIVersions)
+				Write-Verbose "Version information removed"
+				$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIRemovePersonalInformation)
+				Write-Verbose "Personal information removed"
+				$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIEmailHeader)
+				Write-Verbose "Email header removed"
+				$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIRoutingSlip)
+				Write-Verbose "Routing slip removed"
+				$document.RemoveDocumentInformation($WdRemoveDocType::wdRDISendForReview)
+				Write-Verbose "Send for review removed"
+				$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIDocumentProperties)
+				Write-Verbose "Document properties removed"
+				$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIDocumentServerProperties)
+				Write-Verbose "Document Server properties removed"
+				$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIDocumentManagementPolicy)
+				Write-Verbose "Document management policy removed"
+				$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIContentType)
+				Write-Verbose "Content Type information removed"
+				$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIDocumentWorkspace)
+				Write-Verbose "Document Workspace information removed"
+				$document.RemoveDocumentInformation($WdRemoveDocType::wdRDITaskpaneWebExtensions)
+				Write-Verbose "Task pane web extension removed"
+				# preserve the document template if the -KeepTemplate switch is set
+				if (!$KeepTemplate) {
+					$document.RemoveDocumentInformation($WdRemoveDocType::wdRDITemplate)
+					Write-Verbose "Document template removed"
+				}
+				# preserve ink annotations if the -KeepInkAnnotations switch is set  
+				if (!$KeepInkAnnotations) {
+					$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIInkAnnotations)
+					Write-Verbose "Ink Annotations removed"
+				}
+				# preserve comments if the -KeepComments is set  
+				if (!$KeepComments) {
+					$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIComments)
+					Write-Verbose "Comments removed"
+				}
+				# preserve revision information (change tracking) if the -KeepRevisionInformation switch is set  
+				if (!$KeepRevisionInformation) {
+					$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIRevisions)
+					Write-Verbose "Revision information removed"
+				}
+				# if the document doesn't include task pan web extensions or document workspace information, an exception is thrown. Is so just continue.
+				trap [system.exception] {
+					continue
+				}
+				# save and close the document, close down MS Word. 
+				$document.Save() 
+				$application.documents.close() 
+			}
+			$application.quit()
 		}
-		# preserve ink annotations if the -KeepInkAnnotations switch is set  
-		if (!$KeepInkAnnotations) {
-			$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIInkAnnotations)
-			Write-Verbose "Ink Annotations removed"
-		}
-		# preserve comments if the -KeepComments is set  
-		if (!$KeepComments) {
-			$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIComments)
-			Write-Verbose "Comments removed"
-		}
-		# preserve revision information (change tracking) if the -KeepRevisionInformation switch is set  
-		if (!$KeepRevisionInformation) {
-			$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIRevisions)
-			Write-Verbose "Revision information removed"
-		}
-		# if the document doesn't include task pan web extensions or document workspace information, an exception is thrown. Is so just continue.
-		trap [system.exception] {
-			continue
-		}
-		# save and close the document, close down MS Word. 
-		$document.Save() 
-		$application.documents.close() 
-		$application.quit()
 	}
 }
 
@@ -398,63 +537,74 @@ Limit the results to the top results
 	)
 
 	begin {
-		$uniqueProcesses = @()
-		# get number of processor cores
-		$cpus = Get-WmiObject win32_Processor
-		foreach ($cpu in $cpus) {
-			$totalCpuCores += $cpu.NumberOfLogicalProcessors
+		# warn and exit if using powershell core, only supported on Windows Powershell v2, v3, v4 and v5.x
+		If ($IsCoreCLR) {
+			$abortProcessing = $true
+			write-warning "This function is not supported under PowerShell Core. This requires Windows PowerShell."
 		}
-		Write-Verbose "Total CPU cores: $totalCpuCores"
-		# get the process and CPU utiltisation
-		$counters = (Get-Counter '\Process(*)\% Processor Time').CounterSamples
+		else {
+			$abortProcessing = $false
+		
+			$uniqueProcesses = @()
+			# get number of processor cores
+			$cpus = Get-WmiObject win32_Processor
+			foreach ($cpu in $cpus) {
+				$totalCpuCores += $cpu.NumberOfLogicalProcessors
+			}
+			Write-Verbose "Total CPU cores: $totalCpuCores"
+			# get the process and CPU utiltisation
+			$counters = (Get-Counter '\Process(*)\% Processor Time').CounterSamples
+		}
 	}
 
 	# process each item form the pipeline
 	process {
-		$sortedCounters = @()
-		# display specific processes only if the ProcessName parameter provided
-		If ($ProcessName) {
-			foreach ($process in $ProcessName) {
-				# if the process list is piped in, there may be multiple instances of the same process names. Since each iteration returns all matching processes this would result in duplication, so only search for unique process names.
-				if ($uniqueProcesses -notcontains $process) {
-					$uniqueProcesses += $process
-					$sortedCounters += $counters | where-object -FilterScript {$_.InstanceName -eq $process}
-				}    
+		if (!$abortProcessing) {
+			$sortedCounters = @()
+			# display specific processes only if the ProcessName parameter provided
+			If ($ProcessName) {
+				foreach ($process in $ProcessName) {
+					# if the process list is piped in, there may be multiple instances of the same process names. Since each iteration returns all matching processes this would result in duplication, so only search for unique process names.
+					if ($uniqueProcesses -notcontains $process) {
+						$uniqueProcesses += $process
+						$sortedCounters += $counters | where-object -FilterScript {$_.InstanceName -eq $process}
+					}    
+				}
 			}
-		}
         
-		# display utilisation of all (or top) processes
-		else {
-			if ($Top) {
-				$sortedCounters = $counters | Sort-Object -Property CookedValue -Descending | Select-Object -First $Top 
-			}
+			# display utilisation of all (or top) processes
 			else {
-				$sortedCounters = $counters | Sort-Object -Property CookedValue -Descending
+				if ($Top) {
+					$sortedCounters = $counters | Sort-Object -Property CookedValue -Descending | Select-Object -First $Top 
+				}
+				else {
+					$sortedCounters = $counters | Sort-Object -Property CookedValue -Descending
+				}
 			}
-		}
 
-		# Get-Process requires elevated rights to get the path for all processes
-		if (!(IsAdmin)) {
-			write-warning "Run-as Administrator rights needed to list the path for all processes. Some paths will not be displayed."
-		}
-		$processPaths = @{}
-		$allProcesses = Get-Process
-		foreach ($process in $allProcesses) {
-			if (!$processPaths.ContainsKey($process.Name)) {
-				$processPaths.Add($process.Name, $process.Path)
+			# Get-Process requires elevated rights to get the path for all processes
+			if (!(IsAdmin)) {
+				write-warning "Run-as Administrator rights needed to list the path for all processes. Some paths will not be displayed."
 			}
-		}
+			$processPaths = @{}
+			$allProcesses = Get-Process
+			foreach ($process in $allProcesses) {
+				if (!$processPaths.ContainsKey($process.Name)) {
+					$processPaths.Add($process.Name, $process.Path)
+				}
+			}
 
-		# display the CPU and process utilisation (need to divide the utilisation by the number of cores. eg idle returned on a 8 core system is 800% )
-		foreach ($counter in $sortedCounters) {
-			$properties = @{
-				ProcessName = $counter.InstanceName
-				CPU         = (($counter.Cookedvalue / 100) / $totalCpuCores).toString('P')
-				Path        = ($processPaths[$counter.InstanceName])
+			# display the CPU and process utilisation (need to divide the utilisation by the number of cores. eg idle returned on a 8 core system is 800% )
+			foreach ($counter in $sortedCounters) {
+				$properties = @{
+					ProcessName = $counter.InstanceName
+					CPU         = (($counter.Cookedvalue / 100) / $totalCpuCores).toString('P')
+					Path        = ($processPaths[$counter.InstanceName])
+				}
+				$outputObject = New-Object -TypeName PSObject -Property $properties
+				$outputObject.PSObject.TypeNames.Insert(0, "Powertools.ProcessorUtilisation.Result")
+				write-output $outputObject
 			}
-			$outputObject = New-Object -TypeName PSObject -Property $properties
-			$outputObject.PSObject.TypeNames.Insert(0, "Powertools.ProcessorUtilisation.Result")
-			write-output $outputObject
 		}
 	}
 }
@@ -509,13 +659,13 @@ The (optional) username to store with the password
 	)
 
 	process {
-		# exit if the fidle exists, and the -NoClobber switch was set
+		# exit if the file exists, and the -NoClobber switch was set
 		if ($NoClobber -AND (Test-Path -Path $Path)) {
-			Write-Warning "The file '$Path' already exists. Ommit the '-NoClobber' switch to force overwrite."
+			Write-Warning "The file '$Path' already exists. Omit the '-NoClobber' switch to force overwrite."
 			Return
 		}
 
-		# convert the secure string to text. Only the current user on the current host will be able to condvert the text back to a readabsle password.
+		# convert the secure string to text. Only the current user on the current host will be able to convert the text back to a readabsle password.
 		if ($PSCmdlet.ParameterSetName -eq "Credential") {
 			$Username = $Credential.UserName
 			$passwordText = $Credential.Password | ConvertFrom-SecureString
@@ -563,7 +713,11 @@ The XML file will contain metas data indicating the username and the host when t
 #> 
 	[CmdletBinding(DefaultParameterSetName = "Password")]
 	param(
-		[Parameter (Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $true)] 
+		[Parameter (
+			Position = 0, 
+			Mandatory = $True, 
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $true)] 
 		[ValidateNotNullorEmpty()]
 		[ValidateScript( {
 				if (Test-Path $_) {
@@ -577,7 +731,6 @@ The XML file will contain metas data indicating the username and the host when t
 	)
 
 	process {
-
 		# import the xml file containing the credentials
 		$savedCredentials = Import-Clixml -Path $Path
 		# [-Verbose] display the metat data from when the file was saved
@@ -598,9 +751,9 @@ The XML file will contain metas data indicating the username and the host when t
 }
 
 
-# returns true if the powershell session is runninging under elevated permissions
+# returns true if the powershell session is running under elevated permissions
 function IsAdmin() {
-	# confirm the powershell console is running under loacl admin credentials.
+	# confirm the powershell console is running under local admin credentials.
 	If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {    
 		return $false
 	}
@@ -619,7 +772,7 @@ Requires        : PowerShell V3
 				: Windows Vista+
 
 .SYNOPSIS 
-Captures a screenshot.
+Captures a screen shot.
 .DESCRIPTION 
 Captures a screen shot. The Image defaults to being saved to the desktop, or can be saved to a file via the -SaveAs parameter.
 It defaults to capturing the primary monitor, but can also capture all monitors or the active application window instead.
@@ -630,9 +783,9 @@ Switch to specify that the screen from all monitors is captured.
 .PARAMETER PrimaryMonitor 
 Switch to specify that only the primary monitor is captured. This is the default behaviour if no switch is supplied.
 .PARAMETER Delay 
-The time in seconds to delay before the screenshot is taken. Defaults to 5 seconds.
+The time in seconds to delay before the screen shot is taken. Defaults to 5 seconds.
 .PARAMETER SaveAs
-A file path to save the screenshot to. The following file types are supported: .jpg, .png, .bmp and .gif. If any other (unsupported) file typse are provided in the -SaveAs parameter it will default to a .png file.
+A file path to save the screen shot to. The following file types are supported: .jpg, .png, .bmp and .gif. If any other (unsupported) file typse are provided in the -SaveAs parameter it will default to a .png file.
 .EXAMPLE
 Get-Screenshot -Delay 4 -ActiveWindow -SaveAs C:\scratch\test.png
 .EXAMPLE
@@ -642,24 +795,33 @@ Get-Screenshot -AllMonitors
 #> 
 	[CmdletBinding(DefaultParameterSetName = "PrimaryMonitor")]
 	param(
-		[parameter(Mandatory = $false, ValueFromPipeline = $true, Position = 1)]
+		[parameter(
+			Mandatory = $false, 
+			ValueFromPipeline = $true, 
+			Position = 1)]
 		[int]$Delay = 5,
 
-		[Parameter(ParameterSetName = "ActiveWindow", Mandatory = $False)]
+		[Parameter(
+			ParameterSetName = "ActiveWindow", 
+			Mandatory = $False)]
 		[Switch]$ActiveWindow,
 
-		[Parameter(ParameterSetName = "PrimaryMonitor", Mandatory = $False)]
+		[Parameter(
+			ParameterSetName = "PrimaryMonitor", 
+			Mandatory = $False)]
 		[Switch]$PrimaryMonitor,
 
-		[Parameter(ParameterSetName = "AllMonitors", Mandatory = $False)]
+		[Parameter(
+			ParameterSetName = "AllMonitors", 
+			Mandatory = $False)]
 		[Switch]$AllMonitors,
 
-		[Parameter(Mandatory = $False)]
+		[Parameter(
+			Mandatory = $False)]
 		[string] $SaveAs
 	)
 
 	process {
-		
 		# this relies on System.Windows.Forms, not available under .Net core CLR
 		if ($IsCoreCLR) {
 			write-warning "This function is only supported under Windows Powershell (not Powershell core)"
