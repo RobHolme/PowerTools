@@ -641,20 +641,37 @@ The (optional) username to store with the password
 #> 
 	[CmdletBinding(DefaultParameterSetName = "Password")]
 	param(
-		[Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $true)] 
+		[Parameter(
+			Position = 0, 
+			Mandatory = $True, 
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $true)] 
 		[ValidateNotNullorEmpty()] 
 		[string] $Path,
         
-		[Parameter(Position = 1, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "Password")] 
+		[Parameter(
+			Position = 1, 
+			Mandatory = $True, 
+			ValueFromPipeline = $True, 
+			ParameterSetName = "Password")] 
 		[Security.SecureString] $Password,
         
-		[Parameter(Position = 2, Mandatory = $False, ValueFromPipeline = $True, ParameterSetName = "Password")] 
+		[Parameter(
+			Position = 2, 
+			Mandatory = $False, 
+			ValueFromPipeline = $True, 
+			ParameterSetName = "Password")] 
 		[string] $Username,
         
-		[Parameter(Position = 1, Mandatory = $False, ValueFromPipeline = $True, ParameterSetName = "Credential")] 
+		[Parameter(
+			Position = 1, 
+			Mandatory = $False, 
+			ValueFromPipeline = $True, 
+			ParameterSetName = "Credential")] 
 		[PSCredential] $Credential,
         
-		[Parameter(Mandatory = $False)]
+		[Parameter(
+			Mandatory = $False)]
 		[Switch]$NoClobber
 	)
 

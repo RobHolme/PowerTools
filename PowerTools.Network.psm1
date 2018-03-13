@@ -44,14 +44,38 @@ Use the current logged on user's credentials to authenticate using Windows authe
 #> 
     [CmdletBinding(DefaultParametersetName="WindowsAuth")]
     param(
-    [Parameter(Position=0, Mandatory=$True, ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$true)] [string] $Server,
-    [Parameter(Position=1, Mandatory=$True)] [string] $Database,
-    [Parameter(Position=2, Mandatory=$True, ParameterSetName="SQLAuth")] [string] $Username,
-    [Parameter(Position=3, Mandatory=$False, ParameterSetName="SQLAuth")] [Security.SecureString] $Password,
-    [Parameter(Position=2, Mandatory=$False, ParameterSetName="WindowsAuth")] [switch] $UseWindowsAuthentication
+        [Parameter(
+            Position=0, 
+            Mandatory=$True, 
+            ValueFromPipeline=$True, 
+            ValueFromPipelineByPropertyName=$true)] 
+            [string] $Server,
+
+        [Parameter(
+            Position=1, 
+            Mandatory=$True)] 
+            [string] $Database,
+
+        [Parameter(
+            Position=2, 
+            Mandatory=$True, 
+            ParameterSetName="SQLAuth")] 
+            [string] $Username,
+
+        [Parameter(
+            Position=3, 
+            Mandatory=$False, 
+            ParameterSetName="SQLAuth")] 
+            [Security.SecureString] $Password,
+
+        [Parameter(
+            Position=2, 
+            Mandatory=$False,
+            ParameterSetName="WindowsAuth")] 
+            [switch] $UseWindowsAuthentication
     )
 
-    # connect to the database, then immediatly close the connection. If an exception occurs it indicates the conneciton was not successful. 
+    # connect to the database, then immediately close the connection. If an exception occurs it indicates the conneciton was not successful. 
     process { 
         $dbConnection = New-Object System.Data.SqlClient.SqlConnection
         if ($Username) {
@@ -116,14 +140,38 @@ Use the current logged on user's credentials to authenticate using Windows authe
 #> 
     [CmdletBinding(DefaultParametersetName="WindowsAuth")]
     param(
-    [Parameter(Position=0, Mandatory=$True, ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$true)] [string] $Server,
-    [Parameter(Position=1, Mandatory=$True)] [string] $Database,
-    [Parameter(Position=2, Mandatory=$True, ParameterSetName="SQLAuth")] [string] $Username,
-    [Parameter(Position=3, Mandatory=$False, ParameterSetName="SQLAuth")] [Security.SecureString] $Password,
-    [Parameter(Position=2, Mandatory=$False, ParameterSetName="WindowsAuth")] [switch] $UseWindowsAuthentication
+        [Parameter(
+            Position=0, 
+            Mandatory=$True, 
+            ValueFromPipeline=$True, 
+            ValueFromPipelineByPropertyName=$true)] 
+            [string] $Server,
+
+        [Parameter(
+            Position=1, 
+            Mandatory=$True)] 
+            [string] $Database,
+
+        [Parameter(
+            Position=2, 
+            Mandatory=$True,
+            ParameterSetName="SQLAuth")] 
+            [string] $Username,
+
+        [Parameter(
+            Position=3, 
+            Mandatory=$False, 
+            ParameterSetName="SQLAuth")] 
+            [Security.SecureString] $Password,
+
+        [Parameter(
+            Position=2, 
+            Mandatory=$False, 
+            ParameterSetName="WindowsAuth")] 
+            [switch] $UseWindowsAuthentication
     )
 
-    # connect to the database, then immediatly close the connection. If an exception occurrs it indicates the conneciton was not successful. 
+    # connect to the database, then immediately close the connection. If an exception occurs it indicates the conneciton was not successful. 
     process { 
         $dbConnection = New-Object System.Data.SqlClient.SqlConnection
         if ($Username) {
@@ -199,9 +247,24 @@ The number of the port to connect to.
 The timeout in seconds to wait for the TCP connection
 #> 
     param( 
-        [Parameter(Position=0, Mandatory=$True, ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$true)] [string] $Hostname,
-        [Parameter(Position=1, Mandatory=$True)] [ValidateRange(1,65535)] [int] $Port,
-        [Parameter(Position=2, Mandatory=$False)] [uint16] $Timeout = 3)
+        [Parameter(
+            Position=0, 
+            Mandatory=$True, 
+            ValueFromPipeline=$True, 
+            ValueFromPipelineByPropertyName=$true)] 
+            [string] $Hostname,
+
+        [Parameter(
+            Position=1, 
+            Mandatory=$True)] 
+            [ValidateRange(1,65535)] 
+            [int] $Port,
+
+        [Parameter(
+            Position=2, 
+            Mandatory=$False)] 
+            [uint16] $Timeout = 3
+    )
 
     # establish a TCP connection. If the connection fails an exception will be raised.
     process {  
@@ -254,8 +317,19 @@ The Hostname or IP address of the host to connect to.
 The number of the port to connect to. 
 #> 
     param( 
-        [Parameter(Position=0, Mandatory=$True, ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$true)] [string] $Hostname,
-        [Parameter(Position=1, Mandatory=$True)] [ValidateRange(1,65535)] [int] $Port)
+        [Parameter(
+            Position=0, 
+            Mandatory=$True, 
+            ValueFromPipeline=$True, 
+            ValueFromPipelineByPropertyName=$true)] 
+            [string] $Hostname,
+
+        [Parameter(
+            Position=1, 
+            Mandatory=$True)] 
+            [ValidateRange(1,65535)] 
+            [int] $Port
+    )
 
     # establish a TCP connection. If the connection fails an eresolxception will be raised.
     process { 
@@ -303,8 +377,19 @@ The Hostname or IP address of the host to connect to.
 The number of the port to connect to. 
 #> 
     param( 
-        [Parameter(Position=0, Mandatory=$True, ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$true)] [string] $Hostname,
-        [Parameter(Position=1, Mandatory=$True)] [ValidateRange(1,65535)] [int] $Port)
+        [Parameter(
+            Position=0, 
+            Mandatory=$True,
+            ValueFromPipeline=$True, 
+            ValueFromPipelineByPropertyName=$true)] 
+            [string] $Hostname,
+
+        [Parameter(
+            Position=1, 
+            Mandatory=$True)] 
+            [ValidateRange(1,65535)] 
+            [int] $Port
+    )
 
     # establish a TCP connection. If the connection fails an exception will be raised.
     process { 
@@ -358,16 +443,24 @@ A wrapper for netstat that resolves process ID's to process names.
 .DESCRIPTION 
 A wrapper for netstat that resolves process ID's to process names.
 .PARAMETER ResolveIPAddress
-This switch will resolve remote IP addresses to hostnames. This will be slower than displaying IP addresses.
+This switch will resolve remote IP addresses to host names. This will be slower than displaying IP addresses.
 .EXAMPLE 
 Get-Netstat
 .EXAMPLE 
 Get-Netstat -ResolveIPAddresses
 #> 
-    Param([Parameter(Position=0, Mandatory=$False)] [switch] $ResolveIPAddress)
+    Param([Parameter(
+        Position=0, 
+        Mandatory=$False)] 
+        [switch] $ResolveIPAddress
+    )
 
     process { 
-        # get the curent list of processnames and IDs, store as a hashtable
+        if ($IsMacOS -or $IsLinux) {
+            write-warning "This function is supported on Windows only"
+            return
+        }
+        # get the current list of process names and IDs, store as a hash table
         $allProcesses = Get-Process
         $processHash = @{}
         foreach ($process in $allProcesses) {
@@ -386,7 +479,7 @@ Get-Netstat -ResolveIPAddresses
         $netstatResult = $netstatResult[4..$netstatResult.count]
         foreach ($line in $netstatResult)
 		{
-			# remove the whitespaces at the start of the line
+			# remove the white spaces at the start of the line
 			$line = $line -replace '^\s+', ''
 			# get each property by splitting the line on the blocks of whitespace
 			$splitLine = $line -split '\s+'
@@ -673,6 +766,11 @@ Version         : 1.0 (21/12/2016)
 Requires        :   
 #>
 
+    if ($IsMacOS -or $IsLinux) {
+        write-warning "This function is only supported on Windows"
+        return
+    }
+    
     # get the list of profiles from the active store. This is the result of domain (GPO) and local policies.
     $allFirewallProfiles = Get-NetFirewallProfile -PolicyStore ActiveStore
     foreach ($firewallProfile in $allFirewallProfiles) {
