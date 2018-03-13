@@ -1145,14 +1145,11 @@ function GetFileExtension([string] $Path) {
 	}
 }
 
+# queries the DPI of the primary display. Returns the scaling factor currently applied.
 function GetDPIScalingFactor() {
 	# check DPI setting, apply scaling factor if required
-	switch ((Get-ItemProperty 'HKCU:\Control Panel\Desktop\WindowMetrics' -Name AppliedDPI).AppliedDPI) {
-		96 {$dpiScalingFactor = 1}
-		120 {$dpiScalingFactor = 1.25}
-		144 {$dpiScalingFactor = 1.5}
-		192 {$dpiScalingFactor = 2}
-	}
+	$dpi =  (Get-ItemProperty 'HKCU:\Control Panel\Desktop\WindowMetrics' -Name AppliedDPI).AppliedDPI
+	$dpiScalingFactor =  $dpi/96
 	Write-Verbose "DPI Scaling detected at $($dpiScalingFactor * 100)%"
 	return $dpiScalingFactor
 }
