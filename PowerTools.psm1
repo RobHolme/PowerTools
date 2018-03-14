@@ -823,6 +823,12 @@ Switch to specify that only the primary monitor is captured. This is the default
 The time in seconds to delay before the screen shot is taken. Defaults to 5 seconds.
 .PARAMETER SaveAs
 A file path to save the screen shot to. The following file types are supported: .jpg, .png, .bmp and .gif. If any other (unsupported) file typse are provided in the -SaveAs parameter it will default to a .png file.
+For repeated captures, the capture number will be added to the end of the file name.
+.PARAMETER RepeatCount
+The number of times to capture the screen area. If capturing the active window, the windows original position is used for all captures, it region will
+not update if the window is moved, or another window becomes active.
+.PARAMETER RepeatInterval
+The interval between screen captures in seconds
 .EXAMPLE
 Get-Screenshot -Delay 4 -ActiveWindow -SaveAs C:\scratch\test.png
 .EXAMPLE
@@ -855,10 +861,37 @@ Get-Screenshot -AllMonitors
 
 		[Parameter(
 			Mandatory = $False)]
-		[string] $SaveAs
+		[string] $SaveAs,
+
+		[Parameter(
+			Mandatory = $false,
+		)]
+		[uint32] $RepeatCount,
+
+		[Parameter(
+			Mandatory = $false,
+		)]
+		[uint32] $RepeatInterval
 	)
 
+	begin {
+		$abortProcessing = $false
+		# validate the RepeatCount and RepeatInterval parameters
+		if ($RepeatCount -and !$RepeatInterval) {
+			write-warning "The parameter -RepeatInterval must be provided if using -RepeatCount"
+			$abortProcessing = $true
+		}
+		if (!$RepeatCount -and $RepeatInterval) {
+			write-warning "The parameter -RepeatCount must be provided if using -RepeatInterval"
+			$abortProcessing = $true
+		}
+	}
+
 	process {
+		if ($abortProcessing) {
+			return
+		}
+
 		# this relies on System.Windows.Forms, not available under .Net core CLR
 		if ($IsCoreCLR) {
 			write-warning "This function is only supported under Windows Powershell (not Powershell core)"
@@ -946,52 +979,63 @@ Get-Screenshot -AllMonitors
         
 		Write-Verbose "Canvas size ($width,$height)"
 		$bitmap = New-Object System.Drawing.Bitmap $width, $height
-		$graphic = [System.Drawing.Graphics]::FromImage($bitmap)
-		$graphic.CopyFromScreen($topLeft.X, $topLeft.Y, 0, 0, $bitmap.Size)
+		$repeat = If($RepeatCount) {$RepeatCount} Else {1}
+		Write-Verbose "Repeating $repeat captures"
+		for ($i = 0; $i -lt $repeat; $i++) {
+			$graphic = [System.Drawing.Graphics]::FromImage($bitmap)
+			$graphic.CopyFromScreen($topLeft.X, $topLeft.Y, 0, 0, $bitmap.Size)
 		
-		# Resolve any relative paths
-		# Save the screenshot from the clipboard to file.
-		if ($SaveAs) {
-			$SaveAs = $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($SaveAs)
-			$extension = GetFileExtension $SaveAs
-			switch -exact ($extension) {
-				"png" {  
-					$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Png)
-					Write-Output "Image saved to $SaveAs"
-					break
+			# Resolve any relative paths
+			# Save the screenshot from the clipboard to file.
+			if ($SaveAs) {
+				if ($RepeatCount) {
+					$SaveAs = AddRepeatSuffixToFilename $SaveAs, $repeat
 				}
-				"jpg" {  
-					$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Jpeg)
-					Write-Output "Image saved to $SaveAs"
-					break
-				}
-				"jpeg" {  
-					$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Jpeg)
-					Write-Output "Image saved to $SaveAs"
-					break
-				}
-				"bmp" {  
-					$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Bmp)
-					Write-Output "Image saved to $SaveAs"
-					break
-				}
-				"gif" {  
-					$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Gif)
-					Write-Output "Image saved to $SaveAs"
-					break
-				}
-				# default to png format if file extension is missing or not recognised
-				Default {
-					$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Png)
-					Write-Output "Image saved to $SaveAs"
-					break
+				$SaveAs = $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($SaveAs)
+				$extension = GetFileExtension $SaveAs
+				switch -exact ($extension) {
+					"png" {  
+						$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Png)
+						Write-Output "Image saved to $SaveAs"
+						break
+					}
+					"jpg" {  
+						$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Jpeg)
+						Write-Output "Image saved to $SaveAs"
+						break
+					}
+					"jpeg" {  
+						$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Jpeg)
+						Write-Output "Image saved to $SaveAs"
+						break
+					}
+					"bmp" {  
+						$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Bmp)
+						Write-Output "Image saved to $SaveAs"
+						break
+					}
+					"gif" {  
+						$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Gif)
+						Write-Output "Image saved to $SaveAs"
+						break
+					}
+					# default to png format if file extension is missing or not recognised
+					Default {
+						$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Png)
+						Write-Output "Image saved to $SaveAs"
+						break
+					}
 				}
 			}
-		}
-		# save to the clipboard if not saving to file.
-		else {
-			[System.Windows.Forms.Clipboard]::SetImage($bitmap)
-			Write-Output "Image saved to clipboard"
+			# save to the clipboard if not saving to file.
+			else {
+				[System.Windows.Forms.Clipboard]::SetImage($bitmap)
+				Write-Output "Image saved to clipboard"
+			}
+			if ($RepeatInterval) {
+				write-host "Next screen capture in $RepeatInterval seconds"
+				start-sleep -seconds $RepeatInterval
+			}
 		}
 		$bitmap.Dispose()
 		$graphic.Dispose()
@@ -1189,4 +1233,11 @@ function GetDPIScalingFactor() {
 	$dpiScalingFactor =  $dpi/96
 	Write-Verbose "DPI Scaling detected at $($dpiScalingFactor * 100)%"
 	return $dpiScalingFactor
+}
+
+function AddRepeatSuffixToFilename($Path, $RepeatNumber) {
+	$startOfExtension = $Path.LastIndexOf('.')
+	$extension = $Path.Substring($startOfExtension, $Path.Length - $startOfExtension)
+	$filename = $Path.Substring(0, $startOfExtension)
+	return $filename + "-" + $RepeatNumber + $extension
 }
