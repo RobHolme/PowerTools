@@ -17,6 +17,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #----------------------------------------------------
 function Select-Top() {
     <#
+.NOTES
 Function Name  : Select-Top
 Author     : Rob Holme (rob@holme.com.au)
 Requires   : PowerShell V2  
@@ -103,6 +104,7 @@ The number of lines to display. Default to 10.
 #----------------------------------------------------
 function Select-Tail() {
     <#
+.NOTES
 Function Name  : Select-Tail
 Author     : Rob Holme (rob@holme.com.au)
 Requires   : PowerShell V2  
