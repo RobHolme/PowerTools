@@ -766,8 +766,8 @@ Version         : 1.0 (21/12/2016)
 Requires        :   
 #>
 
-    if ($IsMacOS -or $IsLinux) {
-        write-warning "This function is only supported on Windows"
+    if ($IsCoreCLR) {
+        write-warning "This function is only supported on Windows Powershell"
         return
     }
     
