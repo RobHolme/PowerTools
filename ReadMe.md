@@ -3,8 +3,9 @@ A module containing a random collection of functions that I use occasionally. Th
 - Connect-Database
 - Connect-TCPPort
 - Convert-ADTimestamp
-- Export-Password
+- Export-Credential
 - Get-FirewallStatus
+- Get-Hash
 - Get-IniValue
 - Get-Netstat
 - Get-ProcessorAffinity
@@ -12,7 +13,7 @@ A module containing a random collection of functions that I use occasionally. Th
 - Get-Screenshot
 - Get-Uptime
 - Get-Hash
-- Import-Password
+- Import-Credential
 - Remove-IniValue
 - Remove-WordMetadata
 - Rename-FileExtension
@@ -25,8 +26,9 @@ A module containing a random collection of functions that I use occasionally. Th
 - Start-NetworkTrace
 - Stop-NetworkTrace
 - Test-Database
-- Test-TCPPort
 - Test-IsPasswordPwned
+- Test-TCPPort
+
 
 ---
 ## Connect-Database
@@ -64,4 +66,125 @@ Server      : sqlserver01\SQLInst01
 Database    : testdb
 User        : Windows (rob)
 ```
+
 ---
+## Connect-TCPPort
+### DESCRIPTION
+Tests connectivity to a TCP port on a remote host. If successful, the time to connect is displayed with the endpoint details.
+
+### SYNTAX
+```PowerShell
+Connect-TCPPort [-Hostname] <String> [-Port] <Int32> [<CommonParameters>]
+```
+### PARAMETERS
+```-Hostname <string>```The name or IP address of the remote host to connect to.
+
+```-Port <Int32>``` The port number on the remote host to connect to. 
+
+### EXAMPLE
+```
+PS C:\> Connect-TCPPort somehost.com -80
+
+Connection ElapsedTime RemoteHost   Port
+---------- ----------- ----------   ----
+Successful 0.0165949   somehost.com 80
+
+```
+
+---
+## Convert-ADTimestamp
+### DESCRIPTION
+Converts a integer timestamp (e.g. from LDIFDE or some AD CmdLets) to a date/time value.
+### SYNTAX
+```PowerShell
+Convert-ADTimestamp [-Value] <string>  [<CommonParameters>]
+```
+### PARAMETERS
+```-Value <string>```The value of the date/time field extracted from AD.
+
+### EXAMPLE
+```
+PS C:\> Convert-ADTimestamp -Value 131200456520442703
+
+Tuesday, 4 October 2016 5:07:32 PM
+```
+
+---
+## cmdlet-name
+### DESCRIPTION
+
+### SYNTAX
+```PowerShell
+
+```
+### PARAMETERS
+```-Name <type>```
+
+### EXAMPLE
+```
+
+```
+
+---
+## cmdlet-name
+### DESCRIPTION
+
+### SYNTAX
+```PowerShell
+
+```
+### PARAMETERS
+```-Name <type>```
+
+### EXAMPLE
+```
+
+```
+
+---
+## cmdlet-name
+### DESCRIPTION
+
+### SYNTAX
+```PowerShell
+
+```
+### PARAMETERS
+```-Name <type>```
+
+### EXAMPLE
+```
+
+```
+
+---
+## cmdlet-name
+### DESCRIPTION
+
+### SYNTAX
+```PowerShell
+
+```
+### PARAMETERS
+```-Name <type>```
+
+### EXAMPLE
+```
+
+```
+
+---
+## cmdlet-name
+### DESCRIPTION
+
+### SYNTAX
+```PowerShell
+
+```
+### PARAMETERS
+```-Name <type>```
+
+### EXAMPLE
+```
+
+```
