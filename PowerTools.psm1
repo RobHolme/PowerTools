@@ -681,7 +681,21 @@ The (optional) username to store with the password
 		[Switch]$NoClobber
 	)
 
+	begin {
+		# this function is only supported on Windows Platforms
+		if ($IsLinux -or $IsMacOs) {
+			write-warning "This function is only supported on the Windows platform"
+			$abortProcessing = $true
+		}
+		else {
+			$abortProcessing = $false
+		}
+	}
 	process {
+		if ($abortProcessing) {
+			return
+		}
+		
 		# exit if the file exists, and the -NoClobber switch was set
 		if ($NoClobber -AND (Test-Path -Path $Path)) {
 			Write-Warning "The file '$Path' already exists. Omit the '-NoClobber' switch to force overwrite."

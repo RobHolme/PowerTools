@@ -595,7 +595,7 @@ The name of the property to delete
             ValueFromPipelineByPropertyName = $true,
             HelpMessage = "Literal path to one or more locations.")]
         [ValidateNotNullOrEmpty()]
-        [string[]] $LiteralPath, ,
+        [string[]] $LiteralPath,
     
         # -Section parameter
         [Parameter(
