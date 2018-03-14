@@ -864,12 +864,12 @@ Get-Screenshot -AllMonitors
 		[string] $SaveAs,
 
 		[Parameter(
-			Mandatory = $false,
+			Mandatory = $false
 		)]
 		[uint32] $RepeatCount,
 
 		[Parameter(
-			Mandatory = $false,
+			Mandatory = $false
 		)]
 		[uint32] $RepeatInterval
 	)
@@ -979,50 +979,53 @@ Get-Screenshot -AllMonitors
         
 		Write-Verbose "Canvas size ($width,$height)"
 		$bitmap = New-Object System.Drawing.Bitmap $width, $height
-		$repeat = If($RepeatCount) {$RepeatCount} Else {1}
+		$RepeatCount = If($RepeatCount) {$RepeatCount} Else {1}
 		Write-Verbose "Repeating $repeat captures"
-		for ($i = 0; $i -lt $repeat; $i++) {
+		for ($repeatIndex = 1; $repeatIndex -le $RepeatCount; $repeatIndex++) {
 			$graphic = [System.Drawing.Graphics]::FromImage($bitmap)
 			$graphic.CopyFromScreen($topLeft.X, $topLeft.Y, 0, 0, $bitmap.Size)
 		
 			# Resolve any relative paths
 			# Save the screenshot from the clipboard to file.
 			if ($SaveAs) {
-				if ($RepeatCount) {
-					$SaveAs = AddRepeatSuffixToFilename $SaveAs, $repeat
+				if ($RepeatCount -gt 1) {
+					$SaveAsPath = AddRepeatSuffixToFilename $SaveAs $repeatIndex
+				}
+				else {
+					$SaveAsPath = $SaveAs
 				}
 				$SaveAs = $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($SaveAs)
 				$extension = GetFileExtension $SaveAs
 				switch -exact ($extension) {
 					"png" {  
-						$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Png)
-						Write-Output "Image saved to $SaveAs"
+						$bitmap.Save($SaveAsPath, [System.Drawing.Imaging.ImageFormat]::Png)
+						Write-Output "Image saved to $SaveAsPath"
 						break
 					}
 					"jpg" {  
-						$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Jpeg)
-						Write-Output "Image saved to $SaveAs"
+						$bitmap.Save($SaveAsPath, [System.Drawing.Imaging.ImageFormat]::Jpeg)
+						Write-Output "Image saved to $SaveAsPath"
 						break
 					}
 					"jpeg" {  
-						$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Jpeg)
-						Write-Output "Image saved to $SaveAs"
+						$bitmap.Save($SaveAsPath, [System.Drawing.Imaging.ImageFormat]::Jpeg)
+						Write-Output "Image saved to $SaveAsPath"
 						break
 					}
 					"bmp" {  
-						$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Bmp)
-						Write-Output "Image saved to $SaveAs"
+						$bitmap.Save($SaveAsPath, [System.Drawing.Imaging.ImageFormat]::Bmp)
+						Write-Output "Image saved to $SaveAsPath"
 						break
 					}
 					"gif" {  
-						$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Gif)
-						Write-Output "Image saved to $SaveAs"
+						$bitmap.Save($SaveAsPath, [System.Drawing.Imaging.ImageFormat]::Gif)
+						Write-Output "Image saved to $SaveAsPath"
 						break
 					}
 					# default to png format if file extension is missing or not recognised
 					Default {
-						$bitmap.Save($SaveAs, [System.Drawing.Imaging.ImageFormat]::Png)
-						Write-Output "Image saved to $SaveAs"
+						$bitmap.Save($SaveAsPath, [System.Drawing.Imaging.ImageFormat]::Png)
+						Write-Output "Image saved to $SaveAsPath"
 						break
 					}
 				}
@@ -1032,7 +1035,8 @@ Get-Screenshot -AllMonitors
 				[System.Windows.Forms.Clipboard]::SetImage($bitmap)
 				Write-Output "Image saved to clipboard"
 			}
-			if ($RepeatInterval) {
+			# wait for $RepeatInterval seconds before capturing the next screenshot
+			if (($RepeatInterval) -and ($repeatIndex -lt $RepeatCount)) {
 				write-host "Next screen capture in $RepeatInterval seconds"
 				start-sleep -seconds $RepeatInterval
 			}
@@ -1213,8 +1217,6 @@ The SHA1 hash of the password
 		}
 	}
 }
-
-
 # Return the file extension from a path string
 function GetFileExtension([string] $Path) {
 	$startOfExtension = $Path.LastIndexOf('.')
@@ -1235,6 +1237,7 @@ function GetDPIScalingFactor() {
 	return $dpiScalingFactor
 }
 
+# Appends a number to the filename
 function AddRepeatSuffixToFilename($Path, $RepeatNumber) {
 	$startOfExtension = $Path.LastIndexOf('.')
 	$extension = $Path.Substring($startOfExtension, $Path.Length - $startOfExtension)
