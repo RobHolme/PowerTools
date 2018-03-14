@@ -110,19 +110,34 @@ Tuesday, 4 October 2016 5:07:32 PM
 ```
 
 ---
-## cmdlet-name
+## Export-Credential
 ### DESCRIPTION
+Exports a password to a file (as a secure string). The file format is XML. The password is encrypted, requiring the same user and host to be able to read the password. The exported password can not be transported between hosts or users, it will fail to import.
+
+Use Import-Password to return the PS Credential object from file.
 
 ### SYNTAX
 ```PowerShell
+Export-Credential [-Path] <String> [-Password] <SecureString> [[-Username] <String>] [-NoClobber] [<CommonParameters>]
 
+Export-Credential [-Path] <String> [[-Credential] <PSCredential>] [-NoClobber] [<CommonParameters>]
 ```
 ### PARAMETERS
-```-Name <type>```
+```-Path <String>``` The Hostname or IP address of the SQL server to connect to. If connecting to a named instance, include the instance name e.g. server\instance
+
+```Password <SecureString>``` The password (as a secure string). Plain text password not allowed.
+
+```-Username <String>``` The (optional) username to store with the password.
+
+```-Credential <PSCredential>``` The credential object containing the credentials to export.
+
+```-NoClobber [<SwitchParameter>]``` Prevent to function from overwriting existing files.
 
 ### EXAMPLE
 ```
+PS C:\>Export-Credential -Path c:\temp\password.xml -Credential (Get-Credential)
 
+PS C:\>Export-Credential -Path c:\temp\password.xml -Username testdomain\testuser -Password $securePassword
 ```
 
 ---
