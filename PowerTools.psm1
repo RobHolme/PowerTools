@@ -20,6 +20,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #----------------------------------------------------
 function Set-ProcessorAffinity {
 	<#
+.NOTES
 Function Name   : Set-ProcessorAffinity
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (08/07/2016)
@@ -96,6 +97,7 @@ Works with linux, however not all processes support changing the processor affin
 #----------------------------------------------------
 function Get-ProcessorAffinity {
 	<#
+.NOTES
 Function Name   : Get-ProcessorAffinity
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (08/07/2016)
@@ -156,6 +158,7 @@ The ID of the process to query the processor affinity for.
 #----------------------------------------------------
 function Show-WordMetadata {
 	<#
+.NOTES	
 Function Name   : Show-WordMetadata
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (16/08/2016)
@@ -295,6 +298,7 @@ The name of the word document
 #----------------------------------------------------
 function Remove-WordMetadata {
 	<#
+.NOTES
 Function Name   : Remmove-WordMetadata
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (16/08/2016)
@@ -469,15 +473,16 @@ Leave the template attached to the document
 #----------------------------------------------------
 function Convert-ADTimestamp {
 	<#
+.NOTES
 Function Name   : Convert-ADTimestamp
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (06/10/2016)
 Requires        : PowerShell V2  
 
 .SYNOPSIS 
-Converts a integer timestamp (e.g. from LDIFDE or some AD CmdLets) to a datetime value.
+Converts a integer timestamp (e.g. from LDIFDE or some AD CmdLets) to a date/time value.
 .DESCRIPTION 
-Converts a integer timestamp (e.g. from LDIFDE or some AD CmdLets) to a datetime value.
+Converts a integer timestamp (e.g. from LDIFDE or some AD CmdLets) to a date/time value.
 .EXAMPLE 
 Convert-ADTimestamp -Value 131200456520442703
 .PARAMETER Value 
@@ -502,6 +507,7 @@ The timestamp to convert
 #----------------------------------------------------
 function Get-ProcessorUtilisation {
 	<#
+.NOTES
 Function Name   : Get-ProcessorUtilisation
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (16/10/2016)
