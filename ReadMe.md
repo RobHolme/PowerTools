@@ -141,35 +141,48 @@ PS C:\>Export-Credential -Path c:\temp\password.xml -Username testdomain\testuse
 ```
 
 ---
-## cmdlet-name
+## Get-FirewallStatus
 ### DESCRIPTION
+Identifies if the firewall is enabled for the Domain, Private, and Public network profiles.
 
+Supports Windows Powershell only.
 ### SYNTAX
 ```PowerShell
-
+Get-FirewallStatus [<CommonParameters>]
 ```
-### PARAMETERS
-```-Name <type>```
 
 ### EXAMPLE
 ```
+PS C:\> Get-FirewallStatus
 
+ProfileName Enabled
+----------- -------
+Domain         True
+Private        True
+Public         True
 ```
 
 ---
-## cmdlet-name
+## Get-Hash
 ### DESCRIPTION
-
+Generate the hash of a string or file. Supports MD5, SHA1, SHA256, SHA384, SHA512
 ### SYNTAX
 ```PowerShell
+Get-Hash [-String] <String> [[-Algorithm] <String>] [<CommonParameters>]
 
+Get-Hash [-Path] <FileInfo> [[-Algorithm] <String>] [<CommonParameters>]
 ```
 ### PARAMETERS
-```-Name <type>```
+```-String <String>``` The string to generate the hash for.
 
+```-Path <FileInfo>``` The file to generate the hash for.
 ### EXAMPLE
 ```
+PS C:\> Get-Hash -String "Some String" -Algorithm MD5
 
+Algorithm Hash
+--------- ----
+MD5       83beb8c4fa4596c8f7b565d390f494e2
 ```
 
 ---
