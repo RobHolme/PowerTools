@@ -1073,78 +1073,135 @@ The file to hash
 .PARAMETER Algorithm
 The type of hash to calculate. Accepted values include "SHA1","SHA","MD5","SHA256","SHA-256","SHA384","SHA-384","SHA512","SHA-512"
 #> 
-    [CmdletBinding(DefaultParametersetName = "String")]
+    [CmdletBinding(DefaultParametersetName = "Path")]
     param(
+        [Parameter(
+            Position = 0, 
+            Mandatory = $True, 
+            ParameterSetName = "Path",
+            ValueFromPipeline = $True, 
+            ValueFromPipelineByPropertyName = $true)] 
+        [ValidateNotNullOrEmpty()]
+        [Alias('PSPath')] 
+        [string[]] $Path,
+            
+        [Parameter(
+            Position = 0,
+            Mandatory = $True, 
+            ParameterSetName = "LiteralPath",
+            ValueFromPipeline = $False,
+            ValueFromPipelineByPropertyName = $true,
+            HelpMessage = "Literal path to one or more locations.")]
+        [ValidateNotNullOrEmpty()]
+        [string[]] $LiteralPath,
+                
         [parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 1, ParameterSetName = "String")]
         [Alias("PlainText")]
         [string]$String,
-        
-        [parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 1, ParameterSetName = "File")]
-        [Alias("Filename")]
-        [System.IO.FileInfo]$Path,
 
-        [parameter(Mandatory = $false, ValueFromPipeline = $true, Position = 2)]
+        [parameter(
+            Mandatory = $true, 
+            ValueFromPipeline = $false, 
+            Position = 2)]
         [ValidateSet("SHA1", "MD5", "SHA256", "SHA384", "SHA512")] 
         [string] $Algorithm = "MD5"
     )
 
     process {
-        $StringBuilder = New-Object System.Text.StringBuilder
+        $hash = New-Object System.Text.StringBuilder
+        $paths = @()
 
+        # check and expand wildcard paths
+        if ($psCmdlet.ParameterSetName -eq 'Path') {
+            foreach ($aPath in $Path) {
+                if (!(Test-Path -Path $aPath)) {
+                    $ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+                    $category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                    $errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+                    $psCmdlet.WriteError($errRecord)
+                    continue
+                }
+	
+                # Resolve any wildcards that might be in the path
+                $provider = $null
+                $paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
+            }
+        }
+        # check and expand literal paths
+        if ($psCmdlet.ParameterSetName -eq 'LiteralPath') {
+            foreach ($aPath in $LiteralPath) {
+                if (!(Test-Path -LiteralPath $aPath)) {
+                    $ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+                    $category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                    $errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+                    $psCmdlet.WriteError($errRecord)
+                    continue
+                }	
+                # Resolve any relative paths
+                $paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
+            }
+        }
+
+        # calculate and display the hash of all files
+        if (($PSCmdlet.ParameterSetName -eq "Path") -or ($PSCmdlet.ParameterSetName -eq "LiteralPath")) {
+            foreach ($aPath in $paths) {
+                $file = Get-Item -LiteralPath $aPath
+                $data = [System.Text.Encoding]::UTF8.GetBytes([System.IO.File]::ReadAllBytes($file))
+                $hash = CalculateHash -ByteArrayToHash $data -HashAlgorithm $Algorithm
+                $properties = @{
+                    Algorithm = $Algorithm
+                    Hash      = $hash.ToString()
+                    Filename  = $file.Name
+                }
+                $outputObject = New-Object -TypeName PSObject -Property $properties
+                $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetHash.Result")
+                write-output $outputObject  
+            }
+        }
+
+        # calculate and display the hash of the string
         if ($PSCmdlet.ParameterSetName -eq "String") {
             $data = [System.Text.Encoding]::UTF8.GetBytes($String)
-        }
-        if ($PSCmdlet.ParameterSetName -eq "File") {
-            if (!(Test-Path -LiteralPath $Path -PathType Leaf)) {
-                write-error "The file $Path does not exist"
-                return
-            }
-            $file = Get-Item -LiteralPath $Path
-            $data = [System.Text.Encoding]::UTF8.GetBytes([System.IO.File]::ReadAllBytes($file))
-        }
-        switch ($Algorithm) {
-            "SHA1" {  
-                [System.Security.Cryptography.SHA1]::Create().ComputeHash($data) | ForEach-Object {
-                    [Void]$StringBuilder.Append($_.ToString("x2")) }
-            }
-            "SHA256" {  
-                [System.Security.Cryptography.SHA256]::Create().ComputeHash($data) | ForEach-Object {
-                    [Void]$StringBuilder.Append($_.ToString("x2")) }
-            }
-            "SHA344" {  
-                [System.Security.Cryptography.SHA384]::Create().ComputeHash($data) | ForEach-Object {
-                    [Void]$StringBuilder.Append($_.ToString("x2")) }
-            }
-            "SHA512" { 
-                [System.Security.Cryptography.SHA512]::Create().ComputeHash($data) | ForEach-Object {
-                    [Void]$StringBuilder.Append($_.ToString("x2")) }
-            }
-            "MD5" { 
-                [System.Security.Cryptography.MD5]::Create().ComputeHash($data) | ForEach-Object {
-                    [Void]$StringBuilder.Append($_.ToString("x2")) }
-            }
-        }
-
-        # write the hash to the pipeline
-        if ($PSCmdlet.ParameterSetName -eq "String") {	        
+            $hash = CalculateHash -ByteArrayToHash $data -HashAlgorithm $Algorithm
+            # write the hash to the pipeline
             $properties = @{
                 Algorithm = $Algorithm
-                Hash      = $StringBuilder.ToString()
+                Hash      = $hash.ToString()
             }
+            $outputObject = New-Object -TypeName PSObject -Property $properties
+            $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetHash.Result")
+            write-output $outputObject
         }
-        if ($PSCmdlet.ParameterSetName -eq "File") {
-            $properties = @{
-                Algorithm = $Algorithm
-                Hash      = $StringBuilder.ToString()
-                Filename  = $file.Name
-            }
-        }
-        $outputObject = New-Object -TypeName PSObject -Property $properties
-        $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetHash.Result")
-        write-output $outputObject      
     }
 }
 
+
+function CalculateHash($ByteArrayToHash, $HashAlgorithm) {
+    $StringBuilder = New-Object System.Text.StringBuilder
+    switch ($HashAlgorithm) {
+        "SHA1" {  
+            [System.Security.Cryptography.SHA1]::Create().ComputeHash($ByteArrayToHash) | ForEach-Object {
+                [Void]$StringBuilder.Append($_.ToString("x2")) }
+        }
+        "SHA256" {  
+            [System.Security.Cryptography.SHA256]::Create().ComputeHash($ByteArrayToHash) | ForEach-Object {
+                [Void]$StringBuilder.Append($_.ToString("x2")) }
+        }
+        "SHA344" {  
+            [System.Security.Cryptography.SHA384]::Create().ComputeHash($ByteArrayToHash) | ForEach-Object {
+                [Void]$StringBuilder.Append($_.ToString("x2")) }
+        }
+        "SHA512" { 
+            [System.Security.Cryptography.SHA512]::Create().ComputeHash($ByteArrayToHash) | ForEach-Object {
+                [Void]$StringBuilder.Append($_.ToString("x2")) }
+        }
+        "MD5" { 
+            [System.Security.Cryptography.MD5]::Create().ComputeHash($ByteArrayToHash) | ForEach-Object {
+                [Void]$StringBuilder.Append($_.ToString("x2")) }
+        }
+    }
+    return $StringBuilder
+}
 
 function Test-IsPasswordPwned {
     <#
@@ -1167,11 +1224,25 @@ The SHA1 hash of the password
 #> 
     [CmdletBinding()]
     param(
-        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "SecureString")] 
+        [Parameter(
+            Position = 0, 
+            Mandatory = $True, 
+            ValueFromPipeline = $True, 
+            ParameterSetName = "SecureString")] 
         [Security.SecureString] $SecureStringPassword,
-        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "Password")] 
+
+        [Parameter(
+            Position = 0, 
+            Mandatory = $True,
+            ValueFromPipeline = $True, 
+            ParameterSetName = "Password")] 
         [string] $PlainTextPassword,
-        [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ParameterSetName = "PasswordHash")] 
+
+        [Parameter(
+            Position = 0, 
+            Mandatory = $True, 
+            ValueFromPipeline = $True, 
+            ParameterSetName = "PasswordHash")] 
         [string] $PasswordHashSHA1
     )
 
@@ -1195,11 +1266,11 @@ The SHA1 hash of the password
         # calculate the SHA1 hash of the plaintext password
         if (($PSCmdlet.ParameterSetName -eq "SecureString") -or ($PSCmdlet.ParameterSetName -eq "Password")) {
             $StringBuilder = New-Object System.Text.StringBuilder
-            [System.Security.Cryptography.HashAlgorithm]::Create("SHA1").ComputeHash([System.Text.Encoding]::UTF8.GetBytes($PlainTextPassword)) | ForEach-Object {
-                [Void]$StringBuilder.Append($_.ToString("x2"))
-            }
-            $PasswordHash = $StringBuilder.ToString()
+            [System.Security.Cryptography.SHA1]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($PlainTextPassword)) | ForEach-Object {
+                [Void]$StringBuilder.Append($_.ToString("x2")) }
         }
+        $PasswordHash = $StringBuilder.ToString()
+    
 		
         try {
             [bool] $match = $false
@@ -1221,7 +1292,7 @@ The SHA1 hash of the password
                 }
                 Write-Output $match
             }
-            # a HTTP repsonse other than 200 indicates something unexpected has happened.
+            # a HTTP response other than 200 indicates something unexpected has happened.
             else {
                 Write-Error "Unable to query pwned passwords at this time."
                 Write-Error "Status Code returned: $($response.StatusCode)"
@@ -1235,6 +1306,7 @@ The SHA1 hash of the password
         }
     }
 }
+
 # Return the file extension from a path string
 function GetFileExtension([string] $Path) {
     $startOfExtension = $Path.LastIndexOf('.')
