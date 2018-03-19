@@ -1122,9 +1122,14 @@ The type of hash to calculate. Accepted values include "SHA1","SHA","MD5","SHA25
                     continue
                 }
 	
-                # Resolve any wildcards that might be in the path
+                # Resolve any wild cards that might be in the path. Only add files, not directories.
                 $provider = $null
-                $paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
+                if (Test-Path $aPath -PathType Leaf) {
+                    $paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
+                }
+                else {
+                    Write-Verbose "Ignoring folder $aPath"
+                }
             }
         }
         # check and expand literal paths
@@ -1137,8 +1142,13 @@ The type of hash to calculate. Accepted values include "SHA1","SHA","MD5","SHA25
                     $psCmdlet.WriteError($errRecord)
                     continue
                 }	
-                # Resolve any relative paths
-                $paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
+                # Resolve any relative paths, ignore directories
+                if (Test-Path $aPath -PathType Leaf) {
+                    $paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
+                }
+                else {
+                    Write-Verbose "Ignoring folder $aPath"
+                }
             }
         }
 
