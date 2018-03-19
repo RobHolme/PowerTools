@@ -18,3 +18,4 @@ Version History
 	2.6 (09/03/2018) - added -SaveAs parameter to Get-Screenshot
 	2.7 (10/03/2018) - rewrote get-Screenshot to capture the screen via win32 calls, instead of just sending a prt-screen key press.
 	2.8 (14/03/2018) - add -RepeatCount and RepeatInterval switches to Get-Screenshot to capture multiple screenshots
+	2.9 (19/03/2018) - updated -Path parameter handing in Get-Hash to be consistent with other functions  
