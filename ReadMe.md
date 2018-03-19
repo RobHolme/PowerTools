@@ -77,7 +77,7 @@ Tests connectivity to a TCP port on a remote host. If successful, the time to co
 Connect-TCPPort [-Hostname] <String> [-Port] <Int32> [<CommonParameters>]
 ```
 ### PARAMETERS
-```-Hostname <string>```The name or IP address of the remote host to connect to.
+```-Hostname <string>``` The name or IP address of the remote host to connect to.
 
 ```-Port <Int32>``` The port number on the remote host to connect to. 
 
@@ -100,7 +100,7 @@ Converts a integer timestamp (e.g. from LDIFDE or some AD CmdLets) to a date/tim
 Convert-ADTimestamp [-Value] <string>  [<CommonParameters>]
 ```
 ### PARAMETERS
-```-Value <string>```The value of the date/time field extracted from AD.
+```-Value <string>``` The value of the date/time field extracted from AD.
 
 ### EXAMPLE
 ```
@@ -168,14 +168,18 @@ Public         True
 Generate the hash of a string or file. Supports MD5, SHA1, SHA256, SHA384, SHA512
 ### SYNTAX
 ```PowerShell
-Get-Hash [-String] <String> [[-Algorithm] <String>] [<CommonParameters>]
+Get-Hash [-Path] <String[]> [-Algorithm] <String> [<CommonParameters>]
 
-Get-Hash [-Path] <FileInfo> [[-Algorithm] <String>] [<CommonParameters>]
+Get-Hash [-LiteralPath] <String[]> [-Algorithm] <String> [<CommonParameters>]
+
+Get-Hash [-String] <String> [-Algorithm] <String> [<CommonParameters>]
 ```
 ### PARAMETERS
 ```-String <String>``` The string to generate the hash for.
 
-```-Path <FileInfo>``` The file to generate the hash for.
+```-Path <String[]>``` The file to generate the hash for. Accepts wildcards.
+
+```-LiteralPath <String[]>``` The file to generate the hash for (Literal path).
 ### EXAMPLE
 ```
 PS C:\> Get-Hash -String "Some String" -Algorithm MD5
@@ -185,6 +189,14 @@ Algorithm Hash
 MD5       83beb8c4fa4596c8f7b565d390f494e2
 ```
 
+```
+PS C:\> Get-Hash -Path *.png -Algorithm SHA1
+
+Algorithm Hash                                     Filename
+--------- ----                                     --------
+SHA1      5c87f9db340eec992867cd7448fc8e8518b71e95 test-1.png
+SHA1      2c59ecf75188b9a7496b13a78b5a9e1fb113fcef test-2.png
+```
 ---
 ## cmdlet-name
 ### DESCRIPTION
