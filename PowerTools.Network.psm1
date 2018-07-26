@@ -1,82 +1,82 @@
 <#
 Copyright (c) 2016 Robert Holme (rob@holme.com.au)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
-files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
-modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
+modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software
 is furnished to do so, subject to the following conditions:
 
 1) The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-2) THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR 
+2) THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #>
 
 #----------------------------------------------------
-function Test-Database 
+function Test-SQLDatabase
 {
 <#
 .NOTES
-Function Name   : Test-Database
+Function Name   : Test-SQLDatabase
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (31/07/2016)   - Initial version.
                 : 1.1 (04/10/2016) - Prompt for password as SecureString, instead of accepting plain test password as parameter
-Requires        : PowerShell V2  
+Requires        : PowerShell V2
 
-.SYNOPSIS 
-Tests connectivity to MS SQL Database. Returns true or false. Ffor connection details use Connect-Database. 
-.DESCRIPTION 
-Tests connectivity to MS SQL Database. Supports SQL user authentication, or integrated Windows authentication.  
-.EXAMPLE 
+.SYNOPSIS
+Tests connectivity to MS SQL Database. Returns true or false. Ffor connection details use Connect-Database.
+.DESCRIPTION
+Tests connectivity to MS SQL Database. Supports SQL user authentication, or integrated Windows authentication.
+.EXAMPLE
 Test-Database -Server 127.0.0.1\SQLExpress -Database NorthWind -Username Northwin-User -Password P@ssword
 .EXAMPLE
 Test-Database -Server SQLServer01 -Database NorthWind -UseWindowsAuthentication
-.PARAMETER Server 
-The Hostname or IP address of the SQL server to connect to. If connecting to a named instance, include the instance name e.g. server\instance 
-.PARAMETER Database 
+.PARAMETER Server
+The Hostname or IP address of the SQL server to connect to. If connecting to a named instance, include the instance name e.g. server\instance
+.PARAMETER Database
 The name of the database to connect to
-.PARAMETER Username 
+.PARAMETER Username
 The SQL user account used to authenticate to the database
 .PARAMETER UseWindowsAuthentication
-Use the current logged on user's credentials to authenticate using Windows authentication  
-#> 
+Use the current logged on user's credentials to authenticate using Windows authentication
+#>
     [CmdletBinding(DefaultParametersetName="WindowsAuth")]
     param(
         [Parameter(
-            Position=0, 
-            Mandatory=$True, 
-            ValueFromPipeline=$True, 
-            ValueFromPipelineByPropertyName=$true)] 
+            Position=0,
+            Mandatory=$True,
+            ValueFromPipeline=$True,
+            ValueFromPipelineByPropertyName=$true)]
             [string] $Server,
 
         [Parameter(
-            Position=1, 
-            Mandatory=$True)] 
+            Position=1,
+            Mandatory=$True)]
             [string] $Database,
 
         [Parameter(
-            Position=2, 
-            Mandatory=$True, 
-            ParameterSetName="SQLAuth")] 
+            Position=2,
+            Mandatory=$True,
+            ParameterSetName="SQLAuth")]
             [string] $Username,
 
         [Parameter(
-            Position=3, 
-            Mandatory=$False, 
-            ParameterSetName="SQLAuth")] 
+            Position=3,
+            Mandatory=$False,
+            ParameterSetName="SQLAuth")]
             [Security.SecureString] $Password,
 
         [Parameter(
-            Position=2, 
+            Position=2,
             Mandatory=$False,
-            ParameterSetName="WindowsAuth")] 
+            ParameterSetName="WindowsAuth")]
             [switch] $UseWindowsAuthentication
     )
 
-    # connect to the database, then immediately close the connection. If an exception occurs it indicates the conneciton was not successful. 
-    process { 
+    # connect to the database, then immediately close the connection. If an exception occurs it indicates the conneciton was not successful.
+    process {
         $dbConnection = New-Object System.Data.SqlClient.SqlConnection
         if ($Username) {
             # prompt for the password if not supplied as a parameter (as a securestring)
@@ -111,7 +111,7 @@ Use the current logged on user's credentials to authenticate using Windows authe
 }
 
 #----------------------------------------------------
-function Connect-Database 
+function Connect-SQLDatabase
 {
 <#
 .NOTES
@@ -119,60 +119,60 @@ Function Name   : Test-Database
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (31/07/2016) - Initial version.
                 : 1.1 (04/10/2016) - Prompt for password as SecureString, instead of accepting plain test password as parameter
-Requires        : PowerShell V2  
+Requires        : PowerShell V2
 
-.SYNOPSIS 
+.SYNOPSIS
 Tests connectivity to MS SQL Database. Reports connection details, then closes.
-.DESCRIPTION 
-Tests connectivity to MS SQL Database. Supports SQL user authentication, or integrated Windows authentication.  
-.EXAMPLE 
-Connect-Database -Server 127.0.0.1\SQLExpress -Database NorthWind -Username Northwin-User -Password P@ssword
+.DESCRIPTION
+Tests connectivity to MS SQL Database. Supports SQL user authentication, or integrated Windows authentication.
+.EXAMPLE
+Connect-Database -Server 127.0.0.1\SQLExpress -Database NorthWind -Username Northwind -User -Password P@ssword
 .EXAMPLE
 Connect-Database -Server SQLServer01 -Database NorthWind -UseWindowsAuthentication
-.PARAMETER Server 
-The Hostname or IP address of the SQL server to connect to. If connecting to a named instance, include the instance name e.g. server\instance 
-.PARAMETER Database 
+.PARAMETER Server
+The Hostname or IP address of the SQL server to connect to. If connecting to a named instance, include the instance name e.g. server\instance
+.PARAMETER Database
 The name of the database to connect to
-.PARAMETER Username 
+.PARAMETER Username
 The SQL user account used to authenticate to the database
 .PARAMETER UseWindowsAuthentication
-Use the current logged on user's credentials to authenticate using Windows authentication  
-#> 
+Use the current logged on user's credentials to authenticate using Windows authentication
+#>
     [CmdletBinding(DefaultParametersetName="WindowsAuth")]
     param(
         [Parameter(
-            Position=0, 
-            Mandatory=$True, 
-            ValueFromPipeline=$True, 
-            ValueFromPipelineByPropertyName=$true)] 
+            Position=0,
+            Mandatory=$True,
+            ValueFromPipeline=$True,
+            ValueFromPipelineByPropertyName=$true)]
             [string] $Server,
 
         [Parameter(
-            Position=1, 
-            Mandatory=$True)] 
+            Position=1,
+            Mandatory=$True)]
             [string] $Database,
 
         [Parameter(
-            Position=2, 
+            Position=2,
             Mandatory=$True,
-            ParameterSetName="SQLAuth")] 
+            ParameterSetName="SQLAuth")]
             [string] $Username,
 
         [Parameter(
-            Position=3, 
-            Mandatory=$False, 
-            ParameterSetName="SQLAuth")] 
+            Position=3,
+            Mandatory=$False,
+            ParameterSetName="SQLAuth")]
             [Security.SecureString] $Password,
 
         [Parameter(
-            Position=2, 
-            Mandatory=$False, 
-            ParameterSetName="WindowsAuth")] 
+            Position=2,
+            Mandatory=$False,
+            ParameterSetName="WindowsAuth")]
             [switch] $UseWindowsAuthentication
     )
 
-    # connect to the database, then immediately close the connection. If an exception occurs it indicates the conneciton was not successful. 
-    process { 
+    # connect to the database, then immediately close the connection. If an exception occurs it indicates the conneciton was not successful.
+    process {
         $dbConnection = New-Object System.Data.SqlClient.SqlConnection
         if ($Username) {
             # prompt for the password if not supplied as a parameter (as a securestring)
@@ -215,7 +215,7 @@ Use the current logged on user's credentials to authenticate using Windows authe
             #return the results as an object
             $outputObject = New-Object -Property $Result -TypeName psobject
             $outputObject.PSObject.TypeNames.Insert(0,"Powertools.TestDatabase.Result")
-            write-output $outputObject 
+            write-output $outputObject
         }
     }
 }
@@ -231,43 +231,43 @@ Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (01/12/2014) - Initial version.
                   1.1 (01/08/2016) - Output returned as an object instead of a string.
                   1.2 (24/08/2016) - updated to work on Linux/.Net Core
-Requires        : PowerShell V3. .Net 4.6 or .Net Core  
+Requires        : PowerShell V3. .Net 4.6 or .Net Core
 
-.SYNOPSIS 
+.SYNOPSIS
 Tests connectivity to a TCP port on a remote host.
-.DESCRIPTION 
+.DESCRIPTION
 Tests connectivity to a TCP port on a remote host. Returns true or false. Use Conect-TCPPort if connection information is needed.
-.EXAMPLE 
+.EXAMPLE
 Test-TCPPort -Hostname 192.168.0.1 Port 25
-.PARAMETER Hostname 
-The Hostname or IP address of the host to connect to. 
-.PARAMETER Port 
-The number of the port to connect to. 
+.PARAMETER Hostname
+The Hostname or IP address of the host to connect to.
+.PARAMETER Port
+The number of the port to connect to.
 .PARAMETER Timeout
 The timeout in seconds to wait for the TCP connection
-#> 
-    param( 
+#>
+    param(
         [Parameter(
-            Position=0, 
-            Mandatory=$True, 
-            ValueFromPipeline=$True, 
-            ValueFromPipelineByPropertyName=$true)] 
+            Position=0,
+            Mandatory=$True,
+            ValueFromPipeline=$True,
+            ValueFromPipelineByPropertyName=$true)]
             [string] $Hostname,
 
         [Parameter(
-            Position=1, 
-            Mandatory=$True)] 
-            [ValidateRange(1,65535)] 
+            Position=1,
+            Mandatory=$True)]
+            [ValidateRange(1,65535)]
             [int] $Port,
 
         [Parameter(
-            Position=2, 
-            Mandatory=$False)] 
+            Position=2,
+            Mandatory=$False)]
             [uint16] $Timeout = 3
     )
 
     # establish a TCP connection. If the connection fails an exception will be raised.
-    process {  
+    process {
         $TCPTest = New-Object System.Net.Sockets.TcpClient
         $ipAddresses = [System.Net.Dns]::GetHostAddressesAsync($Hostname)
         # if the hostname resolves to  an ip address
@@ -278,10 +278,10 @@ The timeout in seconds to wait for the TCP connection
                 if ($TCPTest.ConnectAsync($ipAddress, $port).Wait($timeout*1000)) {
                     # if connected, then close the connection
                     if ($PSVersionTable.PSVersion.Major -lt 3) {
-                        $TCPTest.Close() 
+                        $TCPTest.Close()
                     }
                     else {
-                        $TCPTest.Dispose() 
+                        $TCPTest.Dispose()
                     }
                     return $true
                 }
@@ -290,7 +290,7 @@ The timeout in seconds to wait for the TCP connection
         else {
             Write-Error "$Hostname could not be resolved"
         }
-        return $false 
+        return $false
     }
 }
 
@@ -303,36 +303,36 @@ Function Name   : Test-TCPPort
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (01/12/2014) - Initial version.
                   1.1 (01/08/2016) - Output returned as an object instead of a string.
-Requires        : PowerShell V2  
+Requires        : PowerShell V2
 
-.SYNOPSIS 
+.SYNOPSIS
 Tests connectivity to a TCP port on a remote host.
-.DESCRIPTION 
+.DESCRIPTION
 Tests connectivity to a TCP port on a remote host. Returns true or false. Use Conect-TCPPort if connection information is needed.
-.EXAMPLE 
+.EXAMPLE
 Test-TCPPort -Hostname 192.168.0.1 Port 25
-.PARAMETER Hostname 
-The Hostname or IP address of the host to connect to. 
-.PARAMETER Port 
-The number of the port to connect to. 
-#> 
-    param( 
+.PARAMETER Hostname
+The Hostname or IP address of the host to connect to.
+.PARAMETER Port
+The number of the port to connect to.
+#>
+    param(
         [Parameter(
-            Position=0, 
-            Mandatory=$True, 
-            ValueFromPipeline=$True, 
-            ValueFromPipelineByPropertyName=$true)] 
+            Position=0,
+            Mandatory=$True,
+            ValueFromPipeline=$True,
+            ValueFromPipelineByPropertyName=$true)]
             [string] $Hostname,
 
         [Parameter(
-            Position=1, 
-            Mandatory=$True)] 
-            [ValidateRange(1,65535)] 
+            Position=1,
+            Mandatory=$True)]
+            [ValidateRange(1,65535)]
             [int] $Port
     )
 
     # establish a TCP connection. If the connection fails an eresolxception will be raised.
-    process { 
+    process {
         $TCPTest = New-Object System.Net.Sockets.TcpClient
         Try {
             Write-Verbose "Connecting to $($Hostname):$($Port) (TCP) ..."
@@ -341,7 +341,7 @@ The number of the port to connect to.
         }
         # catch failed connections
         Catch {
-            return $false     
+            return $false
         }
         Finally {
             # close any open TCP connections
@@ -363,36 +363,36 @@ Function Name   : Connect-TCPPort
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (01/12/2014) - Initial version.
                   1.1 (01/08/2016) - Output returned as an object instead of a string.
-Requires        : PowerShell V3  
+Requires        : PowerShell V3
 
-.SYNOPSIS 
+.SYNOPSIS
 Tests connectivity to a TCP port on a remote host, reporting connection properties.
-.DESCRIPTION 
+.DESCRIPTION
 Tests connectivity to a TCP port on a remote host. If successful, the time to connect is displayed with the endpoint details.
-.EXAMPLE 
+.EXAMPLE
 Connect-TCPPort -Hostname 192.168.0.1 Port 25
-.PARAMETER Hostname 
-The Hostname or IP address of the host to connect to. 
-.PARAMETER Port 
-The number of the port to connect to. 
-#> 
-    param( 
+.PARAMETER Hostname
+The Hostname or IP address of the host to connect to.
+.PARAMETER Port
+The number of the port to connect to.
+#>
+    param(
         [Parameter(
-            Position=0, 
+            Position=0,
             Mandatory=$True,
-            ValueFromPipeline=$True, 
-            ValueFromPipelineByPropertyName=$true)] 
+            ValueFromPipeline=$True,
+            ValueFromPipelineByPropertyName=$true)]
             [string] $Hostname,
 
         [Parameter(
-            Position=1, 
-            Mandatory=$True)] 
-            [ValidateRange(1,65535)] 
+            Position=1,
+            Mandatory=$True)]
+            [ValidateRange(1,65535)]
             [int] $Port
     )
 
     # establish a TCP connection. If the connection fails an exception will be raised.
-    process { 
+    process {
         $TCPTest = New-Object System.Net.Sockets.TcpClient
         Try {
             Write-Verbose "Connecting to $($Hostname):$($Port) (TCP) ..."
@@ -412,7 +412,7 @@ The number of the port to connect to.
                 RemoteHost = $Hostname
                 Port = $Port
             }
-        }      
+        }
         Finally {
             #return the results as an object
             $outputObject = New-Object -Property $Result -TypeName psobject
@@ -436,26 +436,26 @@ function Get-Netstat()
 Function Name   : Get-Netstat
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (01/08/2016)
-Requires        : PowerShell V3  
+Requires        : PowerShell V3
 
-.SYNOPSIS 
+.SYNOPSIS
 A wrapper for netstat that resolves process ID's to process names.
-.DESCRIPTION 
+.DESCRIPTION
 A wrapper for netstat that resolves process ID's to process names.
 .PARAMETER ResolveIPAddress
 This switch will resolve remote IP addresses to host names. This will be slower than displaying IP addresses.
-.EXAMPLE 
+.EXAMPLE
 Get-Netstat
-.EXAMPLE 
+.EXAMPLE
 Get-Netstat -ResolveIPAddresses
-#> 
+#>
     Param([Parameter(
-        Position=0, 
-        Mandatory=$False)] 
+        Position=0,
+        Mandatory=$False)]
         [switch] $ResolveIPAddress
     )
 
-    process { 
+    process {
         if ($IsMacOS -or $IsLinux) {
             write-warning "This function is supported on Windows only"
             return
@@ -492,7 +492,7 @@ Get-Netstat -ResolveIPAddresses
                 $pid = [int]$splitLine[4]
                 $state = $splitLine[3]
            }
-            # properties to output 
+            # properties to output
 			$properties = @{
 				Protocol = $splitLine[0]
 				LocalIPAddress = GetNetStatIPAddress($splitLine[1])
@@ -506,7 +506,7 @@ Get-Netstat -ResolveIPAddresses
 			$outputObject = New-Object -TypeName PSObject -Property $properties
             $outputObject.PSObject.TypeNames.Insert(0,"Powertools.GetNetstat.Result")
             write-output $outputObject
-        } 
+        }
     }
 }
 
@@ -514,7 +514,7 @@ Get-Netstat -ResolveIPAddresses
 # private function used by Get-Netstat. Returns the IPv4 or IPv6 address from a IP:Port string.
 function GetNetStatIPAddress([string] $ipString)
 {
-    # if the address contains an ']' assume it is an IPv6 address 
+    # if the address contains an ']' assume it is an IPv6 address
     if ($ipString -match ']') {
         # IPv6 addresses contain ':' within the address, so looks for a ':' immediatly following a ']' (regex lookbehind)
         return ($ipString -split "(?<=]):")[0]
@@ -523,13 +523,13 @@ function GetNetStatIPAddress([string] $ipString)
         # If the address sting doesn't contain a ']' assume it is an IPv4 address, or a resolved hostname
         return ($ipString -split ":")[0]
     }
-} 
+}
 
 #----------------------------------------------------
 # private function used by Get-Netstat. Returns the port number from a IP:Port string.
 function GetNetStatPort([string] $ipString)
 {
-    # if the address contains an ']' assume it is an IPv6 address 
+    # if the address contains an ']' assume it is an IPv6 address
     if ($ipString -match ']') {
         # IPv6 addresses contain ':' within the address, so looks for a ':' immediatly following a ']' (regex lookbehind)
         return ($ipString -split "(?<=]):")[1]
@@ -548,17 +548,17 @@ function Start-NetworkTrace
 Function Name   : Start-NetworkTrace
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (08/10/2016)
-Requires        :   
+Requires        :
 
-.SYNOPSIS 
+.SYNOPSIS
 A wrapper for netsh to start a network trace
-.DESCRIPTION 
+.DESCRIPTION
 A wrapper for netsh to start a network trace
 .PARAMETER TraceFile
 The pathname of the file to store the network trace
 .PARAMETER Protocol
 Filter the trace to a single (or range of) protocols. e.g. -Protocol TCP, -Protocol !TCP, -Protocol (4..10)
-.PARAMETER IPv4Address 
+.PARAMETER IPv4Address
 Filter the trace for source or destination addresses matching this IPv4 address.
 .PARAMETER IPv4SourceAddress
 Filter the trace for source addreses matching this IPv4 address.
@@ -576,95 +576,95 @@ Keep the trace running during reboots, until Stop-NetworkTrace CmdLet is run.
 The maximum size of the trace log file in MB. Defaults to 250MB if no prameter supplied.
 .PARAMETER overwrite
 A swtich to instrct netsh to overwrite any existing trace files.
-.EXAMPLE 
+.EXAMPLE
 Start-NetworkTrace -TraceFile C:\temp\trac.etl
-.EXAMPLE 
+.EXAMPLE
 Start-NetworkTrace -TraceFile C:\temp\trac.etl -Protocol TCP -IPv4Address 192.168.0.3
-.EXAMPLE 
+.EXAMPLE
 Start-NetworkTrace -TraceFile C:\temp\trac.etl -Protocol TCP -IPv4SourceAddress 192.168.0.3 -IPv4DestinationAddress 192.168.0.1
-.EXAMPLE 
+.EXAMPLE
 Start-NetworkTrace -TraceFile C:\temp\trac.etl -Protocol UDP -IPv4Address 192.168.0.3 -MaxSize 300
-.EXAMPLE 
+.EXAMPLE
 Start-NetworkTrace -TraceFile C:\temp\trac.etl -Protocol !UDP -IPv4Address 192.168.0.3 -Overwrite
-.EXAMPLE 
+.EXAMPLE
 Start-NetworkTrace -TraceFile C:\temp\trac.etl -IPv6Address fe80::f090:7a62:9d9:3202%17
-#> 
+#>
     [CmdletBinding(DefaultParametersetName="IPv4")]
-    Param ( 
+    Param (
         # -Path parameter
         [Parameter(
-            Mandatory=$True, 
+            Mandatory=$True,
             Position = 0,
             HelpMessage='The name of the file to save the capture to.'
-        )] 
-        [Alias('Path')] 
+        )]
+        [Alias('Path')]
         [string]$TraceFile,
 
         # -Protocol parameter. Filter the trace to a single (or range of) protocols.
         [Parameter(
-            Mandatory=$false, 
+            Mandatory=$false,
             HelpMessage='The protocol filter applied to the the capture .e.g TCP, UDP, !TCP, 4.'
-        )] 
+        )]
         [string]$Protocol,
-    
+
         # -IPv4Address parameter. Filter the trace for source or destination addresses matching this address.
         [Parameter(
             Mandatory=$false,
-            ParameterSetName="IPv4" 
-        )] 
+            ParameterSetName="IPv4"
+        )]
         [string]$IPv4Address,
 
         # -IPv4SourceAddress parameter. Filter the trace for source addreses matching this address.
         [Parameter(
             Mandatory=$false,
             ParameterSetName="IPv4"
-        )] 
+        )]
         [string]$IPv4SourceAddress,
 
         # -IPv4DestinationAddress parameter. Filter the trace for destination addreses matching this address.
         [Parameter(
             Mandatory=$false,
             ParameterSetName="IPv4"
-        )] 
+        )]
         [string]$IPv4DestinationAddress,
 
         # -IPv6Address parameter. Filter the trace for source or destination addresses matching this address.
         [Parameter(
             Mandatory=$false,
-            ParameterSetName="IPv6" 
-        )] 
+            ParameterSetName="IPv6"
+        )]
         [string]$IPv6Address,
 
         # -IPv6SourceAddress parameter. Filter the trace for source addreses matching this address.
         [Parameter(
             Mandatory=$false,
-            ParameterSetName="IPv6" 
-        )] 
+            ParameterSetName="IPv6"
+        )]
         [string]$IPv6SourceAddress,
 
         # -IPv6DestinationAddress parameter. Filter the trace for destination addreses matching this address.
         [Parameter(
             Mandatory=$false,
-            ParameterSetName="IPv6" 
-        )] 
+            ParameterSetName="IPv6"
+        )]
         [string]$IPv6DestinationAddress,
 
         # -Persistant parameter. Make the trace persistant over reboots.
         [Parameter(
             Mandatory=$false
-        )] 
+        )]
         [switch]$Persistant,
 
         # -MaxSize parameter. The size limit of the capture file in MB. Defaults to 250MB if not set.
         [Parameter(
-            Mandatory=$false 
-        )] 
+            Mandatory=$false
+        )]
         [int]$MaxSize,
 
         # -MaxSize parameter. The size limit of the capture file in MB. Defaults to 250MB if not set.
         [Parameter(
-            Mandatory=$false 
-        )] 
+            Mandatory=$false
+        )]
         [switch]$Overwrite
     )
 
@@ -714,9 +714,9 @@ Start-NetworkTrace -TraceFile C:\temp\trac.etl -IPv6Address fe80::f090:7a62:9d9:
             }
             if ($IPv6DestinationAddress) {
                 $netshCommand += " Ethernet.Type=IPv6 IPv6.DestinationAddress=$IPv6DestinationAddress"
-            }      
+            }
             # start the trace
-            Invoke-Expression $netshCommand        
+            Invoke-Expression $netshCommand
         }
     }
 }
@@ -729,15 +729,15 @@ function Stop-NetworkTrace
 Function Name   : Stop-NetworkCapture
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (08/10/2016)
-Requires        :   
+Requires        :
 
-.SYNOPSIS 
+.SYNOPSIS
 A wrapper for netsh to stop a network trace
-.DESCRIPTION 
+.DESCRIPTION
 A wrapper for netsh to stop a network trace
 .EXAMPLE
-Stop-NetworkCapture 
-#> 
+Stop-NetworkCapture
+#>
 
     begin {
         # requires admin rights, exit if not running as an administrator
@@ -763,14 +763,14 @@ function Get-FirewallStatus
 Function Name   : Get-FirewallStatus
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (21/12/2016)
-Requires        :   
+Requires        :
 #>
 
     if ($IsCoreCLR) {
         write-warning "This function is only supported on Windows Powershell"
         return
     }
-    
+
     # get the list of profiles from the active store. This is the result of domain (GPO) and local policies.
     $allFirewallProfiles = Get-NetFirewallProfile -PolicyStore ActiveStore
     foreach ($firewallProfile in $allFirewallProfiles) {
