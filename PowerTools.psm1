@@ -1,19 +1,19 @@
-<# 
-    File Name  : powertools.ps1m  
-    Author     : Rob Holme (rob@holme.com.au) 
+<#
+    File Name  : powertools.ps1m
+    Author     : Rob Holme (rob@holme.com.au)
 
 Copyright (c) 2018 Robert Holme (rob@holme.com.au)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
-files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
-modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
+modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software
 is furnished to do so, subject to the following conditions:
 
 1) The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-2) THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR 
+2) THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #>
 
@@ -24,21 +24,21 @@ function Set-ProcessorAffinity {
 Function Name   : Set-ProcessorAffinity
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (08/07/2016)
-Requires        : PowerShell V2  
+Requires        : PowerShell V2
 
-.SYNOPSIS 
+.SYNOPSIS
 Limits the number of processor cores (incl hyper-threaded 'core') that a process can run on.
-.DESCRIPTION 
+.DESCRIPTION
 Limits the number of processor cores (incl hyper-threaded 'core') that a process can run on.
-.EXAMPLE 
+.EXAMPLE
 Set-ProcessorAffinity -ProcessName "DCMWin" -Cores 2
-.EXAMPLE 
+.EXAMPLE
 Set-ProcessorAffinity -ProcessID 6048 -Cores 4
-.PARAMETER ProcessName 
-The name of the process to set the processor affinity for. 
+.PARAMETER ProcessName
+The name of the process to set the processor affinity for.
 .PARAMETER ProcessID
-The ID of the process to set the processor affinity for. 
-.PARAMETER Cores 
+The ID of the process to set the processor affinity for.
+.PARAMETER Cores
 The number of cpu cores to limit the process to. This includes hyper threaded cores. Set to 0 to use normal processor scheduling.
 .NOTES
 Works with linux, however not all processes support changing the processor affinity attribute.
@@ -46,28 +46,28 @@ Works with linux, however not all processes support changing the processor affin
     [CmdletBinding(DefaultParametersetName = "ProcessName")]
     Param(
         [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
-            ValueFromPipeline = $True, 
-            ParameterSetName = "ProcessName")] 
+            Position = 0,
+            Mandatory = $True,
+            ValueFromPipeline = $True,
+            ParameterSetName = "ProcessName")]
         [string] $ProcessName,
 
         [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
-            ValueFromPipeline = $True, 
-            ParameterSetName = "ProcessID")] 
-        [Alias("Id")] 
+            Position = 0,
+            Mandatory = $True,
+            ValueFromPipeline = $True,
+            ParameterSetName = "ProcessID")]
+        [Alias("Id")]
         [int] $ProcessID,
-		
+
         [Parameter(
-            Position = 1, 
-            Mandatory = $False)] 
+            Position = 1,
+            Mandatory = $False)]
         [int] $Cores
     )
 
     # set the affinity for each process macthing the process name
-    process { 
+    process {
         if ($ProcessName) {
             $processes = Get-Process -Name $ProcessName
         }
@@ -76,7 +76,7 @@ Works with linux, however not all processes support changing the processor affin
         }
         foreach ($process in $processes) {
             try {
-                # ProcessorAffinity is a bit mask. 1 core = 1, 2 cores = 3, 3 cores = 7, 4 cores = 15, 5 cores = 31, 6 cores = 63, 7 cores = 127, 8 cores = 255 
+                # ProcessorAffinity is a bit mask. 1 core = 1, 2 cores = 3, 3 cores = 7, 4 cores = 15, 5 cores = 31, 6 cores = 63, 7 cores = 127, 8 cores = 255
                 $process.ProcessorAffinity = [int][math]::pow(2, $cores) - 1
                 $properties = @{
                     ProcessName = $process.ProcessName
@@ -89,7 +89,7 @@ Works with linux, however not all processes support changing the processor affin
             }
             catch {
                 Write-Error -Exception $_.Exception  -Message  "Failed to set the processor affinity for process $($process.Name)"
-            }   
+            }
         }
     }
 }
@@ -102,39 +102,39 @@ Function Name   : Get-ProcessorAffinity
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (08/07/2016)
                 : 1.1 (29/09/2016) - Updated parameters to accept ValueFromPipelineByPropertyName, allows get-process to be piped to the function
-Requires        : PowerShell V2  
+Requires        : PowerShell V2
 
-.SYNOPSIS 
+.SYNOPSIS
 Reports the number of processor cores (incl hyper-threaded 'core') that a process can run on.
-.DESCRIPTION 
+.DESCRIPTION
 Reports the number of processor cores (incl hyper-threaded 'core') that a process can run on.
-.EXAMPLE 
+.EXAMPLE
 Get-ProcessorAffinity -Process "DCMWin" -Cores 2
-.PARAMETER ProcessName 
-The name of the process to query the processor affinity for. 
+.PARAMETER ProcessName
+The name of the process to query the processor affinity for.
 .PARAMETER ProcessID
-The ID of the process to query the processor affinity for. 
+The ID of the process to query the processor affinity for.
 #>
     [CmdletBinding(DefaultParametersetName = "ProcessName")]
     Param(
         [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
-            ValueFromPipeline = $True, 
-            ValueFromPipelineByPropertyName = $True, 
-            ParameterSetName = "ProcessName")] 
+            Position = 0,
+            Mandatory = $True,
+            ValueFromPipeline = $True,
+            ValueFromPipelineByPropertyName = $True,
+            ParameterSetName = "ProcessName")]
         [string] $ProcessName,
 
         [Parameter(
-            Mandatory = $True, 
-            ValueFromPipeline = $True, 
-            ParameterSetName = "ProcessID")] 
-        [Alias("Id")] 
+            Mandatory = $True,
+            ValueFromPipeline = $True,
+            ParameterSetName = "ProcessID")]
+        [Alias("Id")]
         [int] $ProcessID
     )
 
     # set the affinity for each process macthing the process name
-    process { 
+    process {
         if ($ProcessName) {
             $processes = Get-Process -Name $ProcessName
         }
@@ -142,7 +142,7 @@ The ID of the process to query the processor affinity for.
             $processes = Get-Process -Id $ProcessID
         }
         foreach ($process in $processes) {
-            # ProcessorAffinity is a bit mask. 1 core = 1, 2 cores = 3, 3 cores = 7, 4 cores = 15, 5 cores = 31, 6 cores = 63, 7 cores = 127, 8 cores = 255 
+            # ProcessorAffinity is a bit mask. 1 core = 1, 2 cores = 3, 3 cores = 7, 4 cores = 15, 5 cores = 31, 6 cores = 63, 7 cores = 127, 8 cores = 255
             $properties = @{
                 ProcessName = $process.ProcessName
                 ProcessID   = $process.Id
@@ -158,37 +158,37 @@ The ID of the process to query the processor affinity for.
 #----------------------------------------------------
 function Show-WordMetadata {
     <#
-.NOTES	
+.NOTES
 Function Name   : Show-WordMetadata
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (16/08/2016)
-Requires        : PowerShell V2  
+Requires        : PowerShell V2
 
-.SYNOPSIS 
+.SYNOPSIS
 Displays document properties for a MS Word Document
-.DESCRIPTION 
+.DESCRIPTION
 Displays document properties for a MS Word Document
-.EXAMPLE 
+.EXAMPLE
 Show-WordMetadata -Path c:\test.doc
-.PARAMETER Path 
+.PARAMETER Path
 The name of the word document
 #>
 
     [CmdletBinding(DefaultParameterSetName = 'Path')]
     Param(
         [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
+            Position = 0,
+            Mandatory = $True,
             ParameterSetName = "Path",
-            ValueFromPipeline = $True, 
-            ValueFromPipelineByPropertyName = $true)] 
+            ValueFromPipeline = $True,
+            ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [Alias('PSPath')] 
+        [Alias('PSPath')]
         [string[]] $Path,
 
         [Parameter(
             Position = 0,
-            Mandatory = $True, 
+            Mandatory = $True,
             ParameterSetName = "LiteralPath",
             ValueFromPipeline = $False,
             ValueFromPipelineByPropertyName = $true,
@@ -221,7 +221,7 @@ The name of the word document
                         $psCmdlet.WriteError($errRecord)
                         continue
                     }
-	
+
                     # Resolve any wildcards that might be in the path
                     $provider = $null
                     $paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
@@ -237,16 +237,16 @@ The name of the word document
                         $psCmdlet.WriteError($errRecord)
                         continue
                     }
-	
+
                     # Resolve any relative paths
                     $paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
                 }
             }
-		
+
             $application = New-Object -ComObject word.application
             $application.Visible = $false
-		
-            foreach ($aPath in $paths) { 
+
+            foreach ($aPath in $paths) {
                 # open the document as read only.
                 $document = $application.documents.open($aPath, $false, $true)
                 $binding = "System.Reflection.BindingFlags" -as [type]
@@ -299,40 +299,40 @@ The name of the word document
 function Remove-WordMetadata {
     <#
 .NOTES
-Function Name   : Remmove-WordMetadata
+Function Name   : Remove-WordMetadata
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (16/08/2016)
-Requires        : PowerShell V2  
+Requires        : PowerShell V2
 
-.SYNOPSIS 
+.SYNOPSIS
 Removes document properties for a MS Word Document
-.DESCRIPTION 
+.DESCRIPTION
 Removes all document properties for a MS Word Document, including templates, ink annotations, comments, custome properties, etc.
-.EXAMPLE 
-Show-WordMetadata -Path c:\test.doc
-.PARAMETER Path 
+.EXAMPLE
+Remove-WordMetadata -Path c:\test.doc
+.PARAMETER Path
 The name of the word document
 .PARAMETER KeepTemplate
-Leave the template attached to the document 
+Leave the template attached to the document
 .PARAMETER KeepInkAnnotations
-Leave the template attached to the document 
+Leave the template attached to the document
 #>
 
     [CmdletBinding(DefaultParameterSetName = 'Path')]
     Param(
         [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
+            Position = 0,
+            Mandatory = $True,
             ParameterSetName = "Path",
-            ValueFromPipeline = $True, 
-            ValueFromPipelineByPropertyName = $true)] 
+            ValueFromPipeline = $True,
+            ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [Alias('PSPath')] 
+        [Alias('PSPath')]
         [string[]] $Path,
 
         [Parameter(
             Position = 0,
-            Mandatory = $True, 
+            Mandatory = $True,
             ParameterSetName = "LiteralPath",
             ValueFromPipeline = $False,
             ValueFromPipelineByPropertyName = $true,
@@ -341,19 +341,19 @@ Leave the template attached to the document
         [string[]] $LiteralPath,
 
         [Parameter(
-            Mandatory = $False)] 
+            Mandatory = $False)]
         [switch] $KeepTemplate,
 
         [Parameter(
-            Mandatory = $False)] 
+            Mandatory = $False)]
         [switch] $KeepInkAnnotations,
 
         [Parameter(
-            Mandatory = $False)] 
+            Mandatory = $False)]
         [switch] $KeepComments,
 
         [Parameter(
-            Mandatory = $False)] 
+            Mandatory = $False)]
         [switch] $KeepRevisionInformation
     )
 
@@ -381,7 +381,7 @@ Leave the template attached to the document
                         $psCmdlet.WriteError($errRecord)
                         continue
                     }
-	
+
                     # Resolve any wildcards that might be in the path
                     $provider = $null
                     $paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
@@ -397,7 +397,7 @@ Leave the template attached to the document
                         $psCmdlet.WriteError($errRecord)
                         continue
                     }
-	
+
                     # Resolve any relative paths
                     $paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
                 }
@@ -405,14 +405,14 @@ Leave the template attached to the document
             Add-Type -AssemblyName Microsoft.Office.Interop.Word
             $application = New-Object -ComObject word.application
 
-            foreach ($aPath in $paths) { 
+            foreach ($aPath in $paths) {
                 $document = $application.documents.open($aPath)
                 $application.Visible = $false
                 # suppress warnings to save when comments or ink annotations are present
                 $application.Options.WarnBeforeSavingPrintingSendingMarkup = $false
                 $WdRemoveDocType = "Microsoft.Office.Interop.Word.WdRemoveDocInfoType" -as [type]
-                # remove individual properties from the document. 
-                Write-Verbose "Removing document properties from $aPath" 
+                # remove individual properties from the document.
+                Write-Verbose "Removing document properties from $aPath"
                 #$document.RemoveDocumentInformation($WdRemoveDocType::wdRDIAll) # remove all properties - not used as I need to provide the option of retaining some properties
                 $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIVersions)
                 Write-Verbose "Version information removed"
@@ -441,17 +441,17 @@ Leave the template attached to the document
                     $document.RemoveDocumentInformation($WdRemoveDocType::wdRDITemplate)
                     Write-Verbose "Document template removed"
                 }
-                # preserve ink annotations if the -KeepInkAnnotations switch is set  
+                # preserve ink annotations if the -KeepInkAnnotations switch is set
                 if (!$KeepInkAnnotations) {
                     $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIInkAnnotations)
                     Write-Verbose "Ink Annotations removed"
                 }
-                # preserve comments if the -KeepComments is set  
+                # preserve comments if the -KeepComments is set
                 if (!$KeepComments) {
                     $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIComments)
                     Write-Verbose "Comments removed"
                 }
-                # preserve revision information (change tracking) if the -KeepRevisionInformation switch is set  
+                # preserve revision information (change tracking) if the -KeepRevisionInformation switch is set
                 if (!$KeepRevisionInformation) {
                     $document.RemoveDocumentInformation($WdRemoveDocType::wdRDIRevisions)
                     Write-Verbose "Revision information removed"
@@ -460,9 +460,9 @@ Leave the template attached to the document
                 trap [system.exception] {
                     continue
                 }
-                # save and close the document, close down MS Word. 
-                $document.Save() 
-                $application.documents.close() 
+                # save and close the document, close down MS Word.
+                $document.Save()
+                $application.documents.close()
             }
             $application.quit()
         }
@@ -477,22 +477,22 @@ function Convert-ADTimestamp {
 Function Name   : Convert-ADTimestamp
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (06/10/2016)
-Requires        : PowerShell V2  
+Requires        : PowerShell V2
 
-.SYNOPSIS 
+.SYNOPSIS
 Converts a integer timestamp (e.g. from LDIFDE or some AD CmdLets) to a date/time value.
-.DESCRIPTION 
+.DESCRIPTION
 Converts a integer timestamp (e.g. from LDIFDE or some AD CmdLets) to a date/time value.
-.EXAMPLE 
+.EXAMPLE
 Convert-ADTimestamp -Value 131200456520442703
-.PARAMETER Value 
+.PARAMETER Value
 The timestamp to convert
 #>
 
     Param(
         [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
+            Position = 0,
+            Mandatory = $True,
             ValueFromPipeline = $True
         )]
         [string] $Value)
@@ -511,21 +511,21 @@ function Get-ProcessorUtilisation {
 Function Name   : Get-ProcessorUtilisation
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (16/10/2016)
-Requires        : PowerShell V2  
+Requires        : PowerShell V2
 
-.SYNOPSIS 
+.SYNOPSIS
 Display the overall processor utilisation and process utilisation stats
-.DESCRIPTION 
+.DESCRIPTION
 Display the overall processor utilisation and process utilisation stats
-.EXAMPLE 
+.EXAMPLE
 Get-ProcessorUtilisation -top 10
-.PARAMETER Top 
+.PARAMETER Top
 Limit the results to the top results
 #>
 
     [CmdletBinding(DefaultParametersetName = "TopProcesses")]
     Param(
-        # limit query to Top x processes 
+        # limit query to Top x processes
         [Parameter(
             Mandatory = $False,
             ParameterSetName = "TopProcesses"
@@ -534,9 +534,9 @@ Limit the results to the top results
 
         # only display utilisation for specific processes
         [Parameter(
-            Mandatory = $False, 
+            Mandatory = $False,
             ParameterSetName = "ProcessName",
-            ValueFromPipeline = $True, 
+            ValueFromPipeline = $True,
             ValueFromPipelineByPropertyName = $True
         )]
         [string[]] $ProcessName
@@ -550,7 +550,7 @@ Limit the results to the top results
         }
         else {
             $abortProcessing = $false
-		
+
             $uniqueProcesses = @()
             # get number of processor cores
             $cpus = Get-WmiObject win32_Processor
@@ -574,14 +574,14 @@ Limit the results to the top results
                     if ($uniqueProcesses -notcontains $process) {
                         $uniqueProcesses += $process
                         $sortedCounters += $counters | where-object -FilterScript {$_.InstanceName -eq $process}
-                    }    
+                    }
                 }
             }
-        
+
             # display utilisation of all (or top) processes
             else {
                 if ($Top) {
-                    $sortedCounters = $counters | Sort-Object -Property CookedValue -Descending | Select-Object -First $Top 
+                    $sortedCounters = $counters | Sort-Object -Property CookedValue -Descending | Select-Object -First $Top
                 }
                 else {
                     $sortedCounters = $counters | Sort-Object -Property CookedValue -Descending
@@ -622,14 +622,14 @@ function Export-Credential {
 Function Name   : Export-Credential
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (24/01/2017)   - Initial version.
-Requires        : PowerShell V3  
+Requires        : PowerShell V3
 
-.SYNOPSIS 
+.SYNOPSIS
 Exports a password to a file (as a secure string)
-.DESCRIPTION 
+.DESCRIPTION
 Exports a password to a file (as a secure string). The file format is XML. The password is encrypted, requiring the same user and host to be able to read the password.
 The exported password can not be transported between hosts or users, it will fail to import. Use Import-Password to return the PS Credential object from file.
-.EXAMPLE 
+.EXAMPLE
 Export-Credential -Path c:\temp\password.xml
 # user is prompted to enter password
 .EXAMPLE
@@ -638,44 +638,44 @@ Export-Credential -Path c:\temp\password.xml -Password $SecurePassword -Username
 .EXAMPLE
 Export-Credential -Path c:\temp\password.xml -Credential (Get-Credential)
 # store the credential object
-.PARAMETER Path 
-The Hostname or IP address of the SQL server to connect to. If connecting to a named instance, include the instance name e.g. server\instance 
-.PARAMETER Password 
+.PARAMETER Path
+The Hostname or IP address of the SQL server to connect to. If connecting to a named instance, include the instance name e.g. server\instance
+.PARAMETER Password
 The password (as a securestring)
-.PARAMETER Username 
+.PARAMETER Username
 The (optional) username to store with the password
-#> 
+#>
     [CmdletBinding(DefaultParameterSetName = "Password")]
     param(
         [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
-            ValueFromPipeline = $True, 
-            ValueFromPipelineByPropertyName = $true)] 
-        [ValidateNotNullorEmpty()] 
+            Position = 0,
+            Mandatory = $True,
+            ValueFromPipeline = $True,
+            ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullorEmpty()]
         [string] $Path,
-        
+
         [Parameter(
-            Position = 1, 
-            Mandatory = $True, 
-            ValueFromPipeline = $True, 
-            ParameterSetName = "Password")] 
+            Position = 1,
+            Mandatory = $True,
+            ValueFromPipeline = $True,
+            ParameterSetName = "Password")]
         [Security.SecureString] $Password,
-        
+
         [Parameter(
-            Position = 2, 
-            Mandatory = $False, 
-            ValueFromPipeline = $True, 
-            ParameterSetName = "Password")] 
+            Position = 2,
+            Mandatory = $False,
+            ValueFromPipeline = $True,
+            ParameterSetName = "Password")]
         [string] $Username,
-        
+
         [Parameter(
-            Position = 1, 
-            Mandatory = $False, 
-            ValueFromPipeline = $True, 
-            ParameterSetName = "Credential")] 
+            Position = 1,
+            Mandatory = $False,
+            ValueFromPipeline = $True,
+            ParameterSetName = "Credential")]
         [PSCredential] $Credential,
-        
+
         [Parameter(
             Mandatory = $False)]
         [Switch]$NoClobber
@@ -695,7 +695,7 @@ The (optional) username to store with the password
         if ($abortProcessing) {
             return
         }
-		
+
         # exit if the file exists, and the -NoClobber switch was set
         if ($NoClobber -AND (Test-Path -Path $Path)) {
             Write-Warning "The file '$Path' already exists. Omit the '-NoClobber' switch to force overwrite."
@@ -718,7 +718,7 @@ The (optional) username to store with the password
             ExportUser = "$env:USERDOMAIN\$env:USERNAME"
             ExportHost = "$env:COMPUTERNAME"
             ExportDate = Get-Date
-        }            
+        }
         $outputObject = New-Object -Property $Result -TypeName psobject
         $outputObject.PSObject.TypeNames.Insert(0, "Powertools.ExportedCredentials")
         $outputObject | Export-clixml -Path $Path
@@ -733,28 +733,28 @@ function Import-Credential {
 Function Name   : Import-Credential
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (24/01/2017)   - Initial version.
-Requires        : PowerShell V3  
+Requires        : PowerShell V3
 
-.SYNOPSIS 
+.SYNOPSIS
 Imports a credential from file (exported by Export-Credential)
-.DESCRIPTION 
+.DESCRIPTION
 Imports a PSCredentail object from a file (previously exported by Export-Credential). The file format is XML. The password is encrypted, requiring the same user and host to be able to read the password.
 The exported password can not be transported between hosts or users, it will fail to import. Use Export-Password to create a file with stored credentials.
-.EXAMPLE 
+.EXAMPLE
 $Cred = Import-Credential -Path c:\temp\credential.xml
 $Cred.Username  # this is the domain\username
 $Cred.GetNetworkCredential().Password  # this is the plain text Password
-.PARAMETER Path 
-This is the name of the XML file that contains cretentails previously exported by Export-Credential. Must be the same user and don the same host to import the credentals. 
-The XML file will contain metas data indicating the username and the host when the export was performed. 
-#> 
+.PARAMETER Path
+This is the name of the XML file that contains cretentails previously exported by Export-Credential. Must be the same user and don the same host to import the credentals.
+The XML file will contain metas data indicating the username and the host when the export was performed.
+#>
     [CmdletBinding(DefaultParameterSetName = "Password")]
     param(
         [Parameter (
-            Position = 0, 
-            Mandatory = $True, 
-            ValueFromPipeline = $True, 
-            ValueFromPipelineByPropertyName = $true)] 
+            Position = 0,
+            Mandatory = $True,
+            ValueFromPipeline = $True,
+            ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullorEmpty()]
         [ValidateScript( {
                 if (Test-Path $_) {
@@ -762,7 +762,7 @@ The XML file will contain metas data indicating the username and the host when t
                 }
                 else {
                     Throw "Path not valid: $_"
-                } 
+                }
             })]
         [string] $Path
     )
@@ -791,7 +791,7 @@ The XML file will contain metas data indicating the username and the host when t
 # returns true if the powershell session is running under elevated permissions
 function IsAdmin() {
     # confirm the powershell console is running under local admin credentials.
-    If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {    
+    If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
         return $false
     }
     else {
@@ -805,21 +805,21 @@ function Get-Screenshot {
 .NOTES
 Function Name   : Get-Screenshot
 Author          : Rob Holme (rob@holme.com.au)
-Requires        : PowerShell V3  
+Requires        : PowerShell V3
 				: Windows Vista+
 
-.SYNOPSIS 
+.SYNOPSIS
 Captures a screen shot.
-.DESCRIPTION 
+.DESCRIPTION
 Captures a screen shot. The Image defaults to being saved to the desktop, or can be saved to a file via the -SaveAs parameter.
 It defaults to capturing the primary monitor, but can also capture all monitors or the active application window instead.
-.PARAMETER ActiveWindow 
+.PARAMETER ActiveWindow
 Switch to specify that only the active window is captured.
-.PARAMETER AllMonitors 
+.PARAMETER AllMonitors
 Switch to specify that the screen from all monitors is captured.
-.PARAMETER PrimaryMonitor 
+.PARAMETER PrimaryMonitor
 Switch to specify that only the primary monitor is captured. This is the default behaviour if no switch is supplied.
-.PARAMETER Delay 
+.PARAMETER Delay
 The time in seconds to delay before the screen shot is taken. Defaults to 5 seconds.
 .PARAMETER SaveAs
 A file path to save the screen shot to. The following file types are supported: .jpg, .png, .bmp and .gif. If any other (unsupported) file typse are provided in the -SaveAs parameter it will default to a .png file.
@@ -835,27 +835,27 @@ Get-Screenshot -Delay 4 -ActiveWindow -SaveAs C:\scratch\test.png
 Get-Screenshot SaveAs C:\scratch\test.png
 .EXAMPLE
 Get-Screenshot -AllMonitors
-#> 
+#>
     [CmdletBinding(DefaultParameterSetName = "PrimaryMonitor")]
     param(
         [parameter(
-            Mandatory = $false, 
-            ValueFromPipeline = $true, 
+            Mandatory = $false,
+            ValueFromPipeline = $true,
             Position = 1)]
         [int]$Delay = 5,
 
         [Parameter(
-            ParameterSetName = "ActiveWindow", 
+            ParameterSetName = "ActiveWindow",
             Mandatory = $False)]
         [Switch]$ActiveWindow,
 
         [Parameter(
-            ParameterSetName = "PrimaryMonitor", 
+            ParameterSetName = "PrimaryMonitor",
             Mandatory = $False)]
         [Switch]$PrimaryMonitor,
 
         [Parameter(
-            ParameterSetName = "AllMonitors", 
+            ParameterSetName = "AllMonitors",
             Mandatory = $False)]
         [Switch]$AllMonitors,
 
@@ -897,18 +897,18 @@ Get-Screenshot -AllMonitors
             write-warning "This function is only supported under Windows Powershell (not Powershell core)"
             return
         }
-		
+
         Add-Type -Assembly System.Windows.Forms
         Add-Type -AssemblyName System.Drawing
-		
+
         $width = 0
         $height = 0
         $topLeft = New-Object System.Drawing.Point(0, 0)
         $bottomRight = New-Object System.Drawing.Point(0, 0)
 
-        # delay the start of the screen capture		
+        # delay the start of the screen capture
         for ($i = 0; $i++ -lt $Delay) {
-            $secondsRemaining = ($Delay - $i) + 1 
+            $secondsRemaining = ($Delay - $i) + 1
             write-host "Screen capture in $secondsRemaining seconds"
             start-sleep -seconds 1
         }
@@ -923,19 +923,19 @@ Get-Screenshot -AllMonitors
 				using System;
 				using System.Runtime.InteropServices;
 				public class UserWindows {
-					[DllImport("user32.dll")] 
+					[DllImport("user32.dll")]
 					public static extern IntPtr GetForegroundWindow();
 					[DllImport("dwmapi.dll")]
     				public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out RECT pvAttribute, int cbAttribute);
 				}
-		
+
 				public struct RECT
 				{
 					public int Left;        // x position of upper-left corner
 					public int Top;         // y position of upper-left corner
 					public int Right;       // x position of lower-right corner
 					public int Bottom;      // y position of lower-right corner
-				} 
+				}
 "@
             [int] $DWMWA_EXTENDED_FRAME_BOUNDS = 9
 
@@ -944,13 +944,13 @@ Get-Screenshot -AllMonitors
             $return = [UserWindows]::DwmGetWindowAttribute($foregroundWindowHandle, $DWMWA_EXTENDED_FRAME_BOUNDS, [ref]$rectangle, [Runtime.InteropServices.Marshal]::SizeOf($rectangle))
             If ($return -eq 0) {
                 Write-Verbose "Window rectangle dimensions - Left:$($rectangle.Left) Top:$($rectangle.Top) Right:$($rectangle.Right) Bottom:$($rectangle.Bottom)"
-                # no DPI scaling needed for result from DwmGetWindowAttribute			
+                # no DPI scaling needed for result from DwmGetWindowAttribute
                 $height = ($rectangle.Bottom - $rectangle.Top)
-                $width = ($rectangle.Right - $rectangle.Left) 
-                $topLeft.X = $rectangle.Left 
+                $width = ($rectangle.Right - $rectangle.Left)
+                $topLeft.X = $rectangle.Left
                 $topLeft.Y = $rectangle.Top
-                $bottomRight.X = $rectangle.Right 				
-                $bottomRight.Y = $rectangle.Bottom 
+                $bottomRight.X = $rectangle.Right
+                $bottomRight.Y = $rectangle.Bottom
             }
             else {
                 Write-Error "Unable to get the active window position"
@@ -976,7 +976,7 @@ Get-Screenshot -AllMonitors
             $bottomRight.X = $width
             $bottomRight.Y = $height
         }
-        
+
         Write-Verbose "Canvas size ($width,$height)"
         $bitmap = New-Object System.Drawing.Bitmap $width, $height
         $RepeatCount = If ($RepeatCount) {$RepeatCount} Else {1}
@@ -984,7 +984,7 @@ Get-Screenshot -AllMonitors
         for ($repeatIndex = 1; $repeatIndex -le $RepeatCount; $repeatIndex++) {
             $graphic = [System.Drawing.Graphics]::FromImage($bitmap)
             $graphic.CopyFromScreen($topLeft.X, $topLeft.Y, 0, 0, $bitmap.Size)
-		
+
             # Resolve any relative paths
             # Save the screenshot from the clipboard to file.
             if ($SaveAs) {
@@ -997,27 +997,27 @@ Get-Screenshot -AllMonitors
                 $SaveAs = $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($SaveAs)
                 $extension = GetFileExtension $SaveAs
                 switch -exact ($extension) {
-                    "png" {  
+                    "png" {
                         $bitmap.Save($SaveAsPath, [System.Drawing.Imaging.ImageFormat]::Png)
                         Write-Output "Image saved to $SaveAsPath"
                         break
                     }
-                    "jpg" {  
+                    "jpg" {
                         $bitmap.Save($SaveAsPath, [System.Drawing.Imaging.ImageFormat]::Jpeg)
                         Write-Output "Image saved to $SaveAsPath"
                         break
                     }
-                    "jpeg" {  
+                    "jpeg" {
                         $bitmap.Save($SaveAsPath, [System.Drawing.Imaging.ImageFormat]::Jpeg)
                         Write-Output "Image saved to $SaveAsPath"
                         break
                     }
-                    "bmp" {  
+                    "bmp" {
                         $bitmap.Save($SaveAsPath, [System.Drawing.Imaging.ImageFormat]::Bmp)
                         Write-Output "Image saved to $SaveAsPath"
                         break
                     }
-                    "gif" {  
+                    "gif" {
                         $bitmap.Save($SaveAsPath, [System.Drawing.Imaging.ImageFormat]::Gif)
                         Write-Output "Image saved to $SaveAsPath"
                         break
@@ -1060,50 +1060,50 @@ function Get-Hash {
 .NOTES
 Function Name   : Get-Hash
 Author          : Rob Holme (rob@holme.com.au)
-Requires        :   
+Requires        :
 
-.SYNOPSIS 
+.SYNOPSIS
 Generate the hash of a string or file.
-.DESCRIPTION 
+.DESCRIPTION
 Generate the hash of a string or file. Defaults to MD5.
-.PARAMETER String 
+.PARAMETER String
 The string to hash
 .PARAMETER Path
 The file to hash
 .PARAMETER Algorithm
 The type of hash to calculate. Accepted values include "SHA1","SHA","MD5","SHA256","SHA-256","SHA384","SHA-384","SHA512","SHA-512"
-#> 
+#>
     [CmdletBinding(DefaultParametersetName = "Path")]
     param(
         [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
+            Position = 0,
+            Mandatory = $True,
             ParameterSetName = "Path",
-            ValueFromPipeline = $True, 
-            ValueFromPipelineByPropertyName = $true)] 
+            ValueFromPipeline = $True,
+            ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [Alias('PSPath')] 
+        [Alias('PSPath')]
         [string[]] $Path,
-            
+
         [Parameter(
             Position = 0,
-            Mandatory = $True, 
+            Mandatory = $True,
             ParameterSetName = "LiteralPath",
             ValueFromPipeline = $False,
             ValueFromPipelineByPropertyName = $true,
             HelpMessage = "Literal path to one or more locations.")]
         [ValidateNotNullOrEmpty()]
         [string[]] $LiteralPath,
-                
+
         [parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 1, ParameterSetName = "String")]
         [Alias("PlainText")]
         [string]$String,
 
         [parameter(
-            Mandatory = $true, 
-            ValueFromPipeline = $false, 
+            Mandatory = $true,
+            ValueFromPipeline = $false,
             Position = 2)]
-        [ValidateSet("SHA1", "MD5", "SHA256", "SHA384", "SHA512")] 
+        [ValidateSet("SHA1", "MD5", "SHA256", "SHA384", "SHA512")]
         [string] $Algorithm = "MD5"
     )
 
@@ -1121,7 +1121,7 @@ The type of hash to calculate. Accepted values include "SHA1","SHA","MD5","SHA25
                     $psCmdlet.WriteError($errRecord)
                     continue
                 }
-	
+
                 # Resolve any wild cards that might be in the path. Only add files, not directories.
                 $provider = $null
                 if (Test-Path $aPath -PathType Leaf) {
@@ -1141,7 +1141,7 @@ The type of hash to calculate. Accepted values include "SHA1","SHA","MD5","SHA25
                     $errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
                     $psCmdlet.WriteError($errRecord)
                     continue
-                }	
+                }
                 # Resolve any relative paths, ignore directories
                 if (Test-Path $aPath -PathType Leaf) {
                     $paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
@@ -1165,7 +1165,7 @@ The type of hash to calculate. Accepted values include "SHA1","SHA","MD5","SHA25
                 }
                 $outputObject = New-Object -TypeName PSObject -Property $properties
                 $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetHash.Result")
-                write-output $outputObject  
+                write-output $outputObject
             }
         }
 
@@ -1189,23 +1189,23 @@ The type of hash to calculate. Accepted values include "SHA1","SHA","MD5","SHA25
 function CalculateHash($ByteArrayToHash, $HashAlgorithm) {
     $StringBuilder = New-Object System.Text.StringBuilder
     switch ($HashAlgorithm) {
-        "SHA1" {  
+        "SHA1" {
             [System.Security.Cryptography.SHA1]::Create().ComputeHash($ByteArrayToHash) | ForEach-Object {
                 [Void]$StringBuilder.Append($_.ToString("x2")) }
         }
-        "SHA256" {  
+        "SHA256" {
             [System.Security.Cryptography.SHA256]::Create().ComputeHash($ByteArrayToHash) | ForEach-Object {
                 [Void]$StringBuilder.Append($_.ToString("x2")) }
         }
-        "SHA344" {  
+        "SHA344" {
             [System.Security.Cryptography.SHA384]::Create().ComputeHash($ByteArrayToHash) | ForEach-Object {
                 [Void]$StringBuilder.Append($_.ToString("x2")) }
         }
-        "SHA512" { 
+        "SHA512" {
             [System.Security.Cryptography.SHA512]::Create().ComputeHash($ByteArrayToHash) | ForEach-Object {
                 [Void]$StringBuilder.Append($_.ToString("x2")) }
         }
-        "MD5" { 
+        "MD5" {
             [System.Security.Cryptography.MD5]::Create().ComputeHash($ByteArrayToHash) | ForEach-Object {
                 [Void]$StringBuilder.Append($_.ToString("x2")) }
         }
@@ -1219,40 +1219,40 @@ function Test-IsPasswordPwned {
 Function Name   : Test-IsPasswordPwned
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (06/02/2018)   - Initial version.
-Requires        : PowerShell V3  
+Requires        : PowerShell V3
 
-.SYNOPSIS 
+.SYNOPSIS
 Returns $true if the password is included in the list of known breached passwords (via haveibeenpwned.com).
 Returns $false if the password is not listed. All passwords are converted to SHA1 hash when submitted to haveibeenpwned.com
-.DESCRIPTION 
+.DESCRIPTION
 .PARAMETER SecureString
 A copy of the password as a securestring
 .PARAMETER Password
 The password in plain text
 .PARAMETER PasswordHash
 The SHA1 hash of the password
-#> 
+#>
     [CmdletBinding()]
     param(
         [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
-            ValueFromPipeline = $True, 
-            ParameterSetName = "SecureString")] 
+            Position = 0,
+            Mandatory = $True,
+            ValueFromPipeline = $True,
+            ParameterSetName = "SecureString")]
         [Security.SecureString] $SecureStringPassword,
 
         [Parameter(
-            Position = 0, 
+            Position = 0,
             Mandatory = $True,
-            ValueFromPipeline = $True, 
-            ParameterSetName = "Password")] 
+            ValueFromPipeline = $True,
+            ParameterSetName = "Password")]
         [string] $PlainTextPassword,
 
         [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
-            ValueFromPipeline = $True, 
-            ParameterSetName = "PasswordHash")] 
+            Position = 0,
+            Mandatory = $True,
+            ValueFromPipeline = $True,
+            ParameterSetName = "PasswordHash")]
         [string] $PasswordHashSHA1
     )
 
@@ -1266,13 +1266,13 @@ The SHA1 hash of the password
         if (!$IsCoreCLR) {
             [System.Net.ServicePointManager]::SecurityProtocol = @("Tls12", "Tls11", "Tls", "Ssl3")
         }
-        
+
         # convert secure string to plain text password
         if ($PSCmdlet.ParameterSetName -eq "SecureString") {
             $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureStringPassword)
             $PlainTextPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
         }
-        	
+
         # calculate the SHA1 hash of the plaintext password
         if (($PSCmdlet.ParameterSetName -eq "SecureString") -or ($PSCmdlet.ParameterSetName -eq "Password")) {
             $StringBuilder = New-Object System.Text.StringBuilder
@@ -1280,8 +1280,8 @@ The SHA1 hash of the password
                 [Void]$StringBuilder.Append($_.ToString("x2")) }
         }
         $PasswordHash = $StringBuilder.ToString()
-    
-		
+
+
         try {
             [bool] $match = $false
             # get the first 5 characters of the hash and submit this to the pwnedpasswords range API. All macthing hashed will be returned (minus the 5 char prefix submitted)
@@ -1290,7 +1290,7 @@ The SHA1 hash of the password
             if ($response.StatusCode -eq 200) {
                 Write-Verbose "Password hash: $PasswordHash"
                 # Remove the first character (substring(1)) that is prefixed to the actual content.
-                # Split each line of the content, compare the partial hashes returned against the password hash. 
+                # Split each line of the content, compare the partial hashes returned against the password hash.
                 foreach ($responseString in $response.Content.Substring(1) -Split "`n") {
                     # hashes are sufixed with a colon and a number indicating the number of times the password appears in breaches. The number of occurrances is discarded.
                     $hash = (($responseString -Split ":")[0])
@@ -1308,7 +1308,7 @@ The SHA1 hash of the password
                 Write-Error "Status Code returned: $($response.StatusCode)"
             }
         }
-        # fatal response codes will generally trigger an exception. 
+        # fatal response codes will generally trigger an exception.
         catch {
 
             Write-Error "Unable to query pwned passwords at this time."
