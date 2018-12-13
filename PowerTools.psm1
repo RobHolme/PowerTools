@@ -999,7 +999,6 @@ Get-Screenshot -AllMonitors
                 else {
                     $SaveAsPath = $SaveAs
                 }
-  #              $SaveAs = $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($SaveAs)
                 $extension = GetFileExtension $SaveAs
                 switch -exact ($extension) {
                     "png" {
