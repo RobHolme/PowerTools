@@ -885,6 +885,11 @@ Get-Screenshot -AllMonitors
             write-warning "The parameter -RepeatCount must be provided if using -RepeatInterval"
             $abortProcessing = $true
         }
+
+        # if a relative path is provided construct the full path
+        if ($SaveAs) {
+            $SaveAs = ConstructFullPath($SaveAs)
+        }
     }
 
     process {
@@ -994,7 +999,7 @@ Get-Screenshot -AllMonitors
                 else {
                     $SaveAsPath = $SaveAs
                 }
-                $SaveAs = $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($SaveAs)
+  #              $SaveAs = $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($SaveAs)
                 $extension = GetFileExtension $SaveAs
                 switch -exact ($extension) {
                     "png" {
@@ -1344,11 +1349,22 @@ function AddRepeatSuffixToFilename($Path, $RepeatNumber) {
     $filename = $Path.Substring(0, $startOfExtension)
     return $filename + "-" + $RepeatNumber + $extension
 }
+
+
+function ConstructFullPath($path) {
+    if ([System.IO.Path]::IsPathRooted($path)) {
+        return $path
+    }
+    else {
+        return Join-Path -Path (Get-Location) -ChildPath $path 
+    }
+}
+
 # SIG # Begin signature block
 # MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUkwGBzdRiSdXEHKJxgC/WDawq
-# eZKgggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU+fQOV6k7fRAys2s/EXlGFmEZ
+# ox2gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
 # AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI
 # b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD
 # DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG
@@ -1369,11 +1385,11 @@ function AddRepeatSuffixToFilename($Path, $RepeatNumber) {
 # ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC
 # GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK
 # KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG
-# 9w0BCQQxFgQUH3ZHv0YVbE+eBPAuFMYy481sY38wDQYJKoZIhvcNAQEBBQAEggEA
-# ABo02A6/a8QNuhdADN53bGY0nx9ZrpREtjojWNZsGWONlajsxKk5ret8e7Wzhsru
-# 3+rQoF63ZvZVAD/5m+6YfjrZO1r2iZ7Dyk9ZEVlcFE58uPBy9v5I9HGBwcsKP/Hs
-# ACmVRIqLtfsyiLxYOKPf4Imt6XhaMzqyGJt4aoQCEoMRrx2KyaCxo8G4xW2LLYzB
-# Q6DVd/xo+1wW0ZnH6HWI/Syvip1wj1vGo/QKoWKU/oZRzp4XN4lV8oHj8VimuAxG
-# 8DOeslsyjHKUhPnjz/C728DZ0fSwRGEfNq3oxikIB2KMLRLL2o+kHQE1+YD4ayEH
-# ZboPpiEao6Mj85PwueIWiw==
+# 9w0BCQQxFgQUlZCJHzekjS9gSBRUh6sBJHWWSlkwDQYJKoZIhvcNAQEBBQAEggEA
+# Wbe9jghKdEy+m752pTSm0xerZGcHaH1o+fSQzim/PRV/19Cs9RLmDb/fGT3B9fAN
+# SZ1QOO0X0rTiTDTcWhRr4Av2WFXXBuqusRtmM594dGqDbQFFaw9l2P7KBFPYa4Bt
+# P1m01mCJJbUMW7OOHkxwv5QQo22+W+BdG93u/Cjn1csOoJhdHnkUAqcGIVcuQo1y
+# IEwo8JM+xqjXlMArqzp6rjV8sd8zwVqAs40DjMLC1KDo7ShecwHr+lnFbuXb6uP+
+# Ya/Ms1ulIuAsyzdKERS7oAQwdnTrSuZEUEqoYnadda83mEkgWb7gluFYBOiNh+yc
+# LmoJYR/0oevjLQv8QT632A==
 # SIG # End signature block
