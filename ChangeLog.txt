@@ -19,3 +19,4 @@ Version History
 	2.7 (10/03/2018) - rewrote get-Screenshot to capture the screen via win32 calls, instead of just sending a prt-screen key press.
 	2.8 (14/03/2018) - add -RepeatCount and RepeatInterval switches to Get-Screenshot to capture multiple screenshots
 	2.9 (19/03/2018) - updated -Path parameter handing in Get-Hash to be consistent with other functions  
+	2.10 (09/01/2019) - updated get-adtimestamp to handles values set to never expire (greater than max time value)
