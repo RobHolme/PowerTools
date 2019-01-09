@@ -477,6 +477,7 @@ function Convert-ADTimestamp {
 Function Name   : Convert-ADTimestamp
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (06/10/2016)
+                : 1.1 (09/01/2019) - checked for 'never expires' timestamps
 Requires        : PowerShell V2
 
 .SYNOPSIS
@@ -498,8 +499,13 @@ The timestamp to convert
         [string] $Value)
 
     process {
-        $convertedDateTime = [datetime]::FromFileTime($Value)
-        write-output $convertedDateTime
+        if ($Value -gt [DateTime]::MaxValue.Ticks) {
+            write-warning "Time value exceeds max value. This is used identify a time value of never expires."
+        }
+        else {
+            $convertedDateTime = [datetime]::FromFileTime($Value)
+            write-output $convertedDateTime
+        }
     }
 }
 
@@ -1362,8 +1368,8 @@ function ConstructFullPath($path) {
 # SIG # Begin signature block
 # MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUTcRTC6Hx5EfDdHaGANEUqrmL
-# B+ugggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUPs3nLs8jeTV0ugCpKT+U8x5p
+# WL6gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
 # AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI
 # b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD
 # DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG
@@ -1384,11 +1390,11 @@ function ConstructFullPath($path) {
 # ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC
 # GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK
 # KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG
-# 9w0BCQQxFgQUzqGEF2WBNaiIGJRZYEnx1pfnj2cwDQYJKoZIhvcNAQEBBQAEggEA
-# KWwC1FykqucgBmAEmDCc+Tvg6YzLacY4U9/S+kfIRbYObXZOiVl5SGEnp2LhdUOc
-# p7tNEwekuAWgpBz32/bLKHyYWGJl6UBK0Q5biDnU/VG7t3JX2askztRhww+Hgocn
-# 2WUrvglWsbZpLPK44cbW0TfuyXZ2eqYzO5vUIDxRwXVGgeJKrmQ9HJME/mWdH9fc
-# JdoBSWiZliFKQpdryT5cJN4x0PeXZqW2MsrtFeKI+JZIQk8TSZpF7dl5DXZ7Ig7Q
-# sgav9U0vfZf2pkHeRxEcWjSXyGGgrpgtg0nEr+n9NVM1KRwDjwFYtFmI+8pESu2H
-# Jx7uAM4KleS9yJCBZDXwOg==
+# 9w0BCQQxFgQUoiH3G29kSvTPjs+MsktQjHJSjmowDQYJKoZIhvcNAQEBBQAEggEA
+# KqKTACWgLSMTmngV+GumCiSLERkQs5HcqmITD+VjirQhUmhFVOSN6uXrW2I8dRBf
+# 0Denx3boLLqi7Q87wGSkG9OZwkL89EBUTBCVRAH6QgGxU2JDOndjwDUCpC7gllmE
+# umVojSf4HLRcnFOALMEWisWvV+QEt0yttayqPvhvpqyHAP4ACwqNrfbVQuGVyc4G
+# GUryShGSe3FqpEKYsYkbOaMaiNCHsUZfxZ+B2k+tZpu/T3/5GYLG2iJKiHc8EGpa
+# d5ExOgUNj5VeAjbBCF3BWXJRLJQtkUNR0dJuYo+TlkE1dCdPjJZQblYbe9Bmq5Vp
+# fA4EPaAuF8D6byb42DKcpg==
 # SIG # End signature block
