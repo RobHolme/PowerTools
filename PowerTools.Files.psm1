@@ -877,10 +877,12 @@ The string to replace the value of the -SearchString parameter with. Leave blank
         )]
         [string] $ReplacementString
 
-#        [Parameter(
-#            Position = 3, 
-#            Mandatory = $false, 
-#        )] 
+ #       [Parameter(
+  #          Position = 3, 
+   #        Mandatory = $false,
+    #       ParameterSetName = "RandomPrefix"
+     #   )] 
+      #  [parameter(ParameterSetName = "Path")]
 #        [switch] $RandomPrefix
     )
 	
@@ -950,8 +952,8 @@ The string to replace the value of the -SearchString parameter with. Leave blank
 # SIG # Begin signature block
 # MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUbVaY5/NGxxUvp9+89sgbUQUc
-# ao+gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUM41Hi0E9yDtpdjP7QdJIJFtv
+# aQWgggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
 # AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI
 # b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD
 # DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG
@@ -972,11 +974,11 @@ The string to replace the value of the -SearchString parameter with. Leave blank
 # ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC
 # GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK
 # KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG
-# 9w0BCQQxFgQU1kQQwjyLhv87ngdNgbwoAWx1fXwwDQYJKoZIhvcNAQEBBQAEggEA
-# aZ0dW7mYc5VZgcAuKJq8j92IlfCgKRHiBP1xlAjH8Mn2DVuWI5KqF1XChXihsIUU
-# JwXZWs68fLBSGbvWNHvtJpqc8lbaOYBQ9eUcuqAyc0ng+Ezm+kAKuNtqkrNedW5i
-# EWSurgQN2U+9OZKAh2nLPEDBaLzl0noYhmp2Mu10Vd0nfz5hjpZTLhLUGNDWMUdD
-# Aj3qVoQn2QEsLhY2Od1plpdUxK/tGrBFcGwgvPq1wVsfe/V+nxF0VCRSqgRSXYMX
-# wDglHEMtmAXLbNnNqgz4JMA6uhrvzKRi+U/Mu6JxjmJ2SPS70hw80ysN0KdrvMSI
-# x4DpCMg7vA4XV1bnGayfeQ==
+# 9w0BCQQxFgQUsxjPTQnAE2j9A171SkdSDMQSh8gwDQYJKoZIhvcNAQEBBQAEggEA
+# Qqpzd7naCOh7vOMRxBd15Q1rO1ZOKgUaIDg8JoWiq4MSqD31uvS0uibi9rkUYWlc
+# z8WsaIeZGh3T+KcjeqFeLU0tlUXZLD/eI1t0bqKEb0mgrcsKf354N3IA2X2xl+xh
+# Rjguv1Ct0I9Num/JMZJzFBchTj0qfT4T4qWZzHheNnGDF9kqN9j0Zz68ingNUIN5
+# 8XM2xiFGEpD/gJ2N+KRR/rOpUrH3gWWFzxJH8LR3k80rSwZWji4+WOBcH/QYh9mL
+# I3xJWz/bg7Tjcju06faiJ4vLsVoXZpVksuzQN1VRepm2KHgYdxjnzqFPgzWNpTfu
+# 2zUiT/4qHcXvhzvQwePZ+Q==
 # SIG # End signature block
