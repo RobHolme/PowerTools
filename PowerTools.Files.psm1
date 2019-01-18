@@ -868,9 +868,16 @@ The string to replace the value of the -SearchString parameter with. Leave blank
         [string] $SearchString,
 		
         [Parameter(
-            Position = 1,
+            Position = 2,
             Mandatory = $false)]
-        [string] $ReplacementString
+        [string] $ReplacementString,
+
+        [Parameter(
+            Position = 1, 
+            Mandatory = $true, 
+            ParameterSetName = "RandomPrefix"
+        )] 
+        [switch] $RandomPrefix
     )
 	
     begin {
@@ -915,7 +922,14 @@ The string to replace the value of the -SearchString parameter with. Leave blank
 
         foreach ($aPath in $paths) {      
             $file = Get-Item -LiteralPath $aPath
-            $newFilename = $file.BaseName -replace $SearchString, $ReplacementString
+            If ($RandomPrefix) {
+                $Prefix = ((Get-Random).ToString().Substring(0, 6))
+                $newFilename = "$($Prefix)_$($file.BaseName)"
+            }
+            else {
+                $newFilename = $file.BaseName -replace $SearchString, $ReplacementString
+            }
+
             $Result = @{
                 OldFilename = $file.Name 
                 NewFilename = "$newFilename$($file.Extension)"
@@ -932,8 +946,8 @@ The string to replace the value of the -SearchString parameter with. Leave blank
 # SIG # Begin signature block
 # MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU8xyN9wYKh4BNskfp5Fc5/xx4
-# dDagggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqJf+Myb3I8P75H32E1tVCKJb
+# V5qgggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
 # AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI
 # b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD
 # DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG
@@ -954,11 +968,11 @@ The string to replace the value of the -SearchString parameter with. Leave blank
 # ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC
 # GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK
 # KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG
-# 9w0BCQQxFgQUQXZw8ze2rEfI2vK+JADBASh0WLYwDQYJKoZIhvcNAQEBBQAEggEA
-# kbiJzrmws7lPVAG5+R6UQcaVrG1oGxpPWzNK3nofQ6P66DHWgd8hk3xyywm75fb0
-# zrJEFxEMhLjYNxYAwX9iY+x/A8wCjCMSPWWodVyKaVlTtKq8U3WIY2d7FRFT6B0v
-# k/HCzzZIdqNFd2uw4pNimJaULlq/DMso95h3/xf5JGNUAAkvpA7obEm4AhNBWbk5
-# g3mGMmQm/3JQ64oD3zHhnIgehv1kHisekP/3YXFP4SsbxwS34YXgYq75RKFE/H7q
-# Cqdq0m58lxhxlG9jyHlZyTxPG2nRVsRSi69O1dGoNLOfTXjtCA7JOZV+zKvxIbPy
-# mBD3f64Mbo/VXeeb8yHDNg==
+# 9w0BCQQxFgQUvZYSpLUo2buYoQeZpCYb5BNWNDwwDQYJKoZIhvcNAQEBBQAEggEA
+# YBQgawHws2Hc3qo0+pQmtvh+2WzZhuz2O9tyFiv7U+joDmsSk9c5IRpUi1aiM8nq
+# Q/9XqY5BDXrPC9SAnRLAJpTVoM60LjvlcnSlxBRppNWytMrgxCcX/IoywlMQR/kC
+# U4t+ymkjkTUAMKremYdrN7npocfnuFlGggAhSFah1C+W7/H8AlzsaL+0rqW9vTY5
+# U8v6GZd/ycDBDE290CWWx0JR98F621PeiYmti8eldwCkJNnTsUoTnc39ivIdTF0d
+# SH0PmNmQDB1hA1uqh/6SVpj2C14cuhhhklLkXS7ylAObn6f6Y1K4jB1yeO1/d1Tu
+# 5OoN8slE/D3mPJQbTLclcw==
 # SIG # End signature block
