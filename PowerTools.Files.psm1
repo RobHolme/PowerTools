@@ -847,7 +847,8 @@ The string to replace the value of the -SearchString parameter with. Leave blank
             Mandatory = $True, 
             ParameterSetName = "Path",
             ValueFromPipeline = $True, 
-            ValueFromPipelineByPropertyName = $true)] 
+            ValueFromPipelineByPropertyName = $true
+        )] 
         [ValidateNotNullOrEmpty()]
         [Alias('PSPath')] [string[]] $Path,
 
@@ -857,31 +858,30 @@ The string to replace the value of the -SearchString parameter with. Leave blank
             ParameterSetName = "LiteralPath",
             ValueFromPipeline = $False,
             ValueFromPipelineByPropertyName = $true,
-            HelpMessage = "Literal path to one or more locations.")]
+            HelpMessage = "Literal path to one or more locations."
+        )]
         [ValidateNotNullOrEmpty()]
         [string[]] $LiteralPath,
+        
 
         [Parameter(
             Position = 1,
-            Mandatory = $true,
-            ParameterSetName = "SearchString"
+            Mandatory = $True
         )]
         [ValidateNotNullOrEmpty()]
         [string] $SearchString,
 		
         [Parameter(
             Position = 2,
-            Mandatory = $false,
-            ParameterSetName = "SearchString"
+            Mandatory = $True
         )]
-        [string] $ReplacementString,
+        [string] $ReplacementString
 
-        [Parameter(
-            Position = 1, 
-            Mandatory = $true, 
-            ParameterSetName = "RandomPrefix"
-        )] 
-        [switch] $RandomPrefix
+#        [Parameter(
+#            Position = 3, 
+#            Mandatory = $false, 
+#        )] 
+#        [switch] $RandomPrefix
     )
 	
     begin {
@@ -926,13 +926,13 @@ The string to replace the value of the -SearchString parameter with. Leave blank
 
         foreach ($aPath in $paths) {      
             $file = Get-Item -LiteralPath $aPath
-            If ($RandomPrefix) {
-                $Prefix = ((Get-Random).ToString().Substring(0, 6))
-                $newFilename = "$($Prefix)_$($file.BaseName)"
-            }
-            else {
+#            If ($RandomPrefix) {
+#                $Prefix = ((Get-Random).ToString().Substring(0, 6))
+#                $newFilename = "$($Prefix)_$($file.BaseName)"
+#            }
+#            else {
                 $newFilename = $file.BaseName -replace $SearchString, $ReplacementString
-            }
+ #           }
 
             $Result = @{
                 OldFilename = $file.Name 
@@ -950,8 +950,8 @@ The string to replace the value of the -SearchString parameter with. Leave blank
 # SIG # Begin signature block
 # MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVG2lpdxkCmRZgyaPT6Sc1y28
-# CcmgggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUbVaY5/NGxxUvp9+89sgbUQUc
+# ao+gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
 # AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI
 # b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD
 # DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG
@@ -972,11 +972,11 @@ The string to replace the value of the -SearchString parameter with. Leave blank
 # ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC
 # GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK
 # KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG
-# 9w0BCQQxFgQUIGCQ+egggthyAVVKCD/sBTE3xfswDQYJKoZIhvcNAQEBBQAEggEA
-# bll6LuAmttMFmvV35kXZFBUfyXaXgM4AMUNjGv57zNFEzcKx7UFDpPoN8rHpoxba
-# b5X8pjr/GV9w2TK8Iwhug3gLHUE2W/rMEPZcEK3zgWTwFToRuNxONqOA8sp3q3uU
-# 0i4yE0DHev/xBBX6QFpAechpaZ9bzMbHxDiAoIsJjDBW+ibcNSY9ermBGTbNiZ6Y
-# LzpGfbiftWhI54WjPQu5yfhQa4OMD54LyZ+Clr/O4GYTmLiWqTC4cZhU3IINd4c/
-# psey3gJtRwt2Gmxn95M++066302m5wLleKCGzBr+aD+68U90VYY090KTovf0oCoy
-# g4uISPQPHWHPMh7AlGw0zA==
+# 9w0BCQQxFgQU1kQQwjyLhv87ngdNgbwoAWx1fXwwDQYJKoZIhvcNAQEBBQAEggEA
+# aZ0dW7mYc5VZgcAuKJq8j92IlfCgKRHiBP1xlAjH8Mn2DVuWI5KqF1XChXihsIUU
+# JwXZWs68fLBSGbvWNHvtJpqc8lbaOYBQ9eUcuqAyc0ng+Ezm+kAKuNtqkrNedW5i
+# EWSurgQN2U+9OZKAh2nLPEDBaLzl0noYhmp2Mu10Vd0nfz5hjpZTLhLUGNDWMUdD
+# Aj3qVoQn2QEsLhY2Od1plpdUxK/tGrBFcGwgvPq1wVsfe/V+nxF0VCRSqgRSXYMX
+# wDglHEMtmAXLbNnNqgz4JMA6uhrvzKRi+U/Mu6JxjmJ2SPS70hw80ysN0KdrvMSI
+# x4DpCMg7vA4XV1bnGayfeQ==
 # SIG # End signature block
