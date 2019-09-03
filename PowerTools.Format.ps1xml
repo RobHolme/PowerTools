@@ -431,11 +431,72 @@
 
 </ViewDefinitions>
 </Configuration>
+
+<!-- default list view for Set-IniValue -->
+<View> 
+	<Name>Powertools.GetADUserDetails.Result</Name>
+	<ViewSelectedBy>
+		<TypeName>Powertools.GetADUserDetails.Result</TypeName>
+	</ViewSelectedBy>
+	<ListControl>
+		<ListEntries>
+			<ListEntry>
+				<ListItems>
+					<ListItem>
+						<Label>DisplayName</Label>
+						<PropertyName>DisplayName</PropertyName>
+					</ListItem>
+					<ListItem>
+						<Label>Title</Label>
+						<PropertyName>Title</PropertyName>
+					</ListItem>
+					<ListItem>
+						<Label>PhoneNumber</Label>
+						<PropertyName>PhoneNumber</PropertyName>
+					</ListItem>
+					<ListItem>
+						<Label>Mobile</Label>
+						<PropertyName>Mobile</PropertyName>
+					</ListItem>
+					<ListItem>
+						<Label>OtherIpPhone</Label>
+						<PropertyName>OtherIpPhone</PropertyName>
+					</ListItem>
+					<ListItem>
+						<Label>LastLogon</Label>
+						<PropertyName>LastLogon</PropertyName>
+					</ListItem>
+					<ListItem>
+						<Label>AccountDisabled</Label>
+						<PropertyName>AccountDisabled</PropertyName>
+					</ListItem>
+					<ListItem>
+						<Label>AccountLockout</Label>
+						<PropertyName>AccountLockout</PropertyName>
+					</ListItem>
+					<ListItem>
+						<Label>PasswordExpired</Label>
+						<PropertyName>PasswordExpired</PropertyName>
+					</ListItem>
+					<ListItem>
+						<Label>PasswordLastSet</Label>
+						<PropertyName>PasswordLastSet</PropertyName>
+					</ListItem>
+				</ListItems>
+			</ListEntry>
+		</ListEntries>
+	</ListControl>
+</View>
+
+
+
+
+
 <!-- SIG # Begin signature block -->
 <!-- MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB -->
 <!-- gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR -->
-<!-- AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU1s1L+C/34AXxdEmT5sE4DanE -->
-<!-- nTegggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B -->
+<!-- AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUbulDxzZ1+EC/EZVvZU0KONN5 -->
+<!-- nW6gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B -->
 <!-- AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI -->
 <!-- b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD -->
 <!-- DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG -->
@@ -456,11 +517,11 @@
 <!-- ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC -->
 <!-- GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK -->
 <!-- KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG -->
-<!-- 9w0BCQQxFgQUfPaBFmzZ0VB9kmuLMgh/WAtCO0EwDQYJKoZIhvcNAQEBBQAEggEA -->
-<!-- d3CPZnZaea60LzU26NffSxv+DBVDLX3eNygyyJq1C2tpAR38CIg9FR2tX39gRPgy -->
-<!-- EEWynzyxd3fgxyk9FcvsFUbprlKEyaSSHBb6VLGwHJo8fo9p4TuMtYOwPwoo1A6z -->
-<!-- itWgAvIuo3U8BKWBpOKOqeS+Q2mbExdtfnKZPFOeYhSIn5c3XIpUyPARnHZ5JELr -->
-<!-- OGOVQQtJMq1N+GyEXl8Cvnx4996q5X07gtqao2cfYx8ti/dVgvz8gSls2FYgZemw -->
-<!-- 5TmRMMX9LOmKdHmkHet5YTjJYtSMeJTWtGyh9adM85YrwrKwKvXuSHXk69jRQoWy -->
-<!-- lEKNzPZQSHXIgVpebPNnOA== -->
+<!-- 9w0BCQQxFgQULh2aMq27xd0ytyxAH9/37w1k1cgwDQYJKoZIhvcNAQEBBQAEggEA -->
+<!-- G7tj2naWWExpgJ9t8wFFY1by6bzvhuph7ibA9vIT5xJTHN484IuSw/2XSDyhco2F -->
+<!-- EMUes8mCNc18gzMFekmLRJyc8d8j3CJthXjiQgleM4mh+5bp48I/kpFRyZEwLMuR -->
+<!-- wegQjFvIGYMOwN8BdIY9IQutgd0tDja2wzZM+ytCvgJnMtgw6sbjmdQDGXsNHNa8 -->
+<!-- dY7+MUKOciue60D9160eFYCWGXlNmrZqp7KyD5Oybf0ApW0loyBX9zWUuczZx8oD -->
+<!-- MEtMmk8Uhq5g4MxyCR8dqVtVEBZjsPqudjlBMGXQIW8bik5okG+2oaQAPpYshRyi -->
+<!-- IRZlFG7q//5CNzKTiAf2gA== -->
 <!-- SIG # End signature block -->

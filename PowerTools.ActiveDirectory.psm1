@@ -105,7 +105,7 @@ The logon ID (samAccountName) of the AD user account
                     PasswordLastSet = [datetime]::fromfiletime($currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0]))
                 }
                 $outputObject = New-Object -Property $Result -TypeName psobject
-                $outputObject.PSObject.TypeNames.Insert(0, "GetADUserDetails.Result")
+                $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADUserDetails.Result")
                 write-output $outputObject 
             }
         }
@@ -122,8 +122,8 @@ The logon ID (samAccountName) of the AD user account
 # SIG # Begin signature block
 # MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU5/ZSnmVdAkLGtTLWySu5Bvka
-# fWWgggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU7yrVMUIRSa95kWB3R16wiCvm
+# S9+gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
 # AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI
 # b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD
 # DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG
@@ -144,11 +144,11 @@ The logon ID (samAccountName) of the AD user account
 # ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC
 # GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK
 # KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG
-# 9w0BCQQxFgQUL89Es0AqP/TrvTGOB1EMnLg98bUwDQYJKoZIhvcNAQEBBQAEggEA
-# fdeoojKIqxRu+qvxBb0yuJux+VBeKmlDj64nL8YYX79SGjVemUzLCQNBNDQ9P/zK
-# KOjCEaHKrYvsUFzRfIjFEx9Exrb7riwWyWgxqJfRRm0M5fEH4LWVckGmwbv3oSUC
-# 8dglFVuNdb6xdt31MGL32mrd0Wu6TGe2V4QIWQ/Wua5SGgrXzYKsJBZkCNbPk6F+
-# kkam6dEK+6IJlBy4HhOYGwq0+VYNSh+ra7veyGpwMVW43+CBRa4CP7O0RbxY7A+8
-# GOUJb+EBembpQEHTDYNYJhCIfHQSmrmneQIPzjqFyFoirPZb7cb1JemPEuURANEm
-# XM8Bt984KuI2Qxm55DbH+Q==
+# 9w0BCQQxFgQU1yESvlA0eO34mTmx6zPK/oc8RUYwDQYJKoZIhvcNAQEBBQAEggEA
+# NH+t9eJYQGK8YkN1KSB0ZhhPYpaAcsR4LnBUSPkweMctRj3LDB43GVW7BkTDI2kP
+# jSom34WeY/OIwMnboSeeAXxB73eWWHkgCfjCFbeXw5m+3ZaBxh8FrSN1tkvD3uil
+# AxesVuvXKlMsMAtIydhu/tRUc1DxkW3cmAKnsZeUcSYcO6lBzLOIukdEkqsxmGpS
+# zyag4YC+3bxiA4x+H2/26/mZq4htz+wn23UuyALAibTW9E8IqpH2xidg4T6752iw
+# 7y7APVjOL063VhXoQlG9l+7WUASIxqd5Zl7GjZ8i8ClbpjxQaGabcIxjIIyDS+l6
+# UnIlZ4nCX/o9EV21yOfJdQ==
 # SIG # End signature block
