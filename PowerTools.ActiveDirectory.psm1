@@ -91,18 +91,20 @@ The logon ID (samAccountName) of the AD user account
                 if (($userAccountControl -band $PASSWORD_EXPIRED) -eq $PASSWORD_EXPIRED) {
                     $userPasswordExpired = $true
                 }
-                    
+
+                # display the account properties                   
                 $Result = @{
                     DisplayName     = $currentUser.displayName.ToString()
                     Title           = $currentUser.title.ToString()
                     PhoneNumber     = $currentUser.telephoneNumber.ToString()
                     Mobile          = $currentUser.mobile.ToString()
                     OtherIpPhone    = $currentUser.otherIpPhone.ToString()
-                    LastLogon       = [datetime]::fromfiletime($currentUser.ConvertLargeIntegerToInt64($currentUser.lastlogon[0]))
+                    LastLogon       = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.lastlogon[0])
                     AccountDisabled = $userDisabled 
                     AccountLockout  = $userLockedOut
                     PasswordExpired = $userPasswordExpired
-                    PasswordLastSet = [datetime]::fromfiletime($currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0]))
+                    AccountExpires  = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.accountExpires[0])
+                    PasswordLastSet = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0])
                 }
                 $outputObject = New-Object -Property $Result -TypeName psobject
                 $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADUserDetails.Result")
@@ -110,20 +112,30 @@ The logon ID (samAccountName) of the AD user account
             }
         }
         Else {
-            Write-Warning "  No matching user found." 
+            Write-Warning "No matching user found." 
         }
     }
 
 }
 
+#----------------------------------------------------
+# Convert the AD Date/Time field into a Date object
+function ConvertADDateTime ($dateTimeValue) {
+    if (($dateTimeValue -gt [DateTime]::MaxValue.Ticks) -or ($dateTimeValue -eq 0)) {
+        return "Never"
+    }
+    else {
+        return [datetime]::FromFileTime($dateTimeValue)
+    }
+}
 
 
 
 # SIG # Begin signature block
 # MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU7yrVMUIRSa95kWB3R16wiCvm
-# S9+gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUXGX3XnzEolO1Lq/e0kQf6B54
+# /56gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
 # AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI
 # b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD
 # DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG
@@ -144,11 +156,11 @@ The logon ID (samAccountName) of the AD user account
 # ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC
 # GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK
 # KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG
-# 9w0BCQQxFgQU1yESvlA0eO34mTmx6zPK/oc8RUYwDQYJKoZIhvcNAQEBBQAEggEA
-# NH+t9eJYQGK8YkN1KSB0ZhhPYpaAcsR4LnBUSPkweMctRj3LDB43GVW7BkTDI2kP
-# jSom34WeY/OIwMnboSeeAXxB73eWWHkgCfjCFbeXw5m+3ZaBxh8FrSN1tkvD3uil
-# AxesVuvXKlMsMAtIydhu/tRUc1DxkW3cmAKnsZeUcSYcO6lBzLOIukdEkqsxmGpS
-# zyag4YC+3bxiA4x+H2/26/mZq4htz+wn23UuyALAibTW9E8IqpH2xidg4T6752iw
-# 7y7APVjOL063VhXoQlG9l+7WUASIxqd5Zl7GjZ8i8ClbpjxQaGabcIxjIIyDS+l6
-# UnIlZ4nCX/o9EV21yOfJdQ==
+# 9w0BCQQxFgQUYu9SjvqUPm016Ho9nwHb+TdAUBAwDQYJKoZIhvcNAQEBBQAEggEA
+# bUZ3Xy4GL3CFLIwr2090MJHiujIk9hy9gq6acrBPgvOHHxQH0iokpby1RR6NY119
+# ZprCOIMlEYhahHI6i0gLZK9EtarOJ06bXs9ZVCQ4vK+8M8spXo/HZReSwXaBSVKa
+# WEmVARPIenYxADyz56QmjjkMzg9Heoo5MtM1pRFT4aaEQJoYh2dGCxaqac7du81r
+# nEj9DiZpncMHRT8WjKJVnSqR8f/pC3eKrfmB8UTjSQ42rvrwAyyD/k/ljLUFldSM
+# hchBUnK2llPz1NPLt5a7junOvIUzne76OWAst4/BpeB12wO7zvClrZImyQATwbu5
+# WDC4mgk4ym68YYhOlTI3Mg==
 # SIG # End signature block
