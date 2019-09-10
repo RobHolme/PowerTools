@@ -484,6 +484,10 @@
 						<Label>PasswordLastSet</Label>
 						<PropertyName>PasswordLastSet</PropertyName>
 					</ListItem>
+					<ListItem>
+						<Label>ChangePasswordOnNextLogon</Label>
+						<PropertyName>ChangePasswordOnNextLogon</PropertyName>
+					</ListItem>
 				</ListItems>
 			</ListEntry>
 		</ListEntries>
@@ -495,13 +499,11 @@
 </Configuration>
 
 
-
-
 <!-- SIG # Begin signature block -->
 <!-- MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB -->
 <!-- gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR -->
-<!-- AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU0y4xESbkiju/eu9Dajopqzfq -->
-<!-- vXSgggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B -->
+<!-- AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUI9UxSkSmwagEAc2jtyZsm1yz -->
+<!-- vj6gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B -->
 <!-- AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI -->
 <!-- b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD -->
 <!-- DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG -->
@@ -522,11 +524,11 @@
 <!-- ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC -->
 <!-- GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK -->
 <!-- KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG -->
-<!-- 9w0BCQQxFgQUdZH182ferVSh8f2zlZCv+Kpih20wDQYJKoZIhvcNAQEBBQAEggEA -->
-<!-- LmgChEKNWQ9mbOBf3+AYyfnd6OiMnpKPT4Qw9DKOafRRfxh3A5r7jFMGTBx5KiOm -->
-<!-- 5KSGqbx3p1dJhi21UUe75EKbbOCRCtinfjjbK17ZI73vT6Jdme+yb2ySDTKgghW3 -->
-<!-- 9SIm3gN4SZIJUW1LBzESCnlxIgrr3zpUi+XQqJ8x/ff71G0aCemJ9Fa1VAQg60qD -->
-<!-- LJZdDyCEYYA45H2EcFgAvyOLfIvmFz8Bs5kSmLYb++DrpzyV7YuG7kPhhlrX8/OI -->
-<!-- 46y8rVDAymQK4qCzte7FZ8r/RuE6qXleqftvidux8MiLpxHRVZN5DOGdXbW+OJL+ -->
-<!-- zepAOA1zIukW3Gu1NexWXw== -->
+<!-- 9w0BCQQxFgQUztCPhzl3FfcSQfElGJGZFvX+RxQwDQYJKoZIhvcNAQEBBQAEggEA -->
+<!-- N3yCZhQXFuAaxyuNmapk2Bz7xZoEQXvkX/QWAphFUUxCncNLfmnDfb2/UssIXXjD -->
+<!-- EybLwJX++NiJPm5jOAhZR/MZqIbc6+Y3b47+/CZ2LmP99VoU0b15tfJXuwwDnEi9 -->
+<!-- w5rsw0bYBaZhIwocL1RpXjLJPPuG/GZ7ONVBKXOwSqyD3qW/nJvbvLHvPWcxjK5o -->
+<!-- sDOeSFH/yq1WO2roEthUw5P6lHFcoyaik4bbB9kcEODO81NKh7V0KI0DFC7iGdCq -->
+<!-- feR3tJT9w+UXewlFT8FQCSq/ToXAxfcDs7xvyB7K8CuDFSlHv6EBzjb9EMsiRg9o -->
+<!-- YcN7BAcL9TOwBHP5LkCeOg== -->
 <!-- SIG # End signature block -->

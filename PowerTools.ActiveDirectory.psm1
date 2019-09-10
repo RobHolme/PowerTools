@@ -92,19 +92,26 @@ The logon ID (samAccountName) of the AD user account
                     $userPasswordExpired = $true
                 }
 
+                # check to see if the user must change password on next logon
+                $pwdChangeOnNextLogon = $false
+                if ($currentUser.pwdLastSet[0] = 0) {
+                    $pwdChangeOnNextLogon = $true
+                }
+                
                 # display the account properties                   
                 $Result = @{
-                    DisplayName     = $currentUser.displayName.ToString()
-                    Title           = $currentUser.title.ToString()
-                    PhoneNumber     = $currentUser.telephoneNumber.ToString()
-                    Mobile          = $currentUser.mobile.ToString()
-                    OtherIpPhone    = $currentUser.otherIpPhone.ToString()
-                    LastLogon       = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.lastlogon[0])
-                    AccountDisabled = $userDisabled 
-                    AccountLockout  = $userLockedOut
-                    PasswordExpired = $userPasswordExpired
-                    AccountExpires  = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.accountExpires[0])
-                    PasswordLastSet = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0])
+                    DisplayName               = $currentUser.displayName.ToString()
+                    Title                     = $currentUser.title.ToString()
+                    PhoneNumber               = $currentUser.telephoneNumber.ToString()
+                    Mobile                    = $currentUser.mobile.ToString()
+                    OtherIpPhone              = $currentUser.otherIpPhone.ToString()
+                    LastLogon                 = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.lastlogon[0])
+                    AccountDisabled           = $userDisabled 
+                    AccountLockout            = $userLockedOut
+                    PasswordExpired           = $userPasswordExpired
+                    AccountExpires            = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.accountExpires[0])
+                    PasswordLastSet           = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0])
+                    ChangePasswordOnNextLogon = $pwdChangeOnNextLogon
                 }
                 $outputObject = New-Object -Property $Result -TypeName psobject
                 $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADUserDetails.Result")
@@ -129,13 +136,11 @@ function ConvertADDateTime ($dateTimeValue) {
     }
 }
 
-
-
 # SIG # Begin signature block
 # MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUXGX3XnzEolO1Lq/e0kQf6B54
-# /56gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUsXTC8UA1kadoKmORsBwu2Ri+
+# jw+gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
 # AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI
 # b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD
 # DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG
@@ -156,11 +161,11 @@ function ConvertADDateTime ($dateTimeValue) {
 # ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC
 # GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK
 # KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG
-# 9w0BCQQxFgQUYu9SjvqUPm016Ho9nwHb+TdAUBAwDQYJKoZIhvcNAQEBBQAEggEA
-# bUZ3Xy4GL3CFLIwr2090MJHiujIk9hy9gq6acrBPgvOHHxQH0iokpby1RR6NY119
-# ZprCOIMlEYhahHI6i0gLZK9EtarOJ06bXs9ZVCQ4vK+8M8spXo/HZReSwXaBSVKa
-# WEmVARPIenYxADyz56QmjjkMzg9Heoo5MtM1pRFT4aaEQJoYh2dGCxaqac7du81r
-# nEj9DiZpncMHRT8WjKJVnSqR8f/pC3eKrfmB8UTjSQ42rvrwAyyD/k/ljLUFldSM
-# hchBUnK2llPz1NPLt5a7junOvIUzne76OWAst4/BpeB12wO7zvClrZImyQATwbu5
-# WDC4mgk4ym68YYhOlTI3Mg==
+# 9w0BCQQxFgQUIJHhRYp2aomHbPhECg36as5m69YwDQYJKoZIhvcNAQEBBQAEggEA
+# R8Ro91XhGHNlSyla9wL2xtp52Hoy675/SSDK92BTnSnkU5IK3dJPfqzNQZR72lr9
+# nsuEhZXw4bL4Hi5CGyvdieBf4AxXwP344ZfoLOaWtpOnTg/nYXr/pGpvDOSZB5ko
+# DOwQgAfY3KCGyC5E0B5AQG3bfnBOaxmrSjpQhZy7uUpb0pEXzMfpuX0GB+7rEsRW
+# xhe79LewGXf/8LXQU4tZvAnGhuqjrzWV5rDtdZcjl+pkBxT+0Lx6KsIc++w1N7Lu
+# PEiwvWNtB+qwO0lU5vpyRDM5szZYxOgI/wGSSTMPBlunaGncGcVw+nlEuuBDsrdV
+# gko6mxzZQypw8oNkaI5MYA==
 # SIG # End signature block
