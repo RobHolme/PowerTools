@@ -94,7 +94,7 @@ The logon ID (samAccountName) of the AD user account
 
                 # check to see if the user must change password on next logon
                 $pwdChangeOnNextLogon = $false
-                if ($currentUser.pwdLastSet[0] = 0) {
+                if ($currentUser.pwdLastSet[0] -eq 0) {
                     $pwdChangeOnNextLogon = $true
                 }
                 
@@ -135,12 +135,11 @@ function ConvertADDateTime ($dateTimeValue) {
         return [datetime]::FromFileTime($dateTimeValue)
     }
 }
-
 # SIG # Begin signature block
 # MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUsXTC8UA1kadoKmORsBwu2Ri+
-# jw+gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUTD1Gj6/MB80lk3ouCOI5o1Lq
+# 5S2gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
 # AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI
 # b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD
 # DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG
@@ -161,11 +160,11 @@ function ConvertADDateTime ($dateTimeValue) {
 # ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC
 # GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK
 # KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG
-# 9w0BCQQxFgQUIJHhRYp2aomHbPhECg36as5m69YwDQYJKoZIhvcNAQEBBQAEggEA
-# R8Ro91XhGHNlSyla9wL2xtp52Hoy675/SSDK92BTnSnkU5IK3dJPfqzNQZR72lr9
-# nsuEhZXw4bL4Hi5CGyvdieBf4AxXwP344ZfoLOaWtpOnTg/nYXr/pGpvDOSZB5ko
-# DOwQgAfY3KCGyC5E0B5AQG3bfnBOaxmrSjpQhZy7uUpb0pEXzMfpuX0GB+7rEsRW
-# xhe79LewGXf/8LXQU4tZvAnGhuqjrzWV5rDtdZcjl+pkBxT+0Lx6KsIc++w1N7Lu
-# PEiwvWNtB+qwO0lU5vpyRDM5szZYxOgI/wGSSTMPBlunaGncGcVw+nlEuuBDsrdV
-# gko6mxzZQypw8oNkaI5MYA==
+# 9w0BCQQxFgQUxuecWDYPKKW4Jl5ZloKVS3PlOSIwDQYJKoZIhvcNAQEBBQAEggEA
+# lu5XPIwjJcpwXfeGF2QTKVWQD4DPhE2On9QaR/iRIEEB+FvmXNsXG2dZGRFPRkxC
+# d9hdrXZuOXRvw4tkRiuTUVYrCrqnq7EDlTOycnKf0UVqUGXkr08PhE+M0pkP9vLL
+# m84yds5Ze+Ec1PuZ/iEPjm8OuffUvKhTbnQjw3pRoqFvqolZhPDjWQvBVOJ08lpu
+# +WBigW4j76VsZmYFNWtMpA12gCZOBaFNriw7bPsRk0xho+pGNgdl5G7ZbVxgZN8d
+# yuGR0m1cf5O7DwLywAnP0cCA//APuHWvqG/cGohfFuxBvCFQbhPIU3QmXeNiBHLG
+# G96a25ug+LaD/SBzLpEcyQ==
 # SIG # End signature block
