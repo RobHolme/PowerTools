@@ -94,7 +94,7 @@ The logon ID (samAccountName) of the AD user account
 
                 # check to see if the user must change password on next logon
                 $pwdChangeOnNextLogon = $false
-                if ($currentUser.pwdLastSet[0] -eq 0) {
+                if ($currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0]) -eq 0) {
                     $pwdChangeOnNextLogon = $true
                 }
                 
@@ -122,8 +122,8 @@ The logon ID (samAccountName) of the AD user account
             Write-Warning "No matching user found." 
         }
     }
-
 }
+
 
 #----------------------------------------------------
 # Convert the AD Date/Time field into a Date object
@@ -135,11 +135,48 @@ function ConvertADDateTime ($dateTimeValue) {
         return [datetime]::FromFileTime($dateTimeValue)
     }
 }
+
+
+
+
+    # SIG # Begin signature block
+    # MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
+    # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
+    # AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUSEK0UnRd82ovNxC9zM92gI75
+    # uyWgggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
+    # AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI
+    # b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD
+    # DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG
+    # SIb3DQEBAQUAA4IBDwAwggEKAoIBAQCiacpv6833R8nJVUj7yvOFzKGicu7dpLEz
+    # orI+/1iKeMDFewd/vGzovfeD5nSNjykD5ytrY1JjRbErvKomWEsaVli/0bUn+tH9
+    # 3zm9gCAp/tz9TsWFFDUbSbxa6jkFd/NwaRl8ALtN1KBm2U/u2hZhpC/7osWZneuz
+    # KENivdlgn1JNJZY5d1BeMNExt692Ed5yhovtEUB8e4V5I/egRQPvQ++NpIby03K4
+    # 4yy3Be2E3mcmg8n+usJW1Jio/fQ2mFKu3jcjON3JjUrjQWqq2VyrFIPzBOjqGO6U
+    # 4jKcE5JZbv2yM+v1X2AkZppK3ETjfRVKWbHZKb5gZUi7hrUcgjupAgMBAAGjRjBE
+    # MA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQU
+    # 9iGsMPlntS9c8aeHPnNxcdgzumUwDQYJKoZIhvcNAQEFBQADggEBAKHStb/AHUJ1
+    # uEgO2vlyDDngbcN8Q1rGnLVITfugEP7lAAj/TcXyUsVuCOPb7uXt2NaY30IXJvFQ
+    # O3DoevkYbQereHtqSKgicqlGDP8fF2gbj5VC/URR4oc7XmfuW2MAWXc7ot3kulZs
+    # oBvwoN8rL268AXmKrRnn2Zw+NHWCKCDDaKU2RnH0LIDOMvbKpzx+hl3zrUfqCR1J
+    # /71+1khn7d+iS4Kf7E+MrXPcZ6I+QFuWf9BzamhEKiG3oLTPnBIZXyN8HXTBNWXc
+    # 0qLDGYRXPMM3nlW6P259OHgqGPnaTO/tOHP3hfNi+5lgaG1m3ot8qmKsgSzF6EjK
+    # qfYJ6VPdGSYxggHkMIIB4AIBATBDMC8xLTArBgNVBAMMJFNlbGYgU2lnbmVkIENv
+    # ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC
+    # GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK
+    # KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG
+    # 9w0BCQQxFgQU0JZGOmo0PQ6AV3+kx6GwvmLBA/EwDQYJKoZIhvcNAQEBBQAEggEA
+    # I0/kdau3Y35PO3hW4e7yxuZGAEcvzZt9imcw1+GoCv6JdwhtGUfCxJY+CH5pwnpN
+    # Rl6fCBtIVA32ZSiUy8UETSUN2JLCUcMjrgFicswoiaIeiIETzhNNVhWdCVi142Rq
+    # rfCm0vnxS5Bk8J2au4reZEMmqaScegF4vESdadZDv4rKF7C+In6CQ8ynQSNZVXz1
+    # jz3H2smV+X8oeULcmzYCC6UN1JTsXjAd9eDADSlXxkptR5FLS79J6Qlj8AGcUzMI
+    # E94/SEZc9YvyccIYRSJ571zlTfWw4lkJhQ/V1d/NstKfXollOuL4ZBUxd0O54lOl
+    # AxKavkQXUXmO6eggZHXFag==
+    # SIG # End signature block
 # SIG # Begin signature block
 # MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUTD1Gj6/MB80lk3ouCOI5o1Lq
-# 5S2gggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU0RYsQXnx6c9L1CeiyXYgL8uf
+# YfygggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
 # AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI
 # b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD
 # DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG
@@ -160,11 +197,11 @@ function ConvertADDateTime ($dateTimeValue) {
 # ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC
 # GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK
 # KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG
-# 9w0BCQQxFgQUxuecWDYPKKW4Jl5ZloKVS3PlOSIwDQYJKoZIhvcNAQEBBQAEggEA
-# lu5XPIwjJcpwXfeGF2QTKVWQD4DPhE2On9QaR/iRIEEB+FvmXNsXG2dZGRFPRkxC
-# d9hdrXZuOXRvw4tkRiuTUVYrCrqnq7EDlTOycnKf0UVqUGXkr08PhE+M0pkP9vLL
-# m84yds5Ze+Ec1PuZ/iEPjm8OuffUvKhTbnQjw3pRoqFvqolZhPDjWQvBVOJ08lpu
-# +WBigW4j76VsZmYFNWtMpA12gCZOBaFNriw7bPsRk0xho+pGNgdl5G7ZbVxgZN8d
-# yuGR0m1cf5O7DwLywAnP0cCA//APuHWvqG/cGohfFuxBvCFQbhPIU3QmXeNiBHLG
-# G96a25ug+LaD/SBzLpEcyQ==
+# 9w0BCQQxFgQUB957ORJZntEfC9MoXyHc2RUBveowDQYJKoZIhvcNAQEBBQAEggEA
+# RoP2e0NzZqR8FoHwzoZD9N6VEPH42nZLUdCDACHvE0T9Yvm65rDT3Sz5nJ7ZqIrq
+# t1nbo61DcPi81lVY//Ry1PjHz+wLQz8pzN4339XFnJQ8IBOrWECMAiZOAMxop4sW
+# WKTBW6vZ+MBcTYcL+WfJBslqz3IEuIjK4aIS/PopcX1CtT5RxCYgraxoGhlrk6oC
+# /08HjqyUxxEJX9fvD6Lhe0G7LfXVbamTpbNLozGzjAcL9AwPol+pGgQxZpkZ8qzy
+# FQuAoiOlDCwB655NCoybTMLtRtRkA/aWiHARrO2WohPtjvSrvKc+FdsJLQKOhYJy
+# YOeonGx9100CPRtOHeSKqA==
 # SIG # End signature block
