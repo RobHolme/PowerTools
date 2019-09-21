@@ -1268,8 +1268,12 @@ The SHA1 hash of the password
 
     process {
         if ($IsCoreCLR) {
-            write-warning "Not currently supported on .net core. No supoprt for [System.Security.Cryptography.HashAlgorithm]"
-            return
+            if ($IsCoreCLR) {
+                if ($PSVersionTable.PSVersion -lt 6.1)  {
+                    Write-Warning "This function requires Powershell Core 6.1 or greater."
+                 return
+                }
+            }
         }
 
         # .Net Framework doens't support TLS1.2 by default. .Net Core is OK by default, and doesn't support [System.Net.ServicePointManager]
