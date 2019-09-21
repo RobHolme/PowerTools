@@ -21,4 +21,5 @@ Version History
 	2.9 (19/03/2018) - updated -Path parameter handing in Get-Hash to be consistent with other functions  
 	2.10 (09/01/2019) - updated get-adtimestamp to handles values set to never expire (greater than max time value)
 	2.11 (18/01/2019) - added -RandomPrefix parameter to Rename-Filename command
-	2.2 (03/09/2019) - added Active Directory functions
+	2.12 (03/09/2019) - added Get-ADUserDetails function
+	2.13 (21/09/2019) - added Get-ADGroupMemberShip function
