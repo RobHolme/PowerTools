@@ -62,24 +62,7 @@ The logon ID (samAccountName) of the AD user account
     }
     
     process {
-        # display the account properties                   
-        $Result = @{
-            DisplayName               = $currentUser.displayName.ToString()
-            Title                     = $currentUser.title.ToString()
-            PhoneNumber               = $currentUser.telephoneNumber.ToString()
-            Mobile                    = $currentUser.mobile.ToString()
-            OtherIpPhone              = $currentUser.otherIpPhone.ToString()
-            LastLogon                 = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.lastlogon[0])
-            AccountDisabled           = $userDisabled 
-            AccountLockout            = $userLockedOut
-            PasswordExpired           = $userPasswordExpired
-            AccountExpires            = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.accountExpires[0])
-            PasswordLastSet           = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0])
-            ChangePasswordOnNextLogon = $pwdChangeOnNextLogon
-        }
-        $outputObject = New-Object -Property $Result -TypeName psobject
-        $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADUserDetails.Result")
-        write-output $outputObject 
+
         if (!$abort) {
             # search the current domain only
             $dom = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
@@ -115,7 +98,24 @@ The logon ID (samAccountName) of the AD user account
                     $pwdChangeOnNextLogon = $true
                 }
                 
-                
+                # display the account properties                   
+                $Result = @{
+                    DisplayName               = $currentUser.displayName.ToString()
+                    Title                     = $currentUser.title.ToString()
+                    PhoneNumber               = $currentUser.telephoneNumber.ToString()
+                    Mobile                    = $currentUser.mobile.ToString()
+                    OtherIpPhone              = $currentUser.otherIpPhone.ToString()
+                    LastLogon                 = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.lastlogon[0])
+                    AccountDisabled           = $userDisabled 
+                    AccountLockout            = $userLockedOut
+                    PasswordExpired           = $userPasswordExpired
+                    AccountExpires            = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.accountExpires[0])
+                    PasswordLastSet           = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0])
+                    ChangePasswordOnNextLogon = $pwdChangeOnNextLogon
+                }
+                $outputObject = New-Object -Property $Result -TypeName psobject
+                $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADUserDetails.Result")
+                write-output $outputObject 
             }
         }
         Else {
