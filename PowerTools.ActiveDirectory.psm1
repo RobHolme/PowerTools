@@ -42,7 +42,7 @@ The logon ID (samAccountName) of the AD user account
             ValueFromPipelineByPropertyName = $True)] 
         [ValidateNotNullOrEmpty()]
         [Alias('ID')] 
-        [string[]] $Identity
+        [string] $Identity
 
     )
     
@@ -62,8 +62,25 @@ The logon ID (samAccountName) of the AD user account
     }
     
     process {
+        # display the account properties                   
+        $Result = @{
+            DisplayName               = $currentUser.displayName.ToString()
+            Title                     = $currentUser.title.ToString()
+            PhoneNumber               = $currentUser.telephoneNumber.ToString()
+            Mobile                    = $currentUser.mobile.ToString()
+            OtherIpPhone              = $currentUser.otherIpPhone.ToString()
+            LastLogon                 = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.lastlogon[0])
+            AccountDisabled           = $userDisabled 
+            AccountLockout            = $userLockedOut
+            PasswordExpired           = $userPasswordExpired
+            AccountExpires            = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.accountExpires[0])
+            PasswordLastSet           = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0])
+            ChangePasswordOnNextLogon = $pwdChangeOnNextLogon
+        }
+        $outputObject = New-Object -Property $Result -TypeName psobject
+        $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADUserDetails.Result")
+        write-output $outputObject 
         if (!$abort) {
-
             # search the current domain only
             $dom = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
             $root = $dom.GetDirectoryEntry() 
@@ -98,30 +115,142 @@ The logon ID (samAccountName) of the AD user account
                     $pwdChangeOnNextLogon = $true
                 }
                 
-                # display the account properties                   
-                $Result = @{
-                    DisplayName               = $currentUser.displayName.ToString()
-                    Title                     = $currentUser.title.ToString()
-                    PhoneNumber               = $currentUser.telephoneNumber.ToString()
-                    Mobile                    = $currentUser.mobile.ToString()
-                    OtherIpPhone              = $currentUser.otherIpPhone.ToString()
-                    LastLogon                 = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.lastlogon[0])
-                    AccountDisabled           = $userDisabled 
-                    AccountLockout            = $userLockedOut
-                    PasswordExpired           = $userPasswordExpired
-                    AccountExpires            = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.accountExpires[0])
-                    PasswordLastSet           = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0])
-                    ChangePasswordOnNextLogon = $pwdChangeOnNextLogon
-                }
-                $outputObject = New-Object -Property $Result -TypeName psobject
-                $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADUserDetails.Result")
-                write-output $outputObject 
+                
             }
         }
         Else {
             Write-Warning "No matching user found." 
         }
     }
+}
+
+
+function Get-ADGroupMembership() {
+    <#
+.NOTES
+Function Name  : Get-ADGroupMembership
+Author     : Rob Holme (rob@holme.com.au)  
+
+.SYNOPSIS 
+Display the members of an active directory group
+.DESCRIPTION 
+Display the members of an active directory group
+.EXAMPLE 
+Get-ADGroupMembership -Name "VPN Users"
+.PARAMETER Identity 
+The name AD user group 
+#>
+    [CmdletBinding()]
+    Param(
+        [Parameter(
+            Position = 0, 
+            Mandatory = $True, 
+            ValueFromPipeline = $True, 
+            ValueFromPipelineByPropertyName = $True)] 
+        [ValidateNotNullOrEmpty()]
+        [string] $Name
+
+    )
+    
+    begin {
+        # confirm the powershell version and platform requirements are met if using powershell core
+        if ($IsCoreCLR) {
+            if (($PSVersionTable.PSVersion -lt 6.1) -or ($PSVersionTable.Platform -ne "Win32NT")) {
+                Write-Warning "This function requires Powershell Core 6.1 or greater on Windows."
+                $abort = $true
+            }
+        }
+    }
+
+    process {
+        if (!$abort) {
+
+            $members = Get-GroupMembers $Name
+
+            if ($members -eq $false) {
+                Write-Warning "No group matching '$Name' found"
+            }
+            elseif ($members.Count -eq 0) {
+                Write-Warning "The group '$Name' does not contain any members"
+            }
+            else {
+                foreach ($member in $members) {
+                    $memberDetails = [ADSI] "LDAP://$member" 
+                  
+                    # display the properties or each group member                 
+                    $Result = [ORDERED]@{
+                        DisplayName    = $memberDetails.displayName.ToString()
+                        SamAccountName = $memberDetails.samAccountName.ToString()
+                        ObjectClass    = $memberDetails.objectClass[-1]
+                        DN             = $member
+                    }
+                    $outputObject = New-Object -Property $Result -TypeName psobject
+                    $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADGroupMembership.Result")
+                    write-output $outputObject 
+                }
+            }
+        }
+    }
+}
+
+# Return all members of a group. Works around ADSI issue of only 1500 members returned by 'members' property
+# Sourced from https://www.adilhindistan.com/2013/01/getting-members-of-large-groups-via.html
+function  Get-GroupMembers {
+
+    param (
+        [string] $group
+    )
+
+    if (-not ($group)) { 
+        return $false 
+    }
+
+    $searcher = new-object System.DirectoryServices.DirectorySearcher   
+    $filter = "(&(objectClass=group)(cn=${group}))"
+    $searcher.PageSize = 1000
+    $searcher.Filter = $filter
+    $result = $searcher.FindOne()
+
+    if ($result) {
+        $members = $result.properties.item("member")
+
+        ## Either group is empty or has 1500+ members
+        if ($members.count -eq 0) {                       
+
+            $retrievedAllMembers = $false           
+            $rangeBottom = 0
+            $rangeTop = 0
+
+            while (! $retrievedAllMembers) {
+                $rangeTop = $rangeBottom + 1499               
+
+                ##this is how it would show up in AD
+                $memberRange = "member;range=$rangeBottom-$rangeTop"  
+
+                $searcher.PropertiesToLoad.Clear()
+                [void]$searcher.PropertiesToLoad.Add("$memberRange")
+                $rangeBottom += 1500
+
+                try {
+                    ## should cause and exception if the $memberRange is not valid
+                    $result = $searcher.FindOne() 
+                    $rangedProperty = $result.Properties.PropertyNames -like "member;range=*"
+                    $members += $result.Properties.item($rangedProperty)          
+                   
+                    #  check for empty group
+                    if ($members.count -eq 0) { $retrievedAllMembers = $true }
+                }
+
+                catch {
+                    $retrievedAllMembers = $true   ## we received all members
+                }
+            }
+        }
+
+        $searcher.Dispose()
+        return $members
+    }
+    return $false   
 }
 
 
@@ -135,73 +264,3 @@ function ConvertADDateTime ($dateTimeValue) {
         return [datetime]::FromFileTime($dateTimeValue)
     }
 }
-
-
-
-
-    # SIG # Begin signature block
-    # MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
-    # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-    # AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUSEK0UnRd82ovNxC9zM92gI75
-    # uyWgggMyMIIDLjCCAhagAwIBAgIQcD9rYqFCcq1F0DEOCWoyGTANBgkqhkiG9w0B
-    # AQUFADAvMS0wKwYDVQQDDCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBI
-    # b2xtZSkwHhcNMTgwOTE2MDI0MDIwWhcNMTkwOTE2MDMwMDIwWjAvMS0wKwYDVQQD
-    # DCRTZWxmIFNpZ25lZCBDb2RlIFNpZ25pbmcgKFJvYiBIb2xtZSkwggEiMA0GCSqG
-    # SIb3DQEBAQUAA4IBDwAwggEKAoIBAQCiacpv6833R8nJVUj7yvOFzKGicu7dpLEz
-    # orI+/1iKeMDFewd/vGzovfeD5nSNjykD5ytrY1JjRbErvKomWEsaVli/0bUn+tH9
-    # 3zm9gCAp/tz9TsWFFDUbSbxa6jkFd/NwaRl8ALtN1KBm2U/u2hZhpC/7osWZneuz
-    # KENivdlgn1JNJZY5d1BeMNExt692Ed5yhovtEUB8e4V5I/egRQPvQ++NpIby03K4
-    # 4yy3Be2E3mcmg8n+usJW1Jio/fQ2mFKu3jcjON3JjUrjQWqq2VyrFIPzBOjqGO6U
-    # 4jKcE5JZbv2yM+v1X2AkZppK3ETjfRVKWbHZKb5gZUi7hrUcgjupAgMBAAGjRjBE
-    # MA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQU
-    # 9iGsMPlntS9c8aeHPnNxcdgzumUwDQYJKoZIhvcNAQEFBQADggEBAKHStb/AHUJ1
-    # uEgO2vlyDDngbcN8Q1rGnLVITfugEP7lAAj/TcXyUsVuCOPb7uXt2NaY30IXJvFQ
-    # O3DoevkYbQereHtqSKgicqlGDP8fF2gbj5VC/URR4oc7XmfuW2MAWXc7ot3kulZs
-    # oBvwoN8rL268AXmKrRnn2Zw+NHWCKCDDaKU2RnH0LIDOMvbKpzx+hl3zrUfqCR1J
-    # /71+1khn7d+iS4Kf7E+MrXPcZ6I+QFuWf9BzamhEKiG3oLTPnBIZXyN8HXTBNWXc
-    # 0qLDGYRXPMM3nlW6P259OHgqGPnaTO/tOHP3hfNi+5lgaG1m3ot8qmKsgSzF6EjK
-    # qfYJ6VPdGSYxggHkMIIB4AIBATBDMC8xLTArBgNVBAMMJFNlbGYgU2lnbmVkIENv
-    # ZGUgU2lnbmluZyAoUm9iIEhvbG1lKQIQcD9rYqFCcq1F0DEOCWoyGTAJBgUrDgMC
-    # GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK
-    # KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG
-    # 9w0BCQQxFgQU0JZGOmo0PQ6AV3+kx6GwvmLBA/EwDQYJKoZIhvcNAQEBBQAEggEA
-    # I0/kdau3Y35PO3hW4e7yxuZGAEcvzZt9imcw1+GoCv6JdwhtGUfCxJY+CH5pwnpN
-    # Rl6fCBtIVA32ZSiUy8UETSUN2JLCUcMjrgFicswoiaIeiIETzhNNVhWdCVi142Rq
-    # rfCm0vnxS5Bk8J2au4reZEMmqaScegF4vESdadZDv4rKF7C+In6CQ8ynQSNZVXz1
-    # jz3H2smV+X8oeULcmzYCC6UN1JTsXjAd9eDADSlXxkptR5FLS79J6Qlj8AGcUzMI
-    # E94/SEZc9YvyccIYRSJ571zlTfWw4lkJhQ/V1d/NstKfXollOuL4ZBUxd0O54lOl
-    # AxKavkQXUXmO6eggZHXFag==
-    # SIG # End signature bloc
-# SIG # Begin signature block
-# MIIFrAYJKoZIhvcNAQcCoIIFnTCCBZkCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
-# gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxKp9wbAF1tl2LB8c3CJ0tIDP
-# EiSgggMyMIIDLjCCAhagAwIBAgIQINA0nIX3+rpEKhtmvgiUxzANBgkqhkiG9w0B
-# AQsFADAvMS0wKwYDVQQDDCRSb2IgSG9sbWUgQ29kZSBTaWduaW5nIChTZWxmIFNp
-# Z25lZCkwHhcNMTkwOTE3MDAzODQ3WhcNMjkwOTE3MDA0NjM0WjAvMS0wKwYDVQQD
-# DCRSb2IgSG9sbWUgQ29kZSBTaWduaW5nIChTZWxmIFNpZ25lZCkwggEiMA0GCSqG
-# SIb3DQEBAQUAA4IBDwAwggEKAoIBAQCufvdnhvHAAvNYc+A6bynp4ySGTt4Rv0AU
-# owO25Yl0IypzvV4PW2PW/r7HDafK/DjGT84Yr5PaFEYBgZGHhqZoBFcIHgUrnbBn
-# Forr5Ko2+Nckfdcw+wslXc46TJIGab3IW8HLx3NHzuYOIH9f+9InEatRcMD+FZof
-# WBkC4nkQ+bP1n7yx1WSOEFA23/nfXBgFbRCWpjQ+mFCW8PEgG5U91+89TJqK3+09
-# 5637JRStXTwZlNZS73eM5wiq+BG0n0DDfdXmDrAOvYZtbiYzKOR4m2OH8hFK8b22
-# 02QjGDMkZgN2vK3JDEy64S1WkN6TNJV76zi7qt3EZVO9PGku0HjRAgMBAAGjRjBE
-# MA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQU
-# ZSwaA+sUVQ872xk65xAvqtJ83kcwDQYJKoZIhvcNAQELBQADggEBAKRRSbA7xPCp
-# ZuHxV/NnYG6I+GGG0LS1XdXixlL86wR5IwbbsdiPfKqx8nBB8U0D8rLXhMiaqhtE
-# nUpR3xBBQO58ogENkZUBvQbvnu0Iq+VCqrJoPXZldMgLpphEdTcUgr553ekAq71t
-# AJEvQtWIuuM/Wc2hWGsxbFMQ3+GFIeneyDlSu4B6IjxP1nz8LVX5oi0Vf1K9bPGp
-# 1sHyv9UEpif5Pb9ws4IAVCZP6RuRe32W8pOsz6+srlOmuKHv0hZ6s9QrkaiQVjcb
-# GFjCXSpVs9PNGj9eRicZJBM0+OSWYLfmHMaDO0zXhtwwLwU4xCxSRLSx2q2U4j4z
-# ghSqIS4s3ukxggHkMIIB4AIBATBDMC8xLTArBgNVBAMMJFJvYiBIb2xtZSBDb2Rl
-# IFNpZ25pbmcgKFNlbGYgU2lnbmVkKQIQINA0nIX3+rpEKhtmvgiUxzAJBgUrDgMC
-# GgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYK
-# KwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG
-# 9w0BCQQxFgQUtKFa7L0fPCs9Jv1ErYD69MfSRZwwDQYJKoZIhvcNAQEBBQAEggEA
-# rZa+UwmZ2B31m1nzgMuMHFbteue+dEnjQI4geDJbiQ30yJoW4+TsOFd0o+Ob79wp
-# n9bo5mVk4VelcK6bxDvxiGfQc+LEmYYqirAvmG6/2ovMrFYo44zK+5JuhZwMUAyN
-# GSZNaH7QCri/d7fLJJDWisiBzHaAL4kJMOzPLaJoGNEn37a3oFjj07vgU6+MF8j/
-# 9+NSeI/8WtfTeC1+HgNaX53jCitAGBlsgz7SIdvBDoIkp04YycxVu5XK2P2g78iB
-# /Hk149+DHUcdve9ZZFW8N7JmhCFD4Zi7j22cZnwB4NFFUdXEUCLfAa3ZkOJ3GoeQ
-# 0lyt6KPzUhaxiVBg69wNoA==
-# SIG # End signature block
