@@ -23,3 +23,4 @@ Version History
 	2.11 (18/01/2019) - added -RandomPrefix parameter to Rename-Filename command
 	2.12 (03/09/2019) - added Get-ADUserDetails function
 	2.13 (21/09/2019) - added Get-ADGroupMemberShip function
+	2.14 (22/09/2019) - aded Find-ADGroup
