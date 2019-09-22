@@ -15,7 +15,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #>
 
 
-
+#----------------------------------------------------
 function Get-ADUserDetails() {
 	<#
 .NOTES
@@ -126,6 +126,7 @@ The logon ID (samAccountName) of the AD user account
 }
 
 
+#----------------------------------------------------
 function Get-ADGroupMembership() {
 	<#
 .NOTES
@@ -194,6 +195,7 @@ The name AD user group
 	}
 }
 
+#----------------------------------------------------
 # Return all members of a group. Works around ADSI issue of only 1500 members returned by 'members' property
 # Sourced from https://www.adilhindistan.com/2013/01/getting-members-of-large-groups-via.html
 function Get-GroupMembers {
@@ -255,6 +257,7 @@ function Get-GroupMembers {
 }
 
 
+#----------------------------------------------------
 function Find-ADGroup() {
 	<#
 .NOTES
@@ -307,37 +310,7 @@ The name AD user group
 			else {
 				foreach ($group in $searchResult) {
 					# determine the type of group
-					Write-Verbose $group.Properties.grouptype
-					Switch ([convert]::ToInt32($group.Properties.grouptype, 10)) {
-						2 {
-							$groupType = "Global Distribution Group"
-							break
-						}
-						4 {
-							$groupType = "Domain Local Distribution Group"
-							break
-						}
-						8 {
-							$groupType = "Universal Distribution Group"
-							break
-						}
-						-2147483646 {
-							$groupType = "Global Security Group"
-							break
-						}
-						-2147483644 {
-							$groupType = "Domain Local Security Group"
-							break
-						}
-						-2147483640 {
-							$groupType = "Universal Security Group"
-							break
-						}
-						-2147483643 {
-							$groupType = "BuiltIn Group"
-							break
-						}
-					}
+					$groupType = GetGroupType ([convert]::ToInt32($group.Properties.grouptype, 10))
 
 					# display the properties of each group              
 					$Result = [ORDERED]@{
@@ -353,6 +326,51 @@ The name AD user group
 			}
 		}
 	}
+}
+
+
+#----------------------------------------------------
+# returns a string describing the AD group type
+function GetGroupType {
+	param (
+		[string] $groupTypeID
+	)
+
+	if (-not ($groupTypeID)) { 
+		return $false 
+	}
+
+	Switch ($groupTypeID) {
+		2 {
+			$groupType = "Global Distribution Group"
+			break
+		}
+		4 {
+			$groupType = "Domain Local Distribution Group"
+			break
+		}
+		8 {
+			$groupType = "Universal Distribution Group"
+			break
+		}
+		-2147483646 {
+			$groupType = "Global Security Group"
+			break
+		}
+		-2147483644 {
+			$groupType = "Domain Local Security Group"
+			break
+		}
+		-2147483640 {
+			$groupType = "Universal Security Group"
+			break
+		}
+		-2147483643 {
+			$groupType = "BuiltIn Group"
+			break
+		}
+	}
+	return $groupType
 }
 
 
