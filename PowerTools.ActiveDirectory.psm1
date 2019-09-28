@@ -72,9 +72,9 @@ The logon ID (samAccountName) of the AD user account
 			$search.SearchScope = "Subtree"
 			write-verbose "Searching for user accounts with a samAccountName exactly matching '$Identity'"
 			$search.Filter = "(&(objectCategory=person)(samAccountName=$Identity))"
+			$results = $search.FindAll() 
 		}
 
-		$results = $search.FindAll() # return user directory object if unique, $null if not found or prompt user for selection if more than 1 match.
 		If ($results -ne $null) {
 			foreach ($result in $results) {
 				$currentUser = $result.GetDirectoryEntry()
@@ -127,7 +127,7 @@ The logon ID (samAccountName) of the AD user account
 
 
 #----------------------------------------------------
-function Get-ADGroupMembership() {
+function Get-ADGroupMembers() {
 	<#
 .NOTES
 Function Name  : Get-ADGroupMembership
@@ -314,9 +314,9 @@ The name AD user group
 
 					# display the properties of each group              
 					$Result = [ORDERED]@{
-						Name      = $($group.Properties.name).ToString()
-						GroupType = $groupType
-						DN        = $group.Path
+						Name              = $($group.Properties.name).ToString()
+						GroupType         = $groupType
+						distinguishedName = $group.Path
 					}
 					$outputObject = New-Object -Property $Result -TypeName psobject
 					$outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADGroupMembership.Result")
@@ -324,6 +324,85 @@ The name AD user group
 				}
 				$searcher.Dispose()
 			}
+		}
+	}
+}
+
+
+#----------------------------------------------------
+function Get-ADObjectGroupMembership() {
+	<#
+.NOTES
+Function Name  	: Get-ADObjectGroupMembership
+Author     		: Rob Holme (rob@holme.com.au)  
+
+.SYNOPSIS 
+Display the group membership for an AD object.
+.DESCRIPTION 
+Display the group membership for an AD object. Use Get-ADPrincipalGroupMembership instead if AD powershell module is installed.
+.EXAMPLE 
+Get-ADObjectGroupMembership -ID Rob
+.PARAMETER Identity 
+The CN of the AD Object account 
+#>
+	[CmdletBinding()]
+	Param(
+		[Parameter(
+			Position = 0, 
+			Mandatory = $True, 
+			ParameterSetName = "Identity",
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $True)] 
+		[ValidateNotNullOrEmpty()]
+		[Alias('ID')] 
+		[string] $Identity
+
+	)
+    
+	begin {
+		# confirm the powershell version and platform requirements are met if using powershell core
+		if ($IsCoreCLR) {
+			if (($PSVersionTable.PSVersion -lt 6.1) -or ($PSVersionTable.Platform -ne "Win32NT")) {
+				Write-Warning "This function requires Powershell Core 6.1 or greater on Windows."
+				$abort = $true
+			}
+		}
+	}
+    
+	process {
+
+		if (!$abort) {
+			# search the current domain only
+			$dom = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
+			$root = $dom.GetDirectoryEntry() 
+			$searcher = new-Object System.DirectoryServices.DirectorySearcher
+			$searcher.SearchRoot = $root
+			$searcher.SearchScope = "Subtree"
+			write-verbose "Searching for AD Objects with a samAccountName exactly matching '$Identity'"
+			$searcher.Filter = "(samAccountName=$Identity)"
+			$searchResult = $searcher.FindOne() 
+		}
+
+		If ($searchResult -ne $null) {
+			$currentUser = $searchResult.GetDirectoryEntry()
+			$groups = $currentUser.memberOf
+			foreach ($group in $groups) {
+				$groupDetails = [ADSI] "LDAP://$group" 
+				$groupType = GetGroupType ([convert]::ToInt32($groupDetails.Properties.grouptype, 10))
+			
+				# display the properties of each group              
+				$result = [ORDERED]@{
+					Name              = $($groupDetails.Properties.name).ToString()
+					GroupType         = $groupType
+					distinguishedName = $group
+				}
+				$outputObject = New-Object -Property $Result -TypeName psobject
+				$outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADGroupMembership.Result")
+				write-output $outputObject 
+			}
+		}
+		else {
+			write-warning "No object matching '$Identity' found."
 		}
 	}
 }
