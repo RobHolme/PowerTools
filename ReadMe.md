@@ -29,7 +29,8 @@ A module containing a random collection of functions that I use occasionally. Th
 - Test-IsPasswordPwned
 - Test-TCPPort
 - Get-ADUserDetails
-- Get-ADGroupMembership
+- Get-ADGroupMembers
+- Get-ADObjectGroupMembership
 - Find-ADGroup
 
 ---
