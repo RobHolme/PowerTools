@@ -350,13 +350,18 @@ The CN of the AD Object account
         [Parameter(
             Position = 0, 
             Mandatory = $True, 
-            ParameterSetName = "Identity",
             ValueFromPipeline = $True, 
             ValueFromPipelineByPropertyName = $True)] 
         [ValidateNotNullOrEmpty()]
         [Alias('ID')] 
-        [string] $Identity
-
+		[string] $Identity,
+		
+		[Parameter(
+            Position = 0, 
+            Mandatory = $True 
+		)] 
+		[ValidateSet("User", "Computer", "Group", "Contact")]
+        [string] $ObjectType
     )
     
     begin {
@@ -366,7 +371,13 @@ The CN of the AD Object account
                 Write-Warning "This function requires Powershell Core 6.1 or greater on Windows."
                 $abort = $true
             }
-        }
+		}
+		
+		# set default value if ObjectType not specified
+		if (!$ObjectType) {
+			$ObjectType = "User"
+			Write-Warning "ObjectType not set, defaulting to searching User objects"
+		}
     }
     
     process {
@@ -378,8 +389,22 @@ The CN of the AD Object account
             $searcher = new-Object System.DirectoryServices.DirectorySearcher
             $searcher.SearchRoot = $root
             $searcher.SearchScope = "Subtree"
-            write-verbose "Searching for AD Objects with a samAccountName exactly matching '$Identity'"
-            $searcher.Filter = "(samAccountName=$Identity)"
+			if ($ObjectType -eq "Computer") {
+				Write-Verbose "Searching computer objects matching '$Identity'."
+				$searcher.Filter = "(&(objectCategory=computer)(name=$Identity))"
+			}
+			if ($ObjectType -eq "Group") {
+				Write-Verbose "Searching group objects matching '$Identity'."
+				$searcher.Filter = "(&(objectCategory=group)(name=$Identity))"
+			}
+			if ($ObjectType -eq "user") {
+				Write-Verbose "Searching user objects matching '$Identity'."
+				$searcher.Filter = "(&(objectCategory=person)(objectClass=user)(samAccountName=$Identity))"
+			}
+			if ($ObjectType -eq "Contact") {
+				Write-Verbose "Searching contact objects matching '$Identity'."
+				$searcher.Filter = "(&(objectClass=contact)(name=$Identity))"
+			}
             $searchResult = $searcher.FindOne() 
 
             If ($searchResult -ne $null) {
