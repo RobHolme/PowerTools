@@ -357,7 +357,7 @@ The CN of the AD Object account
 		[string] $Identity,
 		
 		[Parameter(
-            Position = 0, 
+            Position = 1, 
             Mandatory = $True 
 		)] 
 		[ValidateSet("User", "Computer", "Group", "Contact")]
@@ -388,7 +388,9 @@ The CN of the AD Object account
             $root = $dom.GetDirectoryEntry() 
             $searcher = new-Object System.DirectoryServices.DirectorySearcher
             $searcher.SearchRoot = $root
-            $searcher.SearchScope = "Subtree"
+			$searcher.SearchScope = "Subtree"
+			
+			# construct the search filter based on object type
 			if ($ObjectType -eq "Computer") {
 				Write-Verbose "Searching computer objects matching '$Identity'."
 				$searcher.Filter = "(&(objectCategory=computer)(name=$Identity))"
@@ -407,9 +409,9 @@ The CN of the AD Object account
 			}
             $searchResult = $searcher.FindOne() 
 
-            If ($searchResult -ne $null) {
-                $currentUser = $searchResult.GetDirectoryEntry()
-                $groups = $currentUser.memberOf
+            If ($searchResult) {
+                $currentObject = $searchResult.GetDirectoryEntry()
+                $groups = $currentObject.memberOf
                 foreach ($group in $groups) {
                     $groupDetails = [ADSI] "LDAP://$group" 
                     $groupType = GetGroupType ([convert]::ToInt32($groupDetails.Properties.grouptype, 10))
@@ -426,7 +428,7 @@ The CN of the AD Object account
                 }
             }
             else {
-                write-warning "No object matching '$Identity' found."
+                write-warning "No $ObjectType object matching '$Identity' found."
             }
             $searcher.Dispose()
         }
