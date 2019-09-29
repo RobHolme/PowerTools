@@ -67,61 +67,61 @@ The logon ID (samAccountName) of the AD user account
             # search the current domain only
             $dom = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
             $root = $dom.GetDirectoryEntry() 
-            $search = new-Object System.DirectoryServices.DirectorySearcher
-            $search.SearchRoot = $root
-            $search.SearchScope = "Subtree"
+            $searcher = new-Object System.DirectoryServices.DirectorySearcher
+            $searcher.SearchRoot = $root
+            $searcher.SearchScope = "Subtree"
             write-verbose "Searching for user accounts with a samAccountName exactly matching '$Identity'"
-            $search.Filter = "(&(objectCategory=person)(samAccountName=$Identity))"
-            $results = $search.FindAll() 
-        }
-
-        If ($results -ne $null) {
-            foreach ($result in $results) {
-                $currentUser = $result.GetDirectoryEntry()
+            $searcher.Filter = "(&(objectCategory=person)(samAccountName=$Identity))"
+            $results = $searcher.FindAll() 
+        
+            If ($results -ne $null) {
+                foreach ($result in $results) {
+                    $currentUser = $result.GetDirectoryEntry()
                     
-                # get the account status from the userAccountControl bitmask 
-                $userPasswordExpired = $userLockedOut = $userDisabled = $false
-                $userAccountControl = $currentUser.UserAccountControl[0]
-                if (($userAccountControl -band $ACCOUNTDISABLE) -eq $ACCOUNTDISABLE) {
-                    $userDisabled = $true
-                }
-                if (($userAccountControl -band $LOCKOUT) -eq $LOCKOUT) {
-                    $userLockedOut = $true
-                }
-                if (($userAccountControl -band $PASSWORD_EXPIRED) -eq $PASSWORD_EXPIRED) {
-                    $userPasswordExpired = $true
-                }
+                    # get the account status from the userAccountControl bitmask 
+                    $userPasswordExpired = $userLockedOut = $userDisabled = $false
+                    $userAccountControl = $currentUser.UserAccountControl[0]
+                    if (($userAccountControl -band $ACCOUNTDISABLE) -eq $ACCOUNTDISABLE) {
+                        $userDisabled = $true
+                    }
+                    if (($userAccountControl -band $LOCKOUT) -eq $LOCKOUT) {
+                        $userLockedOut = $true
+                    }
+                    if (($userAccountControl -band $PASSWORD_EXPIRED) -eq $PASSWORD_EXPIRED) {
+                        $userPasswordExpired = $true
+                    }
 
-                # check to see if the user must change password on next logon
-                $pwdChangeOnNextLogon = $false
-                if ($currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0]) -eq 0) {
-                    $pwdChangeOnNextLogon = $true
-                }
+                    # check to see if the user must change password on next logon
+                    $pwdChangeOnNextLogon = $false
+                    if ($currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0]) -eq 0) {
+                        $pwdChangeOnNextLogon = $true
+                    }
                 
-                # display the account properties                   
-                $Result = @{
-                    DisplayName               = $currentUser.displayName.ToString()
-                    Title                     = $currentUser.title.ToString()
-                    PhoneNumber               = $currentUser.telephoneNumber.ToString()
-                    Mobile                    = $currentUser.mobile.ToString()
-                    OtherIpPhone              = $currentUser.otherIpPhone.ToString()
-                    LastLogon                 = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.lastlogon[0])
-                    AccountDisabled           = $userDisabled 
-                    AccountLockout            = $userLockedOut
-                    PasswordExpired           = $userPasswordExpired
-                    AccountExpires            = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.accountExpires[0])
-                    PasswordLastSet           = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0])
-                    ChangePasswordOnNextLogon = $pwdChangeOnNextLogon
+                    # display the account properties                   
+                    $Result = @{
+                        DisplayName               = $currentUser.displayName.ToString()
+                        Title                     = $currentUser.title.ToString()
+                        PhoneNumber               = $currentUser.telephoneNumber.ToString()
+                        Mobile                    = $currentUser.mobile.ToString()
+                        OtherIpPhone              = $currentUser.otherIpPhone.ToString()
+                        LastLogon                 = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.lastlogon[0])
+                        AccountDisabled           = $userDisabled 
+                        AccountLockout            = $userLockedOut
+                        PasswordExpired           = $userPasswordExpired
+                        AccountExpires            = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.accountExpires[0])
+                        PasswordLastSet           = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0])
+                        ChangePasswordOnNextLogon = $pwdChangeOnNextLogon
+                    }
+                    $outputObject = New-Object -Property $Result -TypeName psobject
+                    $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADUserDetails.Result")
+                    write-output $outputObject 
                 }
-                $outputObject = New-Object -Property $Result -TypeName psobject
-                $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADUserDetails.Result")
-                write-output $outputObject 
             }
+            Else {
+                Write-Warning "No matching user found." 
+            }
+            $searcher.Dispose()
         }
-        Else {
-            Write-Warning "No matching user found." 
-        }
-        $search.Dispose()
     }
 }
 
@@ -187,7 +187,7 @@ The name AD user group
                         DN             = $member
                     }
                     $outputObject = New-Object -Property $Result -TypeName psobject
-                    $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADGroupMembership.Result")
+                    $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADGroupMembers.Result")
                     write-output $outputObject 
                 }
             }
@@ -319,7 +319,7 @@ The name AD user group
                         distinguishedName = $group.Path
                     }
                     $outputObject = New-Object -Property $Result -TypeName psobject
-                    $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADGroupMembership.Result")
+                    $outputObject.PSObject.TypeNames.Insert(0, "Powertools.FindADGroup.Result")
                     write-output $outputObject 
                 }
                 $searcher.Dispose()
@@ -396,14 +396,14 @@ The CN of the AD Object account
                         distinguishedName = $group
                     }
                     $outputObject = New-Object -Property $Result -TypeName psobject
-                    $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADGroupMembership.Result")
+                    $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADObjectGroupMembership.Result")
                     write-output $outputObject 
                 }
             }
             else {
                 write-warning "No object matching '$Identity' found."
             }
-            $search.Dispose()
+            $searcher.Dispose()
         }
     }
 }
