@@ -130,7 +130,7 @@ The logon ID (samAccountName) of the AD user account
 function Get-ADGroupMembers() {
     <#
 .NOTES
-Function Name  : Get-ADGroupMembership
+Function Name  : Get-ADGroupMembers
 Author     : Rob Holme (rob@holme.com.au)  
 
 .SYNOPSIS 
@@ -138,7 +138,7 @@ Display the members of an active directory group
 .DESCRIPTION 
 Display the members of an active directory group
 .EXAMPLE 
-Get-ADGroupMembership -Name "VPN Users"
+Get-ADGroupMembers -Name "VPN Users"
 .PARAMETER Identity 
 The name AD user group 
 #>
