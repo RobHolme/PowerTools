@@ -202,7 +202,7 @@ The name of the word document
 		# confirm the powershell version and platform supports com objects
 		$abortProcessing = $false
 		if ($IsCoreCLR) {
-			Write-Warning "This function requires Windows Powershell. Powershell Core on Windows is not supprted."
+			Write-Warning "This function requires Windows Powershell. Powershell Core on Windows is not supported."
 			$abortProcessing = $true
 		}
     }
