@@ -162,7 +162,8 @@ function Show-WordMetadata {
 Function Name   : Show-WordMetadata
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (16/08/2016)
-Requires        : PowerShell V2
+Requires        : Microsoft Office
+				: Windows
 
 .SYNOPSIS
 Displays document properties for a MS Word Document
@@ -198,49 +199,26 @@ The name of the word document
     )
 
     begin {
-        # warn and exit if using powershell core, only supported on Windows Powershell v2, v3, v4 and v5.x
-        If ($IsCoreCLR) {
-            $abortProcessing = $true
-            write-warning "This function is not supported under PowerShell Core. This requires Windows PowerShell."
-        }
-        else {
-            $abortProcessing = $false
-        }
+		# confirm the powershell version and platform supports com objects
+		$abortProcessing = $false
+		if ($IsCoreCLR) {
+			Write-Warning "This function requires Windows Powershell. Powershell Core on Windows is not supprted."
+			$abortProcessing = $true
+		}
     }
 
     process {
         if (!$abortProcessing) {
+
             $paths = @()
             # check and expand wildcard paths
             if ($psCmdlet.ParameterSetName -eq 'Path') {
-                foreach ($aPath in $Path) {
-                    if (!(Test-Path -Path $aPath)) {
-                        $ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
-                        $category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                        $errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
-                        $psCmdlet.WriteError($errRecord)
-                        continue
-                    }
-
-                    # Resolve any wildcards that might be in the path
-                    $provider = $null
-                    $paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
-                }
+                $paths = ProcessPath $Path
             }
             # check and expand literal paths
             else {
-                foreach ($aPath in $LiteralPath) {
-                    if (!(Test-Path -LiteralPath $aPath)) {
-                        $ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
-                        $category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                        $errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
-                        $psCmdlet.WriteError($errRecord)
-                        continue
-                    }
-
-                    # Resolve any relative paths
-                    $paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
-                }
+                $paths = ProcessLiteralPath $Path
+                
             }
 
             $application = New-Object -ComObject word.application
@@ -254,13 +232,13 @@ The name of the word document
                 $customProperties = $document.CustomDocumentProperties
                 # display built-in properties
                 foreach ($property in $properties) {
-                    $propertyName = [System.__ComObject].invokemember("name", $binding::GetProperty, $null, $property, $null)
+                    $propertyName = [System.__ComObject].InvokeMember("name", $binding::GetProperty, $null, $property, $null)
                     Write-Verbose $propertyName
                     trap [system.exception] {
                         continue
                     }
                     # create a hash table to save properties for output as an object
-                    $value = [System.__ComObject].invokemember("value", $binding::GetProperty, $null, $property, $null)
+                    $value = [System.__ComObject].InvokeMember("value", $binding::GetProperty, $null, $property, $null)
                     $properties = @{
                         PropertyName = $propertyName.ToString()
                         Value        = $value.ToString()
@@ -272,7 +250,7 @@ The name of the word document
                 }
                 # display custom properties
                 foreach ($property in $customProperties) {
-                    $propertyName = [System.__ComObject].invokemember("name", $binding::GetProperty, $null, $property, $null)
+                    $propertyName = [System.__ComObject].InvokeMember("name", $binding::GetProperty, $null, $property, $null)
                     Write-Verbose $propertyName
                     trap [system.exception] {
                         continue
@@ -294,6 +272,7 @@ The name of the word document
         }
     }
 }
+
 
 #----------------------------------------------------
 function Remove-WordMetadata {
@@ -1331,6 +1310,8 @@ The SHA1 hash of the password
     }
 }
 
+
+#--------------------------------------------------
 # Return the file extension from a path string
 function GetFileExtension([string] $Path) {
     $startOfExtension = $Path.LastIndexOf('.')
@@ -1342,6 +1323,8 @@ function GetFileExtension([string] $Path) {
     }
 }
 
+
+#--------------------------------------------------
 # queries the DPI of the primary display. Returns the scaling factor currently applied.
 function GetDPIScalingFactor() {
     # check DPI setting, apply scaling factor if required
@@ -1351,6 +1334,7 @@ function GetDPIScalingFactor() {
     return $dpiScalingFactor
 }
 
+#--------------------------------------------------
 # Appends a number to the filename
 function AddRepeatSuffixToFilename($Path, $RepeatNumber) {
     $startOfExtension = $Path.LastIndexOf('.')
@@ -1360,6 +1344,7 @@ function AddRepeatSuffixToFilename($Path, $RepeatNumber) {
 }
 
 
+#--------------------------------------------------
 function ConstructFullPath($path) {
     if ([System.IO.Path]::IsPathRooted($path)) {
         return $path
@@ -1369,4 +1354,42 @@ function ConstructFullPath($path) {
     }
 }
 
+
+#--------------------------------------------------
+# Resolve wildcards, expand paths.
+function ProcessPath([string[]] $Path) {
+	foreach ($aPath in $Path) {
+		if (!(Test-Path -Path $aPath)) {
+			$ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+			$category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+			$errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+			$psCmdlet.WriteError($errRecord)
+			continue
+		}
+
+		# Resolve any wildcards that might be in the path
+		$provider = $null
+		$paths += $psCmdlet.SessionState.Path.GetResolvedProviderPathFromPSPath($aPath, [ref]$provider)
+	}
+	return $paths
+}
+
+
+#--------------------------------------------------
+# Resolve paths - literal paths, no wildcards.
+function ProcessLiteralPath([string[]] $LiteralPath) {
+	foreach ($aPath in $LiteralPath) {
+		if (!(Test-Path -LiteralPath $aPath)) {
+			$ex = New-Object System.Management.Automation.ItemNotFoundException "Cannot find path '$aPath' because it does not exist."
+			$category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+			$errRecord = New-Object System.Management.Automation.ErrorRecord $ex, 'PathNotFound', $category, $aPath
+			$psCmdlet.WriteError($errRecord)
+			continue
+		}
+
+		# Resolve any relative paths
+		$paths += $psCmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath($aPath)
+	}
+	return $paths
+}
 
