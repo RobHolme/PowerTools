@@ -21,6 +21,7 @@ Stop-NetworkCapture
         if ($IsLinux -or $IsMacOS) {
             write-warning "This command is supported on Windows platforms only"
             $abort = $true
+            return
         }
         
         # requires admin rights, exit if not running as an administrator

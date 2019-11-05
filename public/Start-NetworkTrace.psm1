@@ -132,6 +132,7 @@ Start-NetworkTrace -TraceFile C:\temp\trac.etl -IPv6Address fe80::f090:7a62:9d9:
         if ($IsLinux -or $IsMacOS) {
             write-warning "This command is supported on Windows platforms only"
             $abort = $true
+            return
         }
 
         # requires admin rights, exit if not running as an administrator
