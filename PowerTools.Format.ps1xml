@@ -461,10 +461,6 @@
 						<PropertyName>OtherIpPhone</PropertyName>
 					</ListItem>
 					<ListItem>
-						<Label>LastLogon</Label>
-						<PropertyName>LastLogon</PropertyName>
-					</ListItem>
-					<ListItem>
 						<Label>AccountDisabled</Label>
 						<PropertyName>AccountDisabled</PropertyName>
 					</ListItem>
