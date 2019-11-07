@@ -91,7 +91,7 @@ The logon ID (samAccountName) of the AD user account
                         PhoneNumber               = $currentUser.telephoneNumber.ToString()
                         Mobile                    = $currentUser.mobile.ToString()
                         OtherIpPhone              = $currentUser.otherIpPhone.ToString()
-                        LastLogon                 = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.lastlogon[0])
+ #                       LastLogon                 = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.lastlogon[0])
                         AccountDisabled           = $userDisabled 
                         AccountLockout            = $userLockedOut
                         PasswordExpired           = $userPasswordExpired
