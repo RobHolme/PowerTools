@@ -32,6 +32,7 @@ A module containing a random collection of functions that I use occasionally. Th
 - Get-ADGroupMembers
 - Get-ADObjectGroupMembership
 - Find-ADGroup
+- Connect-URL
 
 ---
 ## Connect-Database
