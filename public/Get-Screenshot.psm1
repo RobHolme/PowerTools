@@ -99,8 +99,8 @@ Get-Screenshot -AllMonitors
             return
         }
 
-        # this relies on System.Windows.Forms, not available under .Net core CLR
-        if ($IsCoreCLR) {
+        # this relies on System.Windows.Forms, not available under non Windows environments (and early Powershell Core on Windows - pre v6.2?)
+        if (($IsLinux) -or ($IsMacOS)) {
             write-warning "This function is only supported under Windows Powershell (not Powershell core)"
             return
         }
