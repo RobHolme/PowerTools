@@ -1,9 +1,14 @@
 # PowerTools ReadMe
 A module containing a random collection of functions that I use occasionally. These originated as separate scripts but were merged into a module for transportability.
-- Connect-Database
+- Connect-SQLDatabase
 - Connect-TCPPort
+- Connect-URL
 - Convert-ADTimestamp
 - Export-Credential
+- Find-ADGroup
+- Get-ADGroupMembers
+- Get-ADObjectGroupMembership
+- Get-ADUserDetails
 - Get-FirewallStatus
 - Get-Hash
 - Get-IniValue
@@ -11,8 +16,7 @@ A module containing a random collection of functions that I use occasionally. Th
 - Get-ProcessorAffinity
 - Get-ProcessorUtilisation
 - Get-Screenshot
-- Get-Uptime
-- Get-Hash
+- get-Uptime
 - Import-Credential
 - Remove-IniValue
 - Remove-WordMetadata
@@ -24,18 +28,15 @@ A module containing a random collection of functions that I use occasionally. Th
 - Set-ProcessorAffinity
 - Show-WordMetadata
 - Start-NetworkTrace
+- Start-TCPListener
 - Stop-NetworkTrace
-- Test-Database
 - Test-IsPasswordPwned
+- Test-SQLDatabase
 - Test-TCPPort
-- Get-ADUserDetails
-- Get-ADGroupMembers
-- Get-ADObjectGroupMembership
-- Find-ADGroup
-- Connect-URL
+
 
 ---
-## Connect-Database
+## Connect-SQLDatabase
 ### DESCRIPTION
 Tests logon connectivity to MS SQL Database. Supports SQL user authentication, or integrated Windows authentication. Returns connections details (connection status, time to connect) on success or failure. Use ```Test-Database``` instead if you only need a true/false result. 
 ### SYNTAX
