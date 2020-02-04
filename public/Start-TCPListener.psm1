@@ -60,7 +60,7 @@ Function Start-TCPListener {
 			$listener.stop()
 		}
 		Catch {
-			"Connection failed: `n $($_.Exception.Message)"
+			write-warning "Connection failed: `n $($_.Exception.Message)"
 		}
 	}
 }
@@ -72,3 +72,4 @@ function DisplayResult($Result) {
 	$outputObject.PSObject.TypeNames.Insert(0, "Powertools.StartTCPListener.Result")
 	write-output $outputObject
 }
+
