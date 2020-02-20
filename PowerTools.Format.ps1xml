@@ -440,6 +440,10 @@
 		<ListEntries>
 			<ListEntry>
 				<ListItems>
+				<ListItem>
+						<Label>LogonID</Label>
+						<PropertyName>LogonID</PropertyName>
+					</ListItem>
 					<ListItem>
 						<Label>DisplayName</Label>
 						<PropertyName>DisplayName</PropertyName>

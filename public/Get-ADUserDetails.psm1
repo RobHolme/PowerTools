@@ -4,7 +4,7 @@ $activeDirectoryPrivateFunctions = Join-Path (Split-Path $script:MyInvocation.My
 
 #----------------------------------------------------
 function Get-ADUserDetails() {
-    <#
+	<#
 .NOTES
 Function Name  : Get-ADUserDetails
 Author     : Rob Holme (rob@holme.com.au)  
@@ -19,96 +19,134 @@ Get-ADUserDetails -ID Rob
 .PARAMETER Identity 
 The logon ID (samAccountName) of the AD user account 
 #>
-    [CmdletBinding()]
-    Param(
-        [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
-            ParameterSetName = "Identity",
-            ValueFromPipeline = $True, 
-            ValueFromPipelineByPropertyName = $True)] 
-        [ValidateNotNullOrEmpty()]
-        [Alias('ID')] 
-        [string] $Identity
+	[CmdletBinding(DefaultParameterSetName = "Identity")]
+	Param(
+		[Parameter(
+			Position = 0, 
+			Mandatory = $True, 
+			ParameterSetName = "Identity",
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $True)] 
+		[ValidateNotNullOrEmpty()]
+		[Alias('ID')] 
+		[string] $Identity,
 
-    )
+		[Parameter(
+			Position = 0, 
+			Mandatory = $False, 
+			ParameterSetName = "Name",
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $True)] 
+		[string] $Surname,
+
+		[Parameter(
+			Position = 1, 
+			Mandatory = $False, 
+			ParameterSetName = "Name",
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $True)] 
+		[string] $Firstname
+
+	)
     
-    begin {
-        # bit masks for UserAccountControl attribute (in decimal)
-        [int] $ACCOUNTDISABLE = 2
-        [int] $LOCKOUT = 16
-        [int] $PASSWORD_EXPIRED = 8388608
+	begin {
+		# bit masks for UserAccountControl attribute (in decimal)
+		[int] $ACCOUNTDISABLE = 2
+		[int] $LOCKOUT = 16
+		[int] $PASSWORD_EXPIRED = 8388608
 
-        # confirm the powershell version and platform requirements are met if using powershell core
-        if ($IsCoreCLR) {
-            if (($PSVersionTable.PSVersion -lt 6.1) -or ($PSVersionTable.Platform -ne "Win32NT")) {
-                Write-Warning "This function requires Powershell Core 6.1 or greater on Windows."
-                $abort = $true
-            }
-        }
-    }
+		# confirm the powershell version and platform requirements are met if using powershell core
+		if ($IsCoreCLR) {
+			if (($PSVersionTable.PSVersion -lt 6.1) -or ($PSVersionTable.Platform -ne "Win32NT")) {
+				Write-Warning "This function requires Powershell Core 6.1 or greater on Windows."
+				$abort = $true
+			}
+		}
+	}
     
-    process {
+	process {
 
-        if (!$abort) {
-            # search the current domain only
-            $dom = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
-            $root = $dom.GetDirectoryEntry() 
-            $searcher = new-Object System.DirectoryServices.DirectorySearcher
-            $searcher.SearchRoot = $root
-            $searcher.SearchScope = "Subtree"
-            write-verbose "Searching for user accounts with a samAccountName exactly matching '$Identity'"
-            $searcher.Filter = "(&(objectCategory=person)(samAccountName=$Identity))"
-            $results = $searcher.FindAll() 
+		if ($PSCmdlet.ParameterSetName -eq "Name") {
+				if (($Surname) -and ($Firstname)) {
+					write-verbose "Searching for user accounts with a Firstname matching '$Firstname' and Surname matching '$Surname'"
+					$filter = "(&(objectCategory=person)(sn=$Surname*)(givenName=$Firstname*))"
+				}
+				elseif ($Surname) {
+					write-verbose "Searching for user accounts with a Surname matching '$Surname'"
+					$filter = "(&(objectCategory=person)(sn=$Surname*))"
+				}
+				elseif ($Firstname) {
+					write-verbose "Searching for user accounts with a Firstname matching '$Firstname'"
+					$filter = "(&(objectCategory=person)(givenName=$Firstname*))"
+				}
+				else {
+					$abort = $true
+					write-warning "Surname or Firstname (or both) parameters must have values"
+				}
+		}
+		elseif ($PSCmdlet.ParameterSetName -eq "Identity") {
+			write-verbose "Searching for user accounts with a samAccountName exactly matching '$Identity'"
+			$filter = "(&(objectCategory=person)(samAccountName=$Identity))"
+		}
+
+		if (!$abort) {
+			# search the current domain only
+			$dom = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
+			$root = $dom.GetDirectoryEntry() 
+			$searcher = new-Object System.DirectoryServices.DirectorySearcher
+			$searcher.SearchRoot = $root
+			$searcher.SearchScope = "Subtree"
+			$searcher.Filter = $filter
+			$results = $searcher.FindAll() 
         
-            If ($results -ne $null) {
-                foreach ($result in $results) {
-                    $currentUser = $result.GetDirectoryEntry()
+			If ($results -ne $null) {
+				foreach ($result in $results) {
+					$currentUser = $result.GetDirectoryEntry()
                     
-                    # get the account status from the userAccountControl bitmask 
-                    $userPasswordExpired = $userLockedOut = $userDisabled = $false
-                    $userAccountControl = $currentUser.UserAccountControl[0]
-                    if (($userAccountControl -band $ACCOUNTDISABLE) -eq $ACCOUNTDISABLE) {
-                        $userDisabled = $true
-                    }
-                    if (($userAccountControl -band $LOCKOUT) -eq $LOCKOUT) {
-                        $userLockedOut = $true
-                    }
-                    if (($userAccountControl -band $PASSWORD_EXPIRED) -eq $PASSWORD_EXPIRED) {
-                        $userPasswordExpired = $true
-                    }
+					# get the account status from the userAccountControl bitmask 
+					$userPasswordExpired = $userLockedOut = $userDisabled = $false
+					$userAccountControl = $currentUser.UserAccountControl[0]
+					if (($userAccountControl -band $ACCOUNTDISABLE) -eq $ACCOUNTDISABLE) {
+						$userDisabled = $true
+					}
+					if (($userAccountControl -band $LOCKOUT) -eq $LOCKOUT) {
+						$userLockedOut = $true
+					}
+					if (($userAccountControl -band $PASSWORD_EXPIRED) -eq $PASSWORD_EXPIRED) {
+						$userPasswordExpired = $true
+					}
 
-                    # check to see if the user must change password on next logon
-                    $pwdChangeOnNextLogon = $false
-                    if ($currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0]) -eq 0) {
-                        $pwdChangeOnNextLogon = $true
-                    }
+					# check to see if the user must change password on next logon
+					$pwdChangeOnNextLogon = $false
+					if ($currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0]) -eq 0) {
+						$pwdChangeOnNextLogon = $true
+					}
                 
-                    # display the account properties                   
-                    $Result = @{
-                        DisplayName               = $currentUser.displayName.ToString()
-                        Title                     = $currentUser.title.ToString()
-                        PhoneNumber               = $currentUser.telephoneNumber.ToString()
-                        Mobile                    = $currentUser.mobile.ToString()
-                        OtherIpPhone              = $currentUser.otherIpPhone.ToString()
- #                       LastLogon                 = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.lastlogon[0])
-                        AccountDisabled           = $userDisabled 
-                        AccountLockout            = $userLockedOut
-                        PasswordExpired           = $userPasswordExpired
-                        AccountExpires            = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.accountExpires[0])
-                        PasswordLastSet           = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0])
-                        ChangePasswordOnNextLogon = $pwdChangeOnNextLogon
-                    }
-                    $outputObject = New-Object -Property $Result -TypeName psobject
-                    $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADUserDetails.Result")
-                    write-output $outputObject 
-                }
-            }
-            Else {
-                Write-Warning "No matching user found." 
-            }
-            $searcher.Dispose()
-        }
-    }
+					# display the account properties                   
+					$Result = @{
+						LogonID                   = $currentUser.samAccountName.ToString()
+						DisplayName               = $currentUser.displayName.ToString()
+						Title                     = $currentUser.title.ToString()
+						PhoneNumber               = $currentUser.telephoneNumber.ToString()
+						Mobile                    = $currentUser.mobile.ToString()
+						OtherIpPhone              = $currentUser.otherIpPhone.ToString()
+						AccountDisabled           = $userDisabled 
+						AccountLockout            = $userLockedOut
+						PasswordExpired           = $userPasswordExpired
+						AccountExpires            = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.accountExpires[0])
+						PasswordLastSet           = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0])
+						ChangePasswordOnNextLogon = $pwdChangeOnNextLogon
+					}
+					$outputObject = New-Object -Property $Result -TypeName psobject
+					$outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADUserDetails.Result")
+					write-output $outputObject 
+				}
+			}
+			Else {
+				Write-Warning "No matching user found." 
+			}
+			$searcher.Dispose()
+		}
+	}
 }
 
