@@ -29,4 +29,4 @@ Version History
 	2.16 (29/09/2019)	Updated Get-ADObjectGroupMembership to support groups, contacts, and computers, not just user objects.
 	2.18 (29/11/2019)	Added Connect-URL command.
 	2.19 (01/02/2020)	Add Start-TCPListener command.
-	
+	2.20 (20/02/2020)	Added support to user -Firstname and -Surname filters in Get-ADUserDetails
