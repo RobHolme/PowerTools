@@ -22,13 +22,24 @@ The URL to connect to.
 			Mandatory = $True,
 			ValueFromPipeline = $True,
 			ValueFromPipelineByPropertyName = $true)]
-		[string] $URL
+		[string] $URL,
+
+		[Parameter(
+			Position = 1,
+			Mandatory = $False
+		)]
+		[switch] $PreventRedirect
 	)
 
 	process {
 
 		$status = ""
 		$request = [System.Net.WebRequest]::Create($URL)
+		# prevent redirects if the -PreventRedirect switch is provided
+		if ($PreventRedirect) {
+			$request.AllowAutoRedirect = $false 
+		}
+		
 		try {
 			$timeElapsed = Measure-Command {
 				$response = $request.GetResponse()
