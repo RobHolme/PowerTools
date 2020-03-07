@@ -1,9 +1,3 @@
-
-# dot source private functions
-$privateFunctions = Join-Path (Split-Path $script:MyInvocation.MyCommand.Path) "..\private\PrivateFunctions.ps1"
-. $privateFunctions
-
-#--------------------------------------------------
 function Get-Hash {
     <#
 .NOTES

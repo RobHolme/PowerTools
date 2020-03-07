@@ -1,8 +1,3 @@
-# dot source private functions
-$activeDirectoryPrivateFunctions = Join-Path (Split-Path $script:MyInvocation.MyCommand.Path) "..\private\ActiveDirectory.ps1"
-. $activeDirectoryPrivateFunctions
-
-#----------------------------------------------------
 function Get-ADUserDetails() {
 	<#
 .NOTES
