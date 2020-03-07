@@ -5,7 +5,7 @@ $privateFunctionsPath = Join-Path -Path (Split-Path $script:MyInvocation.MyComma
 $public = @()
 $private = @()
 
-# test that the public and prive function paths exist, if so load all scripts found.
+# test that the public and private function paths exist, if so load all scripts found.
 if (test-path $publicFunctionsPath) {
 	$public = @(Get-ChildItem -Path $publicFunctionsPath -Recurse -ErrorAction Stop) 
 }
