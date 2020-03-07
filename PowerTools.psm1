@@ -2,10 +2,16 @@
 
 $publicFunctionsPath = Join-Path -Path (Split-Path $script:MyInvocation.MyCommand.Path) -ChildPath '\public\*.ps1' 
 $privateFunctionsPath = Join-Path -Path (Split-Path $script:MyInvocation.MyCommand.Path) -ChildPath '\private\*.ps1'
+$public = @()
+$private = @()
 
-Write-Verbose $publicFunctionsPath
-$public = @(Get-ChildItem -Path $publicFunctionsPath -Recurse -ErrorAction Stop) 
-$private = @(Get-ChildItem -Path $privateFunctionsPath -Recurse -ErrorAction Stop) 
+# test that the public and prive function paths exist, if so load all scripts found.
+if (test-path $publicFunctionsPath) {
+	$public = @(Get-ChildItem -Path $publicFunctionsPath -Recurse -ErrorAction Stop) 
+}
+if (Test-Path $privateFunctionsPath) {
+	$private = @(Get-ChildItem -Path $privateFunctionsPath -Recurse -ErrorAction Stop) 
+}
 foreach ($file in @($public + $private)) {
 	try { 
 		. $file.FullName 
