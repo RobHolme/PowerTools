@@ -32,3 +32,4 @@ Version History
 	2.20 (20/02/2020)	Added support to user -Firstname and -Surname filters in Get-ADUserDetails
 	2.21 (27/02/2020)	Added the -PreventRedirect flag to Connect-URLd function
 	2.30 (07/03/2020)	Removed nested modules, now each function is a dot sources ps1 file. Speeds up parameter tab completion and load times.
+	2.31 (07/03/2020)	Removed Get-Uptime as it is now included in powershell core.
