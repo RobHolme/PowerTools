@@ -32,6 +32,7 @@ The logon ID (samAccountName) of the AD user account
 			ParameterSetName = "Name",
 			ValueFromPipeline = $True, 
 			ValueFromPipelineByPropertyName = $True)] 
+		[Alias('Lastname')] 
 		[string] $Surname,
 
 		[Parameter(
@@ -40,6 +41,7 @@ The logon ID (samAccountName) of the AD user account
 			ParameterSetName = "Name",
 			ValueFromPipeline = $True, 
 			ValueFromPipelineByPropertyName = $True)] 
+		[Alias('Givename')] 
 		[string] $Firstname
 
 	)
