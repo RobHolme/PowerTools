@@ -67,7 +67,7 @@ The CN of the AD Object account
 				Write-Verbose "Searching group objects matching '$Identity'."
 				$searcher.Filter = "(&(objectCategory=group)(name=$Identity))"
 			}
-			if ($ObjectType -eq "user") {
+			if ($ObjectType -eq "User") {
 				Write-Verbose "Searching user objects matching '$Identity'."
 				$searcher.Filter = "(&(objectCategory=person)(objectClass=user)(samAccountName=$Identity))"
 			}
@@ -81,18 +81,23 @@ The CN of the AD Object account
                 $currentObject = $searchResult.GetDirectoryEntry()
                 $groups = $currentObject.memberOf
                 foreach ($group in $groups) {
-                    $groupDetails = [ADSI] "LDAP://$group" 
-                    $groupType = GetGroupType ([convert]::ToInt32($groupDetails.Properties.grouptype, 10))
-			
-                    # display the properties of each group              
-                    $result = [ORDERED]@{
-                        Name              = $($groupDetails.Properties.name).ToString()
-                        GroupType         = $groupType
-                        distinguishedName = $group
-                    }
-                    $outputObject = New-Object -Property $Result -TypeName psobject
-                    $outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADObjectGroupMembership.Result")
-                    write-output $outputObject 
+					try {
+						$groupDetails = [ADSI] "LDAP://$group" 
+						$groupType = GetGroupType ([convert]::ToInt32($groupDetails.Properties.grouptype, 10))
+						
+						# display the properties of each group              
+						$result = [ORDERED]@{
+							Name              = $($groupDetails.Properties.name).ToString()
+							GroupType         = $groupType
+							distinguishedName = $group
+						}
+						$outputObject = New-Object -Property $Result -TypeName psobject
+						$outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetADObjectGroupMembership.Result")
+						write-output $outputObject 
+					}
+					catch {
+						Write-Warning "error accessing LDAP://$group"
+					}
                 }
             }
             else {
