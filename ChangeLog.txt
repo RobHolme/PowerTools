@@ -33,3 +33,4 @@ Version History
 	2.21 (27/02/2020)	Added the -PreventRedirect flag to Connect-URLd function
 	2.30 (07/03/2020)	Removed nested modules, now each function is a dot sources ps1 file. Speeds up parameter tab completion and load times.
 	2.31 (07/03/2020)	Removed Get-Uptime as it is now included in powershell core.
+	2.33 (16/03/2020)	Updated Get-ADObjectGroupMembership to catch exceptions when group properties can not be accessed.
