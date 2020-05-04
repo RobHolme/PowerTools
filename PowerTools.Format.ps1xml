@@ -473,8 +473,8 @@
 						<PropertyName>AccountLockout</PropertyName>
 					</ListItem>
 					<ListItem>
-						<Label>PasswordExpired</Label>
-						<PropertyName>PasswordExpired</PropertyName>
+						<Label>PasswordNeverExpires</Label>
+						<PropertyName>PasswordNeverExpires</PropertyName>
 					</ListItem>
 					<ListItem>
 						<Label>AccountExpires</Label>
