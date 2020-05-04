@@ -50,7 +50,8 @@ The logon ID (samAccountName) of the AD user account
 		# bit masks for UserAccountControl attribute (in decimal)
 		[int] $ACCOUNTDISABLE = 2
 		[int] $LOCKOUT = 16
-		[int] $PASSWORD_EXPIRED = 8388608
+#		[int] $PASSWORD_EXPIRED = 8388608
+		[int] $DONT_EXPIRE_PASSWORD = 65536
 
 		# confirm the powershell version and platform requirements are met if using powershell core
 		if ($IsCoreCLR) {
@@ -101,7 +102,7 @@ The logon ID (samAccountName) of the AD user account
 					$currentUser = $result.GetDirectoryEntry()
                     
 					# get the account status from the userAccountControl bitmask 
-					$userPasswordExpired = $userLockedOut = $userDisabled = $false
+					$userPasswordNeverExpires = $userLockedOut = $userDisabled = $false
 					$userAccountControl = $currentUser.UserAccountControl[0]
 					if (($userAccountControl -band $ACCOUNTDISABLE) -eq $ACCOUNTDISABLE) {
 						$userDisabled = $true
@@ -109,9 +110,14 @@ The logon ID (samAccountName) of the AD user account
 					if (($userAccountControl -band $LOCKOUT) -eq $LOCKOUT) {
 						$userLockedOut = $true
 					}
-					if (($userAccountControl -band $PASSWORD_EXPIRED) -eq $PASSWORD_EXPIRED) {
-						$userPasswordExpired = $true
+					if (($userAccountControl -band $DONT_EXPIRE_PASSWORD) -eq $DONT_EXPIRE_PASSWORD) {
+						$userPasswordNeverExpires = $true
 					}
+
+# password expired flag doesn't seem to be supported after Windows 2003.
+#					if (($userAccountControl -band $PASSWORD_EXPIRED) -eq $PASSWORD_EXPIRED) {
+#						$userPasswordExpired = $true
+#					}
 
 					# check to see if the user must change password on next logon
 					$pwdChangeOnNextLogon = $false
@@ -129,7 +135,7 @@ The logon ID (samAccountName) of the AD user account
 						OtherIpPhone              = $currentUser.otherIpPhone.ToString()
 						AccountDisabled           = $userDisabled 
 						AccountLockout            = $userLockedOut
-						PasswordExpired           = $userPasswordExpired
+						PasswordNeverExpires      = $userPasswordNeverExpires
 						AccountExpires            = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.accountExpires[0])
 						PasswordLastSet           = ConvertADDateTime $currentUser.ConvertLargeIntegerToInt64($currentUser.pwdLastSet[0])
 						ChangePasswordOnNextLogon = $pwdChangeOnNextLogon
