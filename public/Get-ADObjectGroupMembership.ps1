@@ -1,5 +1,5 @@
 function Get-ADObjectGroupMembership() {
-    <#
+	<#
 .NOTES
 Function Name  	: Get-ADObjectGroupMembership
 Author     		: Rob Holme (rob@holme.com.au)  
@@ -13,32 +13,32 @@ Get-ADObjectGroupMembership -ID Rob
 .PARAMETER Identity 
 The CN of the AD Object account 
 #>
-    [CmdletBinding()]
-    Param(
-        [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
-            ValueFromPipeline = $True, 
-            ValueFromPipelineByPropertyName = $True)] 
-        [ValidateNotNullOrEmpty()]
-        [Alias('ID')] 
+	[CmdletBinding()]
+	Param(
+		[Parameter(
+			Position = 0, 
+			Mandatory = $True, 
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $True)] 
+		[ValidateNotNullOrEmpty()]
+		[Alias('ID')] 
 		[string] $Identity,
 		
 		[Parameter(
-            Position = 1, 
-            Mandatory = $True 
+			Position = 1, 
+			Mandatory = $True 
 		)] 
 		[ValidateSet("User", "Computer", "Group", "Contact")]
-        [string] $ObjectType
-    )
+		[string] $ObjectType
+	)
     
-    begin {
-        # confirm the powershell version and platform requirements are met if using powershell core
-        if ($IsCoreCLR) {
-            if (($PSVersionTable.PSVersion -lt 6.1) -or ($PSVersionTable.Platform -ne "Win32NT")) {
-                Write-Warning "This function requires Powershell Core 6.1 or greater on Windows."
-                $abort = $true
-            }
+	begin {
+		# confirm the powershell version and platform requirements are met if using powershell core
+		if ($IsCoreCLR) {
+			if (($PSVersionTable.PSVersion -lt 6.1) -or ($PSVersionTable.Platform -ne "Win32NT")) {
+				Write-Warning "This function requires Powershell Core 6.1 or greater on Windows."
+				$abort = $true
+			}
 		}
 		
 		# set default value if ObjectType not specified
@@ -46,16 +46,16 @@ The CN of the AD Object account
 			$ObjectType = "User"
 			Write-Warning "ObjectType not set, defaulting to searching User objects"
 		}
-    }
+	}
     
-    process {
+	process {
 
-        if (!$abort) {
-            # search the current domain only
-            $dom = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
-            $root = $dom.GetDirectoryEntry() 
-            $searcher = new-Object System.DirectoryServices.DirectorySearcher
-            $searcher.SearchRoot = $root
+		if (!$abort) {
+			# search the current domain only
+			$dom = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
+			$root = $dom.GetDirectoryEntry() 
+			$searcher = new-Object System.DirectoryServices.DirectorySearcher
+			$searcher.SearchRoot = $root
 			$searcher.SearchScope = "Subtree"
 			
 			# construct the search filter based on object type
@@ -75,19 +75,20 @@ The CN of the AD Object account
 				Write-Verbose "Searching contact objects matching '$Identity'."
 				$searcher.Filter = "(&(objectClass=contact)(name=$Identity))"
 			}
-            $searchResult = $searcher.FindOne() 
+			$searchResult = $searcher.FindOne() 
 
-            If ($searchResult) {
-                $currentObject = $searchResult.GetDirectoryEntry()
-                $groups = $currentObject.memberOf
-                foreach ($group in $groups) {
+			If ($searchResult) {
+				$currentObject = $searchResult.GetDirectoryEntry()
+				$groups = $currentObject.memberOf
+				foreach ($group in $groups) {
 					try {
 						$groupDetails = [ADSI] "LDAP://$group" 
 						$groupType = GetGroupType ([convert]::ToInt32($groupDetails.Properties.grouptype, 10))
 						
 						# display the properties of each group              
 						$result = [ORDERED]@{
-							Name              = $($groupDetails.Properties.name).ToString()
+							samAccountName    = $Identity
+							GroupName         = $($groupDetails.Properties.name).ToString()
 							GroupType         = $groupType
 							distinguishedName = $group
 						}
@@ -98,14 +99,14 @@ The CN of the AD Object account
 					catch {
 						Write-Warning "error accessing LDAP://$group"
 					}
-                }
-            }
-            else {
-                write-warning "No $ObjectType object matching '$Identity' found."
-            }
-            $searcher.Dispose()
-        }
-    }
+				}
+			}
+			else {
+				write-warning "No $ObjectType object matching '$Identity' found."
+			}
+			$searcher.Dispose()
+		}
+	}
 }
 
 
