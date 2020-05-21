@@ -36,3 +36,4 @@ Version History
 	2.33 (16/03/2020)	Updated Get-ADObjectGroupMembership to catch exceptions when group properties can not be accessed.
 	2.34 (04/05/2020)	Removed PasswordExpired attribute from Get-ADUserDetails as this has not been supported since Windows 2003. 
 						Added PasswordNeverExpires attribute to Get-ADUserDetails 
+	2.35 (21/05/2020)	Updated formatting of get-ADObjectGroupMemebership to hide DN and samAccountName from default view.
