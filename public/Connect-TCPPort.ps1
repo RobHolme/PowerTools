@@ -38,7 +38,8 @@ The number of the port to connect to.
     process {
         $TCPTest = New-Object System.Net.Sockets.TcpClient
         Try {
-            Write-Verbose "Connecting to $($Hostname):$($Port) (TCP) ..."
+			Write-Verbose "Connecting to $($Hostname):$($Port) (TCP) ..."
+			$connectionTime = $null
             $connectionTime = measure-command {$TCPTest.Connect($Hostname, $Port)}
             $Result = @{
                 Connection = "Successful"
