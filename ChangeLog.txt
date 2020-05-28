@@ -37,3 +37,4 @@ Version History
 	2.34 (04/05/2020)	Removed PasswordExpired attribute from Get-ADUserDetails as this has not been supported since Windows 2003. 
 						Added PasswordNeverExpires attribute to Get-ADUserDetails 
 	2.35 (21/05/2020)	Updated formatting of get-ADObjectGroupMemebership to hide DN and samAccountName from default view.
+	2.36 (28/05/2020)	Fixed issue where Connect-TcpPort could report a connection time for a failed connection, if the prior connection was successful
