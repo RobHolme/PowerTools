@@ -3,12 +3,7 @@ A module containing a random collection of functions that I use occasionally. Th
 - Connect-SQLDatabase
 - Connect-TCPPort
 - Connect-URL
-- Convert-ADTimestamp
 - Export-Credential
-- Find-ADGroup
-- Get-ADGroupMembers
-- Get-ADObjectGroupMembership
-- Get-ADUserDetails
 - Get-FirewallStatus
 - Get-Hash
 - Get-IniValue
@@ -16,7 +11,7 @@ A module containing a random collection of functions that I use occasionally. Th
 - Get-ProcessorAffinity
 - Get-ProcessorUtilisation
 - Get-Screenshot
-- get-Uptime
+- Get-Uptime
 - Import-Credential
 - Remove-IniValue
 - Remove-WordMetadata
@@ -94,24 +89,6 @@ Connection ElapsedTime RemoteHost   Port
 ---------- ----------- ----------   ----
 Successful 0.0165949   somehost.com 80
 
-```
-
----
-## Convert-ADTimestamp
-### DESCRIPTION
-Converts a integer timestamp (e.g. from LDIFDE or some AD CmdLets) to a date/time value.
-### SYNTAX
-```PowerShell
-Convert-ADTimestamp [-Value] <string>  [<CommonParameters>]
-```
-### PARAMETERS
-```-Value <string>``` The value of the date/time field extracted from AD.
-
-### EXAMPLE
-```
-PS C:\> Convert-ADTimestamp -Value 131200456520442703
-
-Tuesday, 4 October 2016 5:07:32 PM
 ```
 
 ---
