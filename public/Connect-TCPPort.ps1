@@ -35,10 +35,12 @@ The number of the port to connect to.
 
 	# establish a TCP connection. If the connection fails an exception will be raised.
 	process {
+		$portCount = 1
 		foreach ($portNumber in $Port) {
 			$TCPTest = New-Object System.Net.Sockets.TcpClient
 			Try {
 				Write-Verbose "Connecting to $($Hostname):$($portNumber) (TCP) ..."
+				Write-Progress -Activity "Connecting to $($Hostname):$($portNumber)" -PercentComplete (($portCount++ / $Port.Count) * 100)
 				$connectionTime = $null
 				$connectionTime = measure-command { $TCPTest.Connect($Hostname, $portNumber) }
 				$Result = @{
