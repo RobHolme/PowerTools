@@ -40,3 +40,4 @@ Version History
 	2.36 (28/05/2020)	Fixed issue where Connect-TcpPort could report a connection time for a failed connection, if the prior connection was successful
 	2.37 (29/05/2020)	Connect-TcpPort now accepts an array of port numbers to connect to via the -Port parameter
 	2.38 (25/06/2020)	Added Clear-Clipboard function
+	2.39 (21/10/2020)	Added progress bar to connect-tcpport 
