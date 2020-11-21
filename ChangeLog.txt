@@ -41,3 +41,4 @@ Version History
 	2.37 (29/05/2020)	Connect-TcpPort now accepts an array of port numbers to connect to via the -Port parameter
 	2.38 (25/06/2020)	Added Clear-Clipboard function
 	2.39 (21/10/2020)	Added progress bar to connect-tcpport 
+	2.40 (21/11/2020)	Added Add-SshAuthorizedKey
