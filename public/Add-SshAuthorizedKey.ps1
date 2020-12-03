@@ -56,9 +56,17 @@ The SSH server(s)
 			Mandatory=$True,
 			ValueFromPipeline=$False,
 			ValueFromPipelineByPropertyName = $true,
-			HelpMessage="SSH user"
+			HelpMessage="SSH Hostname"
 		)]
-		[string[]] $Server
+		[string[]] $Server,
+
+		[Parameter(
+			Position=3,
+			ValueFromPipeline=$False,
+			ValueFromPipelineByPropertyName = $true,
+			HelpMessage="Overwrite existing SSH keys for the user"
+		)]
+		[switch] $OverwriteExistingKeys
 	)
 
 	process {
@@ -112,8 +120,16 @@ The SSH server(s)
 					write-error "Private Key detected. Skipping $aPath"
 				}
 				else {
-					Write-Verbose "Adding $aPath to $User@$sshServer"
-					$publicKey | ssh $User@$sshServer 'mkdir ~/.ssh; cat >> ~/.ssh/authorized_keys' | out-null
+					# overwrite existing keys in ~\.ssh\authorised_keys with new key
+					if ($OverwriteExistingKeys) {
+						Write-Verbose "Adding $aPath to $User@$sshServer - Overwriting existing keys"
+						$publicKey | ssh $User@$sshServer 'mkdir ~/.ssh; cat > ~/.ssh/authorized_keys' | out-null
+					}
+					# append new key to existing keys in ~\.ssh\authorised_keys
+					else {
+						Write-Verbose "Adding $aPath to $User@$sshServer"
+						$publicKey | ssh $User@$sshServer 'mkdir ~/.ssh; cat >> ~/.ssh/authorized_keys' | out-null
+					}
 				}
 			}
 		}
