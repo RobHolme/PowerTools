@@ -42,3 +42,4 @@ Version History
 	2.38 (25/06/2020)	Added Clear-Clipboard function
 	2.39 (21/10/2020)	Added progress bar to connect-tcpport 
 	2.40 (21/11/2020)	Added Add-SshAuthorizedKey
+	2.41 (03/12/2020)	Added -OverwriteExistingKeys switch to Add-SshAuthorizedKey
