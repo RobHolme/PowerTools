@@ -45,7 +45,7 @@ The number of the port to connect to.
 				$connectionTime = measure-command { $TCPTest.Connect($Hostname, $portNumber) }
 				$Result = @{
 					Connection  = "Successful"
-					ElapsedTime = $connectionTime.TotalSeconds
+					ElapsedTime = "$([math]::Round(($connectionTime.TotalSeconds * 1000),1)) ms"
 					RemoteHost  = $Hostname
 					Port        = $portNumber
 				}
