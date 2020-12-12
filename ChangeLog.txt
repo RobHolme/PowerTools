@@ -43,3 +43,4 @@ Version History
 	2.39 (21/10/2020)	Added progress bar to connect-tcpport 
 	2.40 (21/11/2020)	Added Add-SshAuthorizedKey
 	2.41 (03/12/2020)	Added -OverwriteExistingKeys switch to Add-SshAuthorizedKey
+	2.42 (12/12/2020)	Changed reporting of connection time to ms in Connect-TCPPort
