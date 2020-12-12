@@ -33,44 +33,75 @@ The number of the port to connect to.
 		[int[]] $Port
 	)
 
-	# establish a TCP connection. If the connection fails an exception will be raised.
-	process {
-		$portCount = 1
-		foreach ($portNumber in $Port) {
-			$TCPTest = New-Object System.Net.Sockets.TcpClient
-			Try {
-				Write-Verbose "Connecting to $($Hostname):$($portNumber) (TCP) ..."
-				Write-Progress -Activity "Connecting to $($Hostname):$($portNumber)" -PercentComplete (($portCount++ / $Port.Count) * 100)
-				$connectionTime = $null
-				$connectionTime = measure-command { $TCPTest.Connect($Hostname, $portNumber) }
-				$Result = @{
-					Connection  = "Successful"
-					ElapsedTime = "$([math]::Round(($connectionTime.TotalSeconds * 1000),1)) ms"
-					RemoteHost  = $Hostname
-					Port        = $portNumber
-				}
+	Begin {
+		function TestTCPConnection {
+			param (
+				$TargetIPAddress,
+				$TargetPort
+			)
+		
+			Write-Progress -Activity "Connecting to $($TargetIPAddress):$($TargetPort)" -SecondsRemaining -1 -PercentComplete -1      
+		
+			$Result = @{
+				Connection    = "Failed"
+				ElapsedTime   = ""
+				RemoteHost    = $Hostname
+				RemoteAddress = $TargetIPAddress
+				Port          = $TargetPort
 			}
-			# catch failed connections
-			Catch {
-				$Result = @{
-					Connection  = "Failed"
-					ElapsedTime = $connectionTime.TotalSeconds
-					RemoteHost  = $Hostname
-					Port        = $portNumber
-				}
-			}
-			Finally {
-				#return the results as an object
-				$outputObject = New-Object -Property $Result -TypeName psobject
-				$outputObject.PSObject.TypeNames.Insert(0, "Powertools.TestTCPPort.Result")
-				write-output $outputObject
 
-				# close any open TCP connections
-				if ($PSVersionTable.PSVersion.Major -lt 3) {
-					$TCPTest.Close() 
+			$TCPClient = [System.Net.Sockets.TcpClient]::new($TargetIPAddress.AddressFamily)
+			$connectionTime = $null
+
+			try {
+				$connectionTime = measure-command { $null = $TCPClient.ConnectAsync($TargetIPAddress, $TargetPort).GetAwaiter().Getresult() }
+				if ($TCPClient.Connected) {
+					$Result.Connection = "Successful"
+					$Result.ElapsedTime = "$([Math]::Round($connectionTime.TotalMilliseconds,1)) ms"
 				}
-				else {
-					$TCPTest.Dispose() 
+			}
+			catch {
+				Write-Debug "TCP connect to ($TargetIPAddress : $TargetPort) threw exception: $($_.Exception.Message)"
+			}
+			finally {
+				$TCPClient.Dispose()
+			}
+			return $Result
+		}
+	}
+
+	# establish a TCP connection. If the connection fails an exception will be raised.
+	Process {
+		Write-Verbose "Connecting to $Hostname"
+		# resolve the hostname to an IP address
+		$Addresses = $null
+		try {
+			$Addresses = [System.Net.Dns]::GetHostAddressesAsync($Hostname).GetAwaiter().GetResult()
+		}
+		catch {
+			Write-Debug "Name resolution of $Hostname threw exception: $($_.Exception.Message)"
+		}
+
+		if ($null -eq $Addresses) {
+			write-warning "Name resolution of $Hostname failed"
+			$ConnectionResult = @{
+				Connection    = "Failed"
+				ElapsedTime   = ""
+				RemoteHost    = $Hostname
+				RemoteAddress = ""
+				Port          = $Port
+			}	
+		}
+		else {
+			foreach ($portNumber in $Port) {
+				$i = 0
+				while ($i -lt $Addresses.Count) {
+					$ConnectionResult = TestTCPConnection -TargetIPAddress $Addresses[$i] -TargetPort $portNumber
+					$i++
+				
+					$outputObject = New-Object -Property $ConnectionResult -TypeName psobject
+					$outputObject.PSObject.TypeNames.Insert(0, "Powertools.TestTCPPort.Result")
+					write-output $outputObject
 				}
 			}
 		}
