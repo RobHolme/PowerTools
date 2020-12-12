@@ -80,6 +80,9 @@
 					<Label>RemoteHost</Label>
 				</TableColumnHeader>
 				<TableColumnHeader>
+					<Label>RemoteAddress</Label>
+				</TableColumnHeader>
+				<TableColumnHeader>
 					<Label>Port</Label>
 				</TableColumnHeader>
 			</TableHeaders>
@@ -94,6 +97,9 @@
 						</TableColumnItem>
 						<TableColumnItem>
 							<PropertyName>RemoteHost</PropertyName>
+						</TableColumnItem>
+						<TableColumnItem>
+							<PropertyName>RemoteAddress</PropertyName>
 						</TableColumnItem>
 						<TableColumnItem>
 							<PropertyName>Port</PropertyName>
