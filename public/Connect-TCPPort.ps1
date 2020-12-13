@@ -44,7 +44,7 @@ The number of the port to connect to.
 		
 			$Result = @{
 				Connection    = "Failed"
-				ElapsedTime   = ""
+				ElapsedTime   = "0 ms"
 				RemoteHost    = $Hostname
 				RemoteAddress = $TargetIPAddress
 				Port          = $TargetPort
@@ -57,13 +57,13 @@ The number of the port to connect to.
 				$connectionTime = measure-command { $null = $TCPClient.ConnectAsync($TargetIPAddress, $TargetPort).GetAwaiter().Getresult() }
 				if ($TCPClient.Connected) {
 					$Result.Connection = "Successful"
-					$Result.ElapsedTime = "$([Math]::Round($connectionTime.TotalMilliseconds,1)) ms"
 				}
 			}
 			catch {
 				Write-Debug "TCP connect to ($TargetIPAddress : $TargetPort) threw exception: $($_.Exception.Message)"
 			}
 			finally {
+				$Result.ElapsedTime = $connectionTime.TotalMilliseconds
 				$TCPClient.Dispose()
 			}
 			return $Result
@@ -80,31 +80,36 @@ The number of the port to connect to.
 		}
 		catch {
 			Write-Debug "Name resolution of $Hostname threw exception: $($_.Exception.Message)"
+			Write-Warning "Failed to resolve $Hostname"
 		}
 
-		if ($null -eq $Addresses) {
-			write-warning "Name resolution of $Hostname failed"
-			$ConnectionResult = @{
-				Connection    = "Failed"
-				ElapsedTime   = ""
-				RemoteHost    = $Hostname
-				RemoteAddress = ""
-				Port          = $Port
-			}	
-			$outputObject = New-Object -Property $ConnectionResult -TypeName psobject
-			$outputObject.PSObject.TypeNames.Insert(0, "Powertools.TestTCPPort.Result")
-			write-output $outputObject
-		}
-		else {
-			foreach ($portNumber in $Port) {
+		# attempt a TCP connection for all ports (for all resolved IP addresses for hostname)
+		foreach ($portNumber in $Port) {
+			# report failure for each port if name resolution failed, so all results reported consistently
+			if ($null -eq $Addresses) {
+				[PSCustomObject]@{
+					PSTypeName     = "Powertools.TestTCPPort.Result"
+					Connection     = "Failed"
+					ConnectionTime = "0 ms"
+					RemoteHost     = $Hostname
+					RemoteAddress  = ""
+					Port           = $portNumber
+				}
+			}
+			# test the TCP connection for each resolved IP address
+			else {
 				$i = 0
 				while ($i -lt $Addresses.Count) {
-					$ConnectionResult = TestTCPConnection -TargetIPAddress $Addresses[$i] -TargetPort $portNumber
-					$i++
+					$ConnectionResult = TestTCPConnection -TargetIPAddress $Addresses[$i++] -TargetPort $portNumber
 				
-					$outputObject = New-Object -Property $ConnectionResult -TypeName psobject
-					$outputObject.PSObject.TypeNames.Insert(0, "Powertools.TestTCPPort.Result")
-					write-output $outputObject
+					[PSCustomObject]@{
+						PSTypeName     = "Powertools.TestTCPPort.Result"
+						Connection     = $ConnectionResult.Connection
+						ConnectionTime = "$([Math]::Round($ConnectionResult.ElapsedTime,1)) ms"
+						RemoteHost     = $Hostname
+						RemoteAddress  = $ConnectionResult.RemoteAddress
+						Port           = $portNumber
+					}
 				}
 			}
 		}
