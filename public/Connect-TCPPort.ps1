@@ -101,7 +101,6 @@ The number of the port to connect to.
 				$i = 0
 				while ($i -lt $Addresses.Count) {
 					$ConnectionResult = TestTCPConnection -TargetIPAddress $Addresses[$i++] -TargetPort $portNumber
-				
 					[PSCustomObject]@{
 						PSTypeName     = "Powertools.TestTCPPort.Result"
 						Connection     = $ConnectionResult.Connection
