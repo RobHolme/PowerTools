@@ -91,6 +91,9 @@ The number of the port to connect to.
 				RemoteAddress = ""
 				Port          = $Port
 			}	
+			$outputObject = New-Object -Property $ConnectionResult -TypeName psobject
+			$outputObject.PSObject.TypeNames.Insert(0, "Powertools.TestTCPPort.Result")
+			write-output $outputObject
 		}
 		else {
 			foreach ($portNumber in $Port) {
