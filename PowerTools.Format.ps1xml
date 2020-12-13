@@ -74,9 +74,6 @@
 					<Label>Connection</Label>
 				</TableColumnHeader>
 				<TableColumnHeader>
-					<Label>ConnectionTime</Label>
-				</TableColumnHeader>
-				<TableColumnHeader>
 					<Label>RemoteHost</Label>
 				</TableColumnHeader>
 				<TableColumnHeader>
@@ -85,16 +82,23 @@
 				<TableColumnHeader>
 					<Label>Port</Label>
 				</TableColumnHeader>
+				<TableColumnHeader>
+					<Label>ConnectionTime</Label>
+				</TableColumnHeader>
 			</TableHeaders>
 			<TableRowEntries>
 				<TableRowEntry>
 					<TableColumnItems>
 						<TableColumnItem>
-							<PropertyName>Connection</PropertyName>
-						</TableColumnItem>
-						<TableColumnItem>
-							<PropertyName>ConnectionTime</PropertyName>
-						</TableColumnItem>
+                			<ScriptBlock>
+                  			if ($_.Connection -eq "Failed") {
+                      			"$([char]0x1b)[1;91m$($_.Connection)$([char]0x1b)[0m"
+                  			}
+                  			else {
+                      			$_.Connection
+                  			}
+                			</ScriptBlock>
+              			</TableColumnItem>
 						<TableColumnItem>
 							<PropertyName>RemoteHost</PropertyName>
 						</TableColumnItem>
@@ -103,6 +107,9 @@
 						</TableColumnItem>
 						<TableColumnItem>
 							<PropertyName>Port</PropertyName>
+						</TableColumnItem>
+						<TableColumnItem>
+							<PropertyName>ConnectionTime</PropertyName>
 						</TableColumnItem>
 					</TableColumnItems>
 				</TableRowEntry>
