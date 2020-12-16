@@ -1,7 +1,7 @@
-function Connect-TCPPort {
+function Test-TCPPort {
 	<#
 .NOTES
-Function Name   : Connect-TCPPort
+Function Name   : Test-TCPPort
 Author          : Rob Holme (rob@holme.com.au)
 Version         : 1.0 (01/12/2014) - Initial version.
                   1.1 (01/08/2016) - Output returned as an object instead of a string.
