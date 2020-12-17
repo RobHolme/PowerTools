@@ -1,4 +1,4 @@
-function Connect-URL {
+function Test-URL {
 	<#
 .NOTES
 Function Name   : Connect-TCPPort
@@ -54,16 +54,16 @@ The URL to connect to.
 				$status = $Matches[0]
 			}
 			else {	
-				write-warning "Failed to connect to $URL.  $($_.Exception.Message)"
+				write-warning "Failed to connect to $URL"
+				write-debug  "Exception thrown: $($_.Exception.Message)"
 			}
 		}
-		$result = [Ordered]@{
+		
+		[PSCustomObject]@{
+			PSTypeName   = "Powertools.ConnectURL.Result"
 			StatusCode   = $status
 			ResponseTime = "$([math]::Round($timeElapsed.Milliseconds,2)) (ms)"  
 			URL          = $URL
 		} 
-		$outputObject = New-Object -Property $result -TypeName psobject
-		$outputObject.PSObject.TypeNames.Insert(0, "Powertools.ConnectURL.Result")
-		Write-Output $outputObject
 	}
 }
