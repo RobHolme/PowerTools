@@ -58,7 +58,7 @@ The URL to connect to.
 				write-debug  "Exception thrown: $($_.Exception.Message)"
 			}
 		}
-		
+	
 		[PSCustomObject]@{
 			PSTypeName   = "Powertools.ConnectURL.Result"
 			StatusCode   = $status
