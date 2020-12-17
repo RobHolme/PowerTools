@@ -47,3 +47,4 @@ Version History
 	2.43 (12/12/2020)	Connect-TCPPort now reports connection status of all IP addresses if a hostname resolves to more than 1 address
 	2.44 (13/12/2020)	Connect-TCPPort results show failed connection status in Red
 	2.45 (16/12/2020)	Removed several little used functions from the module (to speed up loading module when all .ps1m files need to be signed). 
+	2.46 (17/12/2020)	Renamed Connect-URL to Test-URL
