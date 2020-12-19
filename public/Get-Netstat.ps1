@@ -47,7 +47,9 @@ Get-Netstat -ResolveIPAddresses
 					
 				}
 			}
-			$properties = @{	
+			# Output the object, create a custom type name 'Powertools.GetNetstatResult' to allow custom formatting to be applied
+			[PSCustomObject]@{
+				PSTypeName     = 	"Powertools.GetNetstat.Result"
 				Protocol        = "TCP"
 				LocalIPAddress  = $tcpConnection.LocalAddress
 				LocalPort       = $tcpConnection.LocalPort
@@ -56,16 +58,14 @@ Get-Netstat -ResolveIPAddresses
 				State           = $tcpConnection.State
 				ProcessName     = $processHash[[convert]::ToInt32($tcpConnection.OwningProcess, 10)]
 			}
-			# Output the object, create a custom type name 'Powertools.GetNetstatResult' to allow custom formatting to be applied
-			$outputObject = New-Object -TypeName PSObject -Property $properties
-			$outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetNetstat.Result")
-			write-output $outputObject
 		}
 		
 		# list UDP endpoints
 		$udpEndpoints = Get-NetUDPEndpoint
 		ForEach ($udpEndpoint in $udpEndpoints) {
-			$properties = @{	
+			# Output the object, create a custom type name 'Powertools.GetNetstatResult' to allow custom formatting to be applied
+			[PSCustomObject]@{
+				PSTypeName     = "Powertools.GetNetstat.Result"	
 				Protocol        = "UDP"
 				LocalIPAddress  = $udpEndpoint.LocalAddress
 				LocalPort       = $udpEndpoint.LocalPort
@@ -74,12 +74,7 @@ Get-Netstat -ResolveIPAddresses
 				State           = ""
 				ProcessName     = $processHash[[convert]::ToInt32($udpEndpoint.OwningProcess, 10)]
 			}
-			# Output the object, create a custom type name 'Powertools.GetNetstatResult' to allow custom formatting to be applied
-			$outputObject = New-Object -TypeName PSObject -Property $properties
-			$outputObject.PSObject.TypeNames.Insert(0, "Powertools.GetNetstat.Result")
-			write-output $outputObject
 		}
-
 	}
 }
 

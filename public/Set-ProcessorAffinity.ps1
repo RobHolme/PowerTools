@@ -1,5 +1,5 @@
 function Set-ProcessorAffinity {
-    <#
+	<#
 .NOTES
 Function Name   : Set-ProcessorAffinity
 Author          : Rob Holme (rob@holme.com.au)
@@ -23,53 +23,52 @@ The number of cpu cores to limit the process to. This includes hyper threaded co
 .NOTES
 Works with linux, however not all processes support changing the processor affinity attribute.
 #>
-    [CmdletBinding(DefaultParametersetName = "ProcessName")]
-    Param(
-        [Parameter(
-            Position = 0,
-            Mandatory = $True,
-            ValueFromPipeline = $True,
-            ParameterSetName = "ProcessName")]
-        [string] $ProcessName,
+	[CmdletBinding(DefaultParametersetName = "ProcessName")]
+	Param(
+		[Parameter(
+			Position = 0,
+			Mandatory = $True,
+			ValueFromPipeline = $True,
+			ParameterSetName = "ProcessName")]
+		[string] $ProcessName,
 
-        [Parameter(
-            Position = 0,
-            Mandatory = $True,
-            ValueFromPipeline = $True,
-            ParameterSetName = "ProcessID")]
-        [Alias("Id")]
-        [int] $ProcessID,
+		[Parameter(
+			Position = 0,
+			Mandatory = $True,
+			ValueFromPipeline = $True,
+			ParameterSetName = "ProcessID")]
+		[Alias("Id")]
+		[int] $ProcessID,
 
-        [Parameter(
-            Position = 1,
-            Mandatory = $False)]
-        [int] $Cores
-    )
+		[Parameter(
+			Position = 1,
+			Mandatory = $False)]
+		[int] $Cores
+	)
 
-    # set the affinity for each process macthing the process name
-    process {
-        if ($ProcessName) {
-            $processes = Get-Process -Name $ProcessName
-        }
-        elseif ($ProcessID) {
-            $processes = Get-Process -Id $ProcessID
-        }
-        foreach ($process in $processes) {
-            try {
-                # ProcessorAffinity is a bit mask. 1 core = 1, 2 cores = 3, 3 cores = 7, 4 cores = 15, 5 cores = 31, 6 cores = 63, 7 cores = 127, 8 cores = 255
-                $process.ProcessorAffinity = [int][math]::pow(2, $cores) - 1
-                $properties = @{
-                    ProcessName = $process.ProcessName
-                    ProcessID   = $process.Id
-                    Cores       = $cores
-                }
-                $outputObject = New-Object -TypeName PSObject -Property $properties
-                $outputObject.PSObject.TypeNames.Insert(0, "Powertools.SetProcessorAffinity.Result")
-                write-output $outputObject
-            }
-            catch {
-                Write-Error -Exception $_.Exception  -Message  "Failed to set the processor affinity for process $($process.Name)"
-            }
-        }
-    }
+	# set the affinity for each process macthing the process name
+	process {
+		if ($ProcessName) {
+			$processes = Get-Process -Name $ProcessName
+		}
+		elseif ($ProcessID) {
+			$processes = Get-Process -Id $ProcessID
+		}
+		foreach ($process in $processes) {
+			try {
+				# ProcessorAffinity is a bit mask. 1 core = 1, 2 cores = 3, 3 cores = 7, 4 cores = 15, 5 cores = 31, 6 cores = 63, 7 cores = 127, 8 cores = 255
+				$process.ProcessorAffinity = [int][math]::pow(2, $cores) - 1
+				[PSCustomObject]@{
+					PSTypeName  = "Powertools.SetProcessorAffinity.Result"
+					ProcessName = $process.ProcessName
+					ProcessID   = $process.Id
+					Cores       = $cores
+				}
+			}
+			catch {
+				Write-Warning "Failed to set the processor affinity for process $($process.Name)"
+				Write-Debug "Setting processor affinity threw an exception: $($_.Exception.Message)"
+			}
+		}
+	}
 }

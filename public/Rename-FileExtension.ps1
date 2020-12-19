@@ -1,5 +1,5 @@
 function Rename-FileExtension {
-    <#
+	<#
 .NOTES
 Function Name   : Remove-IniValue
 Author          : Rob Holme (rob@holme.com.au)
@@ -22,60 +22,58 @@ The file to rename (literal path)
 The new file extension
 #> 
 
-    [CmdletBinding(SupportsShouldProcess = $True, DefaultParameterSetName = 'Path')] 
-    Param(
-        [Parameter(
-            Position = 0, 
-            Mandatory = $True, 
-            HelpMessage = 'Which file is to be renamed?',
-            ParameterSetName = "Path",
-            ValueFromPipeline = $True, 
-            ValueFromPipelineByPropertyName = $true)] 
-        [ValidateNotNullOrEmpty()]
-        [Alias('PSPath')] 
-        [string[]] $Path,
+	[CmdletBinding(SupportsShouldProcess = $True, DefaultParameterSetName = 'Path')] 
+	Param(
+		[Parameter(
+			Position = 0, 
+			Mandatory = $True, 
+			HelpMessage = 'Which file is to be renamed?',
+			ParameterSetName = "Path",
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $true)] 
+		[ValidateNotNullOrEmpty()]
+		[Alias('PSPath')] 
+		[string[]] $Path,
 
-        [Parameter(
-            Position = 0,
-            Mandatory = $True, 
-            ParameterSetName = "LiteralPath",
-            ValueFromPipeline = $False,
-            ValueFromPipelineByPropertyName = $true,
-            HelpMessage = "Literal path to the file to rename")]
-        [ValidateNotNullOrEmpty()]
-        [string[]] $LiteralPath,
+		[Parameter(
+			Position = 0,
+			Mandatory = $True, 
+			ParameterSetName = "LiteralPath",
+			ValueFromPipeline = $False,
+			ValueFromPipelineByPropertyName = $true,
+			HelpMessage = "Literal path to the file to rename")]
+		[ValidateNotNullOrEmpty()]
+		[string[]] $LiteralPath,
     
-        # -NewExtension parameter
-        [Parameter(
-            Mandatory = $true 
-        )] 
-        [string]$NewExtension
-    ) 
+		# -NewExtension parameter
+		[Parameter(
+			Mandatory = $true 
+		)] 
+		[string]$NewExtension
+	) 
 
-    # process each file from the pipeline 
-    process {
-        $paths = @()
-        # check and expand wildcard paths
-        if ($psCmdlet.ParameterSetName -eq 'Path') {
-            $paths = ProcessPath $Path
-        }
-        # check and expand literal paths
-        else {
-            $paths = ProcessLiteralPath $LiteralPath
-        }
-        foreach ($aPath in $paths) {
-            $file = Get-Item -LiteralPath $aPath
-            $Result = @{
-                OldFilename = $file.Name 
-                NewFilename = $file.BaseName + ".$NewExtension"
-            }
-            if ($PSCmdlet.ShouldProcess($aPath, "Set-Content")) {
-                Rename-Item -LiteralPath $aPath -NewName "$($file.BaseName).$NewExtension"
-            }
-            $outputObject = New-Object -Property $Result -TypeName psobject
-            $outputObject.PSObject.TypeNames.Insert(0, "Powertools.RenameExtension.Result")
-            write-output $outputObject 
-        }
-    }
+	# process each file from the pipeline 
+	process {
+		$paths = @()
+		# check and expand wildcard paths
+		if ($psCmdlet.ParameterSetName -eq 'Path') {
+			$paths = ProcessPath $Path
+		}
+		# check and expand literal paths
+		else {
+			$paths = ProcessLiteralPath $LiteralPath
+		}
+		foreach ($aPath in $paths) {
+			$file = Get-Item -LiteralPath $aPath
+			[PSCustomObject]@{
+				PSTypeName  = "Powertools.RenameExtension.Result"
+				OldFilename = $file.Name 
+				NewFilename = $file.BaseName + ".$NewExtension"
+			}
+			if ($PSCmdlet.ShouldProcess($aPath, "Set-Content")) {
+				Rename-Item -LiteralPath $aPath -NewName "$($file.BaseName).$NewExtension"
+			}
+		}
+	}
 }
 

@@ -81,14 +81,12 @@ The name of the word document
                     }
                     # create a hash table to save properties for output as an object
                     $value = [System.__ComObject].InvokeMember("value", $binding::GetProperty, $null, $property, $null)
-                    $properties = @{
+                    [PSCustomObject]@{
+						PSTypeName  = "Powertools.ShowWordMetatdata.Result"
                         PropertyName = $propertyName.ToString()
                         Value        = $value.ToString()
                         Filename     = $aPath
                     }
-                    $outputObject = New-Object -TypeName PSObject -Property $properties
-                    $outputObject.PSObject.TypeNames.Insert(0, "Powertools.ShowWordMetatdata.Result")
-                    write-output $outputObject
                 }
                 # display custom properties
                 foreach ($property in $customProperties) {
@@ -99,14 +97,12 @@ The name of the word document
                     }
                     # create a hash table to save properties for output as an object
                     $value = [System.__ComObject].invokemember("value", $binding::GetProperty, $null, $property, $null)
-                    $properties = @{
+                    [PSCustomObject]@{
+						PSTypeName  = "Powertools.ShowWordMetatdata.Result"
                         PropertyName = $propertyName.ToString()
                         Value        = $value.ToString()
                         Filename     = $aPath
                     }
-                    $outputObject = New-Object -TypeName PSObject -Property $properties
-                    $outputObject.PSObject.TypeNames.Insert(0, "Powertools.ShowWordMetatdata.Result")
-                    write-output $outputObject
                 }
                 $application.documents.close($false)
             }

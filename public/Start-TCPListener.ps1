@@ -25,12 +25,12 @@ Function Start-TCPListener {
 			# default option is to close the connection and report results immediately 
 			if (!$WaitForData) {
 				# format results
-				$result = [ORDERED]@{
+				[PSCustomObject]@{
+					PSTypeName = "Powertools.StartTCPListener.Result"
 					Status     = "Connection Successful"
 					RemoteHost = $remoteIP
 					RemotePort = $remotePort
 				}
-				DisplayResult $result
 			}
 
 			# -WaitForData switch provided, wait for endpoint to send data and display the data received. No response to the pipeline until data is received.
@@ -45,13 +45,13 @@ Function Start-TCPListener {
 					$EncodedText = New-Object System.Text.ASCIIEncoding
 					$dataReceived = $EncodedText.GetString($buffer, 0, $i)
 				
-					$result = [ORDERED]@{
+					[PSCustomObject]@{
+						PSTypeName = "Powertools.StartTCPListener.Result"
 						Status     = "Connection Successful"
 						RemoteHost = $remoteIP
 						RemotePort = $remotePort
 						Data       = $dataReceived
 					}
-					DisplayResult $result
 				}
 				$stream.close()
 			}
@@ -65,11 +65,4 @@ Function Start-TCPListener {
 	}
 }
 
-
-function DisplayResult($Result) {
-	# return the results as an object
-	$outputObject = New-Object -Property $Result -TypeName psobject
-	$outputObject.PSObject.TypeNames.Insert(0, "Powertools.StartTCPListener.Result")
-	write-output $outputObject
-}
 
