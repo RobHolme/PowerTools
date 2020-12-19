@@ -129,7 +129,14 @@
 				<ListItems>
 					<ListItem>
 						<Label>Connection</Label>
-						<PropertyName>Connection</PropertyName>
+						<ScriptBlock>
+                  			if ($_.Connection -eq "Failed") {
+                      			"$([char]0x1b)[1;91m$($_.Connection)$([char]0x1b)[0m"
+                  			}
+                  			else {
+                      			$_.Connection
+                  			}
+                			</ScriptBlock>
 					</ListItem>
 					<ListItem>
 						<Label>ElapsedTime</Label>

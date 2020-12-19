@@ -76,33 +76,34 @@ Use the current logged on user's credentials to authenticate using Windows authe
         else {
             # create the connection string, use logged on users credentials for authentication
             $dbConnection.ConnectionString = "Data Source=$Server; Database=$Database;Integrated Security=True;"
-            $authentication = "Windows ($env:USERNAME)"
+            $authentication = "Windows ($env:USERDOMAIN\$env:USERNAME)"
         }
         try {
-            $connectionTime = measure-command {$dbConnection.Open()}
-            $Result = @{
+			$connectionTime = measure-command {$dbConnection.Open()}
+			[PSCustomObject]@{
+				PSTypeName     = "Powertools.TestDatabase.Result"
                 Connection = "Successful"
                 ElapsedTime = $connectionTime.TotalSeconds
                 Server = $Server
                 Database = $Database
-                User = $authentication}
+				User = $authentication
+			}
         }
         # exceptions will be raised if the database connection failed.
         catch {
-            $Result = @{
+			Write-Debug "Open database connection threw exception: $($_.Exception.Message)"
+            [PSCustomObject]@{
+				PSTypeName     = "Powertools.TestDatabase.Result"
                 Connection = "Failed"
                 ElapsedTime = $connectionTime.TotalSeconds
                 Server = $Server
                 Database = $Database
-                User = $authentication}
+				User = $authentication
+			}
         }
         Finally{
             # close the database connection
             $dbConnection.Close()
-            #return the results as an object
-            $outputObject = New-Object -Property $Result -TypeName psobject
-            $outputObject.PSObject.TypeNames.Insert(0,"Powertools.TestDatabase.Result")
-            write-output $outputObject
         }
     }
 }
