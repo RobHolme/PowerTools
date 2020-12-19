@@ -14,9 +14,47 @@ Reports the number of processor cores (incl hyper-threaded 'core') that a proces
 .EXAMPLE
 Get-ProcessorAffinity -Process "DCMWin" -Cores 2
 .PARAMETER ProcessName
-The name of the process to query the processor affinity for.
+The name of the process to query the processor affinity for. Can include wildcards to return more than one process
 .PARAMETER ProcessID
 The ID of the process to query the processor affinity for.
+.EXAMPLE
+PS C:\> Get-ProcessorAffinity -ProcessName msedge
+
+ProcessID Cores ProcessName
+--------- ----- -----------
+     7380     4 msedge
+    10376     4 msedge
+    12276     4 msedge
+    14296     4 msedge
+    16004     4 msedge
+    18700     4 msedge
+    19908     4 msedge
+    20144     4 msedge
+    21896     4 msedge
+    23072     4 msedge
+.EXAMPLE
+PS C:\> Get-ProcessorAffinity -ProcessName m*
+
+ProcessID Cores ProcessName
+--------- ----- -----------
+     4520     0 MCEBuddy.Service
+     4244     0 mDNSResponder
+     2288     0 Memory Compression
+    11132     4 Microsoft.Photos
+    10708     0 mmc
+    19320     4 mobsync
+     8384     0 MoUsoCoreWorker
+     7380     4 msedge
+    10376     4 msedge
+    12276     4 msedge
+    14296     4 msedge
+    16004     4 msedge
+    18700     4 msedge
+    19908     4 msedge
+    20144     4 msedge
+    21896     4 msedge
+    23072     4 msedge
+	 4764     0 MsMpEng
 #>
 	[CmdletBinding(DefaultParametersetName = "ProcessName")]
 	Param(
