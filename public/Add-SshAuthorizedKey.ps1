@@ -10,12 +10,17 @@ Adds a SSH public key to authorized_keys on a server.
 .DESCRIPTION
 Adds a SSH public key to authorized_keys on a server.
 .PARAMETER Path
-The file containing the public key
+The full path of the public key file. Accepts wildcards to match more than one public key.
+.PARAMETER LiteralPath
+The full path and filename of the file to export the credentials to (Literal Path).
 .PARAMETER User
-The SSH user
+The SSH username.
 .PARAMETER Server
-The SSH server(s)
-
+The SSH hostname(s).
+.PARAMETER OverwriteExistingKeys 
+Overwrite all existing keys in authorized_keys file (if this isn;t set the default is to append to this file).
+.EXAMPLE
+Add-SshAuthorizedKey -Path H:\Documents\.ssh\all-servers_rsa.pub -User rob -Server server1,server2,server3
 #>
     [CmdletBinding(DefaultParametersetName = "Path")]
     param(
@@ -58,6 +63,7 @@ The SSH server(s)
 			ValueFromPipelineByPropertyName = $true,
 			HelpMessage="SSH Hostname"
 		)]
+		[Alias] $Hostname, 
 		[string[]] $Server,
 
 		[Parameter(
