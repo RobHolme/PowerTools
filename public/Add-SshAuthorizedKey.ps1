@@ -63,7 +63,7 @@ Add-SshAuthorizedKey -Path H:\Documents\.ssh\all-servers_rsa.pub -User rob -Serv
 			ValueFromPipelineByPropertyName = $true,
 			HelpMessage="SSH Hostname"
 		)]
-		[Alias] $Hostname, 
+		[Alias('Hostname')]
 		[string[]] $Server,
 
 		[Parameter(
