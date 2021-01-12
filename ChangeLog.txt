@@ -49,3 +49,4 @@ Version History
 	2.45 (16/12/2020)	Removed several little used functions from the module (to speed up loading module when all .ps1m files need to be signed). 
 	2.46 (17/12/2020)	Renamed Connect-URL to Test-URL
 	2.47 (19/12/2020)	Colourised failed connections in Test-SQLDatabase. Connection error reported when -Debug switch used.
+	2.48 (12/01/2021)	Fixed issue with alias for -Server parameter in Add-SshAuthorizedKey
