@@ -26,6 +26,16 @@ The URL to connect to.
 
 		[Parameter(
 			Position = 1,
+			Mandatory = $False)]
+		[switch] $UseSystemProxy,
+
+		[Parameter(
+			Position = 1,
+			Mandatory = $False)]
+		[PSCredential] $ProxyCredential,
+
+		[Parameter(
+			Position = 2,
 			Mandatory = $False
 		)]
 		[switch] $PreventRedirect
@@ -40,6 +50,19 @@ The URL to connect to.
 			$request.AllowAutoRedirect = $false 
 		}
 		
+		# use system proxy [DOES NOT USE AUTO DETECTED PROXY]
+		#if ($UseSystemProxy) {
+		#	$proxy = [System.Net.WebRequest]::GetSystemWebProxy()
+		#	if ($ProxyCredential) {
+		#		$proxy.Credentials = $ProxyCredential	
+		#	}
+		#	else {
+		#		$proxy.Credentials = [System.Net.CredentialCache]::DefaultCredentials
+		#	}
+		#	$request.Proxy = $proxy
+		#	write-verbose "Using proxy server: $Proxy"
+		#}
+
 		try {
 			$timeElapsed = Measure-Command {
 				$response = $request.GetResponse()
