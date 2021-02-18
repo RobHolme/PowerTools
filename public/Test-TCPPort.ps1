@@ -24,6 +24,7 @@ The number of the port to connect to.
 			Mandatory = $True,
 			ValueFromPipeline = $True,
 			ValueFromPipelineByPropertyName = $true)]
+		[Alias('ComputerName')]
 		[string] $Hostname,
 
 		[Parameter(
