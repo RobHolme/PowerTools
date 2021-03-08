@@ -50,4 +50,4 @@ Version History
 	2.46 (17/12/2020)	Renamed Connect-URL to Test-URL
 	2.47 (19/12/2020)	Colourised failed connections in Test-SQLDatabase. Connection error reported when -Debug switch used.
 	2.48 (12/01/2021)	Fixed issue with alias for -Server parameter in Add-SshAuthorizedKey
-	2.49 (08/03/2021)	Added -Timeout parameter to Test-TCPConnection for faster results (Now default to 5 seconds, previously the system timeout of 20 secs applied)
+	2.49 (08/03/2021)	Added -Timeout parameter to Test-TCPPort for faster results (Now default to 5 seconds, previously the system timeout of 20 secs applied)
