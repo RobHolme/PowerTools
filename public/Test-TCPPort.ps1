@@ -3,8 +3,6 @@ function Test-TCPPort {
 .NOTES
 Function Name   : Test-TCPPort
 Author          : Rob Holme (rob@holme.com.au)
-Version         : 1.0 (01/12/2014) - Initial version.
-                  1.1 (01/08/2016) - Output returned as an object instead of a string.
 Requires        : PowerShell V3
 
 .SYNOPSIS
@@ -17,6 +15,8 @@ Connect-TCPPort -Hostname 192.168.0.1 Port 25
 The Hostname or IP address of the host to connect to.
 .PARAMETER Port
 The number of the port to connect to.
+.PARAMETER Timeout
+The TCP connection timeout in seconds. Defaults to 5 secs (or default system timeout if lower) if parameter not supplied. 
 #>
 	param(
 		[Parameter(
@@ -31,16 +31,22 @@ The number of the port to connect to.
 			Position = 1,
 			Mandatory = $True)]
 		[ValidateRange(1, 65535)]
-		[int[]] $Port
+		[int[]] $Port,
+
+		[Parameter(
+			Position = 2,
+			Mandatory = $False)]
+		[ValidateRange(1, 20)]
+		[int] $Timeout = 5
 	)
 
 	Begin {
 		function TestTCPConnection {
 			param (
 				$TargetIPAddress,
-				$TargetPort
+				$TargetPort,
+				$Timeout
 			)
-		
 			Write-Progress -Activity "Connecting to $($TargetIPAddress):$($TargetPort)" -SecondsRemaining -1 -PercentComplete -1      
 		
 			$Result = @{
@@ -55,8 +61,9 @@ The number of the port to connect to.
 			$connectionTime = $null
 
 			try {
-				$connectionTime = measure-command { $null = $TCPClient.ConnectAsync($TargetIPAddress, $TargetPort).GetAwaiter().Getresult() }
-				if ($TCPClient.Connected) {
+				$connectionTime = measure-command { $tcpConnectResult = $TCPClient.ConnectAsync($TargetIPAddress, $TargetPort).Wait($Timeout*1000)			}
+				Write-Verbose "Result: $tcpConnectResult"
+					if ($tcpConnectResult -eq $True) {
 					$Result.Connection = "Successful"
 				}
 			}
@@ -73,7 +80,7 @@ The number of the port to connect to.
 
 	# establish a TCP connection. If the connection fails an exception will be raised.
 	Process {
-		Write-Verbose "Connecting to $Hostname"
+		Write-Verbose "Connecting to $Hostname ($Timeout secs timeout)"
 		# resolve the hostname to an IP address
 		$Addresses = $null
 		try {
@@ -101,7 +108,7 @@ The number of the port to connect to.
 			else {
 				$i = 0
 				while ($i -lt $Addresses.Count) {
-					$ConnectionResult = TestTCPConnection -TargetIPAddress $Addresses[$i++] -TargetPort $portNumber
+					$ConnectionResult = TestTCPConnection -TargetIPAddress $Addresses[$i++] -TargetPort $portNumber -Timeout $Timeout
 					[PSCustomObject]@{
 						PSTypeName     = "Powertools.TestTCPPort.Result"
 						Connection     = $ConnectionResult.Connection
