@@ -273,13 +273,14 @@ Tests connectivity to a TCP port on a remote host. If successful, the time to co
 
 ### SYNTAX
 ```PowerShell
-Test-TCPPort [-Hostname] <String> [-Port] <Int32> [<CommonParameters>]
+Test-TCPPort [-Hostname] <String> [-Port] <Int32> [-Timeout] <Int32> [<CommonParameters>]
 ```
 ### PARAMETERS
 ```-Hostname <string>``` The name or IP address of the remote host to connect to.
 
 ```-Port <Int32>``` The port number on the remote host to connect to. 
 
+```-Timeout <Int32>``` The TCP connection timeout in seconds. Defaults to 5 seconds. System TCP timeout will still apply if lower than this value. 
 ### EXAMPLE
 ```
 PS C:\> Connect-TCPPort somehost.com -80
@@ -299,6 +300,15 @@ Successful www.google.com    216.58.199.36  80   57.7 ms
 Successful www.google.com    216.58.199.36  443  56.6 ms                                                                
 Successful www.microsoft.com 23.194.133.122 80   9.8 ms
 Successful www.microsoft.com 23.194.133.122 443  9.9 ms
+
+```
+### EXAMPLE
+```
+PS C:\> Connect-TCPPort somehost.com -80 -Timeout 2
+
+Connection RemoteHost   RemoteAddress Port ConnectionTime
+---------- ----------   ------------- ---- --------------
+Successful somehost.com 127.0.0.1     80  10.3 ms
 
 ```
 
