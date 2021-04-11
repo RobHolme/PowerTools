@@ -74,10 +74,12 @@ The URL to connect to.
 		#	$proxy = [System.Net.WebProxy]::new($ProxyURI)
 		#}
 		#if ($ProxyCredential) {
-		#	$proxy.Credentials = $ProxyCredential	
+		#	$proxy.Credentials = $ProxyCredential.GetNetworkCredentials()	
 		#}
 		#else {
 		#	$proxy.Credentials = [System.Net.CredentialCache]::DefaultCredentials
+		#      vvv  OR  ^^^
+		#   $proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
 		#}
 
 		try {
