@@ -26,8 +26,15 @@ The URL to connect to.
 
 		[Parameter(
 			Position = 1,
-			Mandatory = $False)]
+			Mandatory = $False,
+			ParameterSetName='SystemProxy')]
 		[switch] $UseSystemProxy,
+
+		[Parameter(
+			Position = 1,
+			Mandatory = $False,
+			ParameterSetName='ProxyURI')]
+		[string] $ProxyURI,
 
 		[Parameter(
 			Position = 1,
@@ -53,14 +60,24 @@ The URL to connect to.
 		# use system proxy [DOES NOT USE AUTO DETECTED PROXY]
 		#if ($UseSystemProxy) {
 		#	$proxy = [System.Net.WebRequest]::GetSystemWebProxy()
-		#	if ($ProxyCredential) {
-		#		$proxy.Credentials = $ProxyCredential	
-		#	}
-		#	else {
-		#		$proxy.Credentials = [System.Net.CredentialCache]::DefaultCredentials
-		#	}
 		#	$request.Proxy = $proxy
-		#	write-verbose "Using proxy server: $Proxy"
+		#	write-verbose "Using proxy server: $proxy"
+		#}
+		#if ($ProxyURI) {
+		#	try {
+		#		$proxyAddress = [uri]::new($ProxyURI)
+		#	}
+		#	catch {
+		#		Write-Error "ProxyURI parameter does not appear to be correct. You must provide a URI (e.g. http://proxyserver.domain:8181)" 
+		#		return
+		#	}
+		#	$proxy = [System.Net.WebProxy]::new($ProxyURI)
+		#}
+		#if ($ProxyCredential) {
+		#	$proxy.Credentials = $ProxyCredential	
+		#}
+		#else {
+		#	$proxy.Credentials = [System.Net.CredentialCache]::DefaultCredentials
 		#}
 
 		try {
