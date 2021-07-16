@@ -52,3 +52,4 @@ Version History
 	2.48 (12/01/2021)	Fixed issue with alias for -Server parameter in Add-SshAuthorizedKey
 	2.49 (08/03/2021)	Added -Timeout parameter to Test-TCPPort for faster results (Now default to 5 seconds, previously the system timeout of 20 secs applied)
 	2.50 (11/04/2021)	Retiring unused cmdlets (get-processorutilisation, get-processoraffinity, set-processoraffinity, remove-wordmetadata, show-wordmetadata)
+	2.51 (16/07/2021)	Added Get-SMBShareCapacity command
