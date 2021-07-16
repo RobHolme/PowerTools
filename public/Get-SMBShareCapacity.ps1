@@ -41,7 +41,7 @@ function Get-SMBShareCapacity {
 	
 	process {
 		# validate the UNCPath string is in the correct format
-		if ($UNCPath -cnotmatch '^\\\\\w+(\\\w+)+') {
+		if ($UNCPath -cnotmatch '^\\\\(\w|\.)+(\\(\w|\$)+)+') {
 			Write-Error "$UNCPath is not a valid UNC path."
 			return
 		}
