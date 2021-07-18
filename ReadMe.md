@@ -140,90 +140,6 @@ UDP      0.0.0.0        5353                                             msedge
 
 ```
 ---
-## Get-ProcessorAffinity
-### DESCRIPTION
- Reports the number of processor cores (incl hyper-threaded 'core') that a process can run on.
-### SYNTAX
-```PowerShell
-Get-ProcessorAffinity [-ProcessName] <String> [<CommonParameters>]
-
-Get-ProcessorAffinity -ProcessID <Int32> [<CommonParameters>]
-```
-### PARAMETERS
-```-ProcessName <String>``` The name of the process. Can use wildcards to return more than one process name.
-
-```-ProcessID <Int>``` The process ID (PID)
-### EXAMPLE
-```
-PS c:\> Get-ProcessorAffinity -ProcessName msedge
-
-ProcessID Cores ProcessName
---------- ----- -----------
-     7380     4 msedge
-    10376     4 msedge
-    12276     4 msedge
-    14296     4 msedge
-    16004     4 msedge
-    18700     4 msedge
-    19908     4 msedge
-    20144     4 msedge
-    21896     4 msedge
-    23072     4 msedge
-```
-
-### EXAMPLE
-```
-Get-ProcessorAffinity -ProcessName m*
-
-ProcessID Cores ProcessName
---------- ----- -----------
-     4520     0 MCEBuddy.Service
-     4244     0 mDNSResponder
-     2288     0 Memory Compression
-    11132     4 Microsoft.Photos
-    10708     0 mmc
-    19320     4 mobsync
-     8384     0 MoUsoCoreWorker
-     7380     4 msedge
-    10376     4 msedge
-    12276     4 msedge
-    14296     4 msedge
-    16004     4 msedge
-    18700     4 msedge
-    19908     4 msedge
-    20144     4 msedge
-    21896     4 msedge
-    23072     4 msedge
-     4764     0 MsMpEng
-```
-
-### EXAMPLE
-```
- Get-ProcessorAffinity -ProcessID 10376
-
-ProcessID Cores ProcessName
---------- ----- -----------
-    10376     4 msedge
-```
-
----
-## Get-ProcessorUtilisation
-### DESCRIPTION
-Display the overall processor utilisation and process utilisation stats.
-This function is not supported under Powershell Core.
-### SYNTAX
-```PowerShell
-Get-ProcessorUtilisation [-Top <Int32>] [<CommonParameters>]
-
-Get-ProcessorUtilisation [-ProcessName <String[]>] [<CommonParameters>]
-```
-### PARAMETERS
-```-Top <Int32>``` Limit the results to the top number of results (by highest CPU utilisation).
-
-```-ProcessName <String[]>``` Limit results to specific process names.
-### EXAMPLE
-```
-```
 
 ---
 ## Test-SQLDatabase
@@ -309,19 +225,34 @@ Successful somehost.com 127.0.0.1     80  10.3 ms
 ```
 
 ---
-## cmdlet-name
+## Get-SMShareCapacity
 ### DESCRIPTION
+Return the free disk space, and total disk space for a SMB share. Free space available will include any quota limits applied to the user running the command.
 
 ### SYNTAX
 ```PowerShell
-
+Get-SMBShareCapacity [-UNCPath] <String> [[-Unit] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 ### PARAMETERS
-```-Name <type>```
+```-UNCPath <String>``` The path to the SMB share in UNC format. If a folder names is included in the path, the properties of the parent share will be returned (i.e. folder paths ignored if supplied)  
+```-Unit <String>``` The unit to format the free space and total space properties. Must be one of "KB", "MB", "GB", "TB". Defaults to "GB" if not supplied. 
+### EXAMPLE
+```
+Get-SMBShareCapacity \\nas\homedrives
+
+FreeSpace  TotalSpace  PercentFree Share
+---------  ----------  ----------- -----
+5526.37 GB 10717.44 GB 51.56%      \\nas\homedrives\
+```
 
 ### EXAMPLE
 ```
+"\\nas\homedrives","\\127.0.0.1\c$" | Get-SMBShareCapacity
 
+FreeSpace  TotalSpace  PercentFree Share
+---------  ----------  ----------- -----
+5526.37 GB 10717.44 GB 51.56%      \\nas\homedrives\
+714.78 GB  930.9 GB    76.78%      \\127.0.0.1\c$\
 ```
 
 ---
