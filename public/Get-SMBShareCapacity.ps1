@@ -17,7 +17,7 @@ function Get-SMBShareCapacity {
 	[CmdletBinding(
 		SupportsShouldProcess = $true,
 		PositionalBinding = $false,
-		HelpUri = 'http://github.com/RobHolme/PowerTools',
+		HelpUri = 'http://github.com/RobHolme/PowerTools#get-smbsharecapacity',
 		ConfirmImpact = 'Medium')]
 
 	Param (
@@ -38,6 +38,27 @@ function Get-SMBShareCapacity {
 		[String] $Unit = "GB"
 		
 	)
+
+	begin {
+		# Import GetDiskFreeSpaceEx() from Kernel32
+		Add-Type @"
+			using System;
+			using System.Runtime.InteropServices;
+
+  			public class DiskSpace {
+				[DllImport("Kernel32", SetLastError=true, CharSet=CharSet.Auto)]
+				[return: MarshalAs(UnmanagedType.Bool)]
+
+				public static extern bool GetDiskFreeSpaceEx
+				(
+					string lpszPath,                    // Must name a folder, must end with '\'.
+					ref long lpFreeBytesAvailable,
+					ref long lpTotalNumberOfBytes,
+					ref long lpTotalNumberOfFreeBytes
+				);
+			}
+"@  
+	}
 	
 	process {
 		# validate the UNCPath string is in the correct format
@@ -59,29 +80,8 @@ function Get-SMBShareCapacity {
 			return
 		}
 
-		# Import GetDiskFreeSpaceEx() from Kernel32
-		Add-Type @"
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
-using System.Security;
-
-  public class DiskSpace {
-	[SuppressMessage("Microsoft.Security", "CA2118:ReviewSuppressUnmanagedCodeSecurityUsage"), SuppressUnmanagedCodeSecurity]
-	[DllImport("Kernel32", SetLastError=true, CharSet=CharSet.Auto)]
-	[return: MarshalAs(UnmanagedType.Bool)]
-
-	public static extern bool GetDiskFreeSpaceEx
-	(
-		string lpszPath,                    // Must name a folder, must end with '\'.
-		ref long lpFreeBytesAvailable,
-		ref long lpTotalNumberOfBytes,
-		ref long lpTotalNumberOfFreeBytes
-	);
-}
-"@  
-
-		if ($pscmdlet.ShouldProcess($UNCPath, "Get Free space")) {
+		if ($pscmdlet.ShouldProcess($UNCPath, "Get SMB Capacity")) {
+			# path must end with a trailing '\'
 			if (!$UNCPath.EndsWith("\")) {
 				$UNCPath += '\'
 			}
