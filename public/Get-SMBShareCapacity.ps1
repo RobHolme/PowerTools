@@ -96,10 +96,10 @@ function Get-SMBShareCapacity {
 				$percentFree = [Math]::Round(($freeBytesAdvailable / $totalNumberOfBytes) * 100, 2)
 				[PSCustomObject]@{
 					PSTypeName  = "Powertools.GetSMBShareCapacity.Result"
+					Share       = $UNCPath
 					FreeSpace   = "$formattedFreeSpace $Unit"
 					TotalSpace  = "$formattedTotalBytes $Unit"
 					PercentFree = "$percentFree%"
-					Share       = $UNCPath
 				}  
 			}
 		}
