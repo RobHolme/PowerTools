@@ -70,7 +70,7 @@ PS> Get-FolderSize
 			$allItems = Get-ChildItem -LiteralPath $Path -Force
 			foreach ($item in $allItems) {
 				if (Test-Path -LiteralPath $item -PathType Container ) {
-					$output = Get-ChildItem -LiteralPath $item -Recurse -Force | Measure-Object -Sum -Property Length | Select-Object 
+					$output = Get-ChildItem -LiteralPath $item -Recurse -Force | Measure-Object -Sum -Property Length
 					$resultList.Add([PSCustomObject]@{
 							Path         = $item.FullName
 							Files        = $output.Count
