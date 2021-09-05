@@ -1,7 +1,8 @@
 # PowerTools ReadMe
 A module containing a random collection of functions that I use occasionally. These originated as separate scripts but were merged into a module for transportability.
  - Add-SshAuthorizedKey    
- - Export-Credential       
+ - Export-Credential  
+ - Get-FolderSize     
  - Get-Hash                
  - Get-Netstat             
  - Get-Screenshot     
@@ -9,10 +10,7 @@ A module containing a random collection of functions that I use occasionally. Th
  - Import-Credential       
  - Rename-FileExtension    
  - Rename-Filename         
- - Start-NetworkTrace      
  - Start-TCPListener       
- - Stop-NetworkTrace       
- - Test-IsPasswordPwned    
  - Test-SQLDatabase        
  - Test-TCPPort            
  - Test-URL
@@ -254,6 +252,47 @@ FreeSpace  TotalSpace  PercentFree Share
 5526.37 GB 10717.44 GB 51.56%      \\nas\homedrives\
 714.78 GB  930.9 GB    76.78%      \\127.0.0.1\c$\
 ```
+
+---
+## Get-FolderSize
+### DESCRIPTION
+Return the size of each subfolder within a specified directory. Include a total size which include files within the root of the folder. Percentage values are rounded so are only approximate. Sample applies to small sizes using a large size unit - may be rounded to 0. 
+### SYNTAX
+```PowerShell
+Get-FolderSize [[-Path] <Object>] [[-Unit] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+### PARAMETERS
+```-Path <string>``` The Path of the folder to report on. If not provided, the current folder will be used.
+
+```-Unit <string>``` The size unit to use in results. Must be one of KB, MB, GB, or TB. Defaults to MB if value not supplied. 
+
+### EXAMPLE
+```
+# get the size of c:\users\test, sizes reported in KB
+PS> Get-FolderSize 'H:\git repos\PowerTools\' -Unit KB
+
+Path                            Files Size(KB) Graph                                          Percent
+----                            ----- -------- -----                                          -------
+H:\git repos\PowerTools\private     1     3.11                                                0.8%
+H:\git repos\PowerTools\public     14    54.07 ■■■■■■■■                                       13.4%
+H:\git repos\PowerTools\.git       90   311.02 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 77.2%
+<Total>                           111   402.97
+```
+### EXAMPLE
+```
+# get the size of the current folder, defaulting to report sizes in MB
+PS> Get-FolderSize
+
+Path                                           Files Size(MB) Graph                                         Percent
+----                                           ----- -------- -----                                         -------
+C:\Program Files\Common Files\Services             1        0                                               0%
+C:\Program Files\Common Files\DESIGNER             1     0.02                                               0%
+C:\Program Files\Common Files\System              58    10.05 ■                                             1.4%
+C:\Program Files\Common Files\microsoft shared   296   157.85 ■■■■■■■■■■■■■■                                22.7%
+C:\Program Files\Common Files\Adobe              172      526 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 75.8%
+<Total>                                          528   693.93
+```
+
 
 ---
 ## cmdlet-name
