@@ -27,7 +27,7 @@ PS> Get-FolderSize
 		$Path,
 
 		[Parameter(Mandatory = $false,
-			Position = 0,
+			Position = 1,
 			ValueFromPipeline = $false)]
 		[ValidateSet("KB", "MB", "GB", "TB")]
 		[string] $Unit = "MB"
