@@ -53,3 +53,4 @@ Version History
 	2.49 (08/03/2021)	Added -Timeout parameter to Test-TCPPort for faster results (Now default to 5 seconds, previously the system timeout of 20 secs applied)
 	2.50 (11/04/2021)	Retiring unused cmdlets (get-processorutilisation, get-processoraffinity, set-processoraffinity, remove-wordmetadata, show-wordmetadata)
 	2.51 (16/07/2021)	Added Get-SMBShareCapacity command
+	2.52 (05/09/2021)	Removed Start-NetworkTrace, Stop-NetworkTrace, Test-IsPasswordPwned from module due to lack of use.
