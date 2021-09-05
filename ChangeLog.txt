@@ -55,3 +55,4 @@ Version History
 	2.51 (16/07/2021)	Added Get-SMBShareCapacity command
 	2.52 (05/09/2021)	Removed Start-NetworkTrace, Stop-NetworkTrace, Test-IsPasswordPwned from module due to lack of use.
 	2.53 (05/09/2021)	Added Get-FolderSize function
+	2.54 (05/09/2021)	Changed order of properties returned in Get-SMBShareCApacity function
