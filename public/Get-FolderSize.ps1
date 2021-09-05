@@ -9,25 +9,9 @@ The path of the root folder to generate report of disk usage.
 .EXAMPLE
 # get the size of 'H:\git repos\PowerTools\', sizes reported in KB
 PS> Get-FolderSize 'H:\git repos\PowerTools\' -Unit KB
-
-Path                            Files Size(KB) Graph                                          Percent
-----                            ----- -------- -----                                          -------
-H:\git repos\PowerTools\private     1     3.11                                                0.8%
-H:\git repos\PowerTools\public     14    54.07 ■■■■■■■■                                       13.4%
-H:\git repos\PowerTools\.git       90   311.02 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 77.2%
-<Total>                           111   402.97
 .EXAMPLE
 # get the size of the current folder, defaulting to report sizes in MB
 PS> Get-FolderSize
-
-Path                                           Files Size(MB) Graph                                         Percent
-----                                           ----- -------- -----                                         -------
-C:\Program Files\Common Files\Services             1        0                                               0%
-C:\Program Files\Common Files\DESIGNER             1     0.02                                               0%
-C:\Program Files\Common Files\System              58    10.05 ■                                             1.4%
-C:\Program Files\Common Files\microsoft shared   296   157.85 ■■■■■■■■■■■■■■                                22.7%
-C:\Program Files\Common Files\Adobe              172      526 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 75.8%
-<Total>                                          528   693.93
 #>
 	
 	[CmdletBinding(SupportsShouldProcess = $true,
