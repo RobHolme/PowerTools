@@ -268,7 +268,7 @@ Get-FolderSize [[-Path] <Object>] [[-Unit] <String>] [-WhatIf] [-Confirm] [<Comm
 
 ### EXAMPLE
 ```
-# get the size of c:\users\test, sizes reported in KB
+# get the size of 'H:\git repos\PowerTools\', sizes reported in KB
 PS> Get-FolderSize 'H:\git repos\PowerTools\' -Unit KB
 
 Path                            Files Size(KB) Graph                                          Percent
