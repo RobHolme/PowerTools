@@ -435,20 +435,17 @@
 					</ListItem>
 					<ListItem>
 						<Label>Verified</Label>
-						<PropertyName>
-							<ScriptBlock>
-                  				if ($_.Verified -eq "False") {
-                      				"$([char]0x1b)[1;91m$($_.Verified)$([char]0x1b)[0m"
-                  				}
-                  				else {
-                      				$_.Verified
-                  				}
-                			</ScriptBlock>
-						</PropertyName>
+						<ScriptBlock>
+                  			if ($_.Verified -eq $false) {
+                    			"$([char]0x1b)[1;91m$($_.Verified)$([char]0x1b)[0m"
+                  			}
+                  			else {
+                    			$_.Verified
+                  			}
+                		</ScriptBlock>
 					</ListItem>
 					<ListItem>
 						<Label>NotBefore</Label>
-						<PropertyName>
 						<ScriptBlock>
                   				if ($_.NotBefore -gt (Get-Date)) {
                       				"$([char]0x1b)[1;91m$($_.NotBefore)$([char]0x1b)[0m"
@@ -457,11 +454,9 @@
 									$_.NotBefore
 								}
 						</ScriptBlock>
-						</PropertyName>
 					</ListItem>	
 					<ListItem>
 						<Label>NotAfter</Label>
-						<PropertyName>
 						<ScriptBlock>
                   				if ($_.NotAfter -lt (Get-Date)) {
                       				"$([char]0x1b)[1;91m$($_.NotAfter)$([char]0x1b)[0m"
@@ -470,7 +465,6 @@
 									$_.NotAfter
 								}
 						</ScriptBlock>
-						</PropertyName>
 					</ListItem>	
 					<ListItem>
 						<Label>SignatureAlgorithm</Label>

@@ -58,7 +58,7 @@ function Get-SSLCertificate {
 			}
 
 			[PSCustomObject]@{
-				PSTypeName              = "Powertools.Get-SSLCertificate.Result"
+				PSTypeName              = "Powertools.GetSSLCertificate.Result"
 				Subject                 = $certificate.Subject
 				SubjectAlternativeNames = $certificate.DnsNameList
 				Issuer                  = $certificate.Issuer
