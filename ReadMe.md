@@ -6,7 +6,8 @@ A module containing a random collection of functions that I use occasionally. Th
  - Get-Hash                
  - Get-Netstat             
  - Get-Screenshot     
- - Get-SMBShareCapacity     
+ - Get-SMBShareCapacity    
+ - Get-SSLCertificate 
  - Import-Credential       
  - Rename-FileExtension    
  - Rename-Filename         
@@ -69,6 +70,46 @@ Export-Credential [-Path] <String> [[-Credential] <PSCredential>] [-NoClobber] [
 PS C:\>Export-Credential -Path c:\temp\password.xml -Credential (Get-Credential)
 
 PS C:\>Export-Credential -Path c:\temp\password.xml -Username testdomain\testuser -Password $securePassword
+```
+
+---
+## Get-FolderSize
+### DESCRIPTION
+Return the size of each subfolder within a specified directory. Include a total size which include files within the root of the folder. Percentage values are rounded so are only approximate. Sample applies to small sizes using a large size unit - may be rounded to 0. 
+### SYNTAX
+```PowerShell
+Get-FolderSize [[-Path] <Object>] [[-Unit] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+### PARAMETERS
+```-Path <string>``` The Path of the folder to report on. If not provided, the current folder will be used.
+
+```-Unit <string>``` The size unit to use in results. Must be one of KB, MB, GB, or TB. Defaults to MB if value not supplied. 
+
+### EXAMPLE
+```
+# get the size of 'H:\git repos\PowerTools\', sizes reported in KB
+PS> Get-FolderSize 'H:\git repos\PowerTools\' -Unit KB
+
+Path                            Files Size(KB) Graph                                          Percent
+----                            ----- -------- -----                                          -------
+H:\git repos\PowerTools\private     1     3.11                                                0.8%
+H:\git repos\PowerTools\public     14    54.07 ■■■■■■■■                                       13.4%
+H:\git repos\PowerTools\.git       90   311.02 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 77.2%
+<Total>                           111   402.97
+```
+### EXAMPLE
+```
+# get the size of the current folder, defaulting to report sizes in MB
+PS> Get-FolderSize
+
+Path                                           Files Size(MB) Graph                                         Percent
+----                                           ----- -------- -----                                         -------
+C:\Program Files\Common Files\Services             1        0                                               0%
+C:\Program Files\Common Files\DESIGNER             1     0.02                                               0%
+C:\Program Files\Common Files\System              58    10.05 ■                                             1.4%
+C:\Program Files\Common Files\microsoft shared   296   157.85 ■■■■■■■■■■■■■■                                22.7%
+C:\Program Files\Common Files\Adobe              172      526 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 75.8%
+<Total>                                          528   693.93
 ```
 
 ---
@@ -137,7 +178,75 @@ UDP      ::             5353                                             msedge
 UDP      0.0.0.0        5353                                             msedge
 
 ```
+
 ---
+## Get-SMShareCapacity
+### DESCRIPTION
+Return the free disk space, and total disk space for a SMB share. Free space available will include any quota limits applied to the user running the command.
+
+### SYNTAX
+```PowerShell
+Get-SMBShareCapacity [-UNCPath] <String> [[-Unit] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+### PARAMETERS
+```-UNCPath <String>``` The path to the SMB share in UNC format. If a folder names is included in the path, the properties of the parent share will be returned (i.e. folder paths ignored if supplied)  
+```-Unit <String>``` The unit to format the free space and total space properties. Must be one of "KB", "MB", "GB", "TB". Defaults to "GB" if not supplied. 
+### EXAMPLE
+```
+Get-SMBShareCapacity \\nas\homedrives
+
+FreeSpace  TotalSpace  PercentFree Share
+---------  ----------  ----------- -----
+5526.37 GB 10717.44 GB 51.56%      \\nas\homedrives\
+```
+
+### EXAMPLE
+```
+"\\nas\homedrives","\\127.0.0.1\c$" | Get-SMBShareCapacity
+
+Share             FreeSpace  TotalSpace  PercentFree
+-----             ---------  ----------  -----------
+\\nas\homedrives\ 5526.37 GB 10717.44 GB 51.56%      
+\\127.0.0.1\c$\   714.78 GB  930.9 GB    76.78% 
+```
+
+---
+## Get-SSLCertificate
+### DESCRIPTION
+Retrieve SSL certificate, display properties or export to .cer file. 
+
+### SYNTAX
+```PowerShell
+ Get-SSLCertificate [-Hostname] <String> [[-Port] <Int32>] [[-SNIname] <String>] [[-ExportFile] <String>]
+    [<CommonParameters>]
+```
+### PARAMETERS
+```-Hostname <string>``` The remote host to retrieve the certificate from. 
+
+```-Port <int>``` The TCP port number of the remote site. Optional, will default to 443 TCP if omitted.
+
+```-SNIname <string>``` Optionally provide a SNI (Server Name Indication) name. Where a single site supports multiple certs, SNI name identifies the cert requested.
+
+```-ExportFile <string>``` Export the certificate to a base64 encoded X.509 certificate file (.CER).
+### EXAMPLE
+```
+# get the certificate from www.example.com (default to port 443)
+PS> Get-SSLCertificate -Hostname www.example.com
+```
+### EXAMPLE
+```
+PS> Get-SSLCertificate -Hostname www.example.com -SNIName api.example.com
+```
+### EXAMPLE
+```
+# get LDAPS cert form a domain controller
+PS> Get-SSLCertificate -Hostname DC01 -port 636
+```
+### EXAMPLE
+```
+# export certificate to c:\temp\CertExport.cer
+PS> Get-SSLCertificate -Hostname www.example.com -ExportFile c:\temp\CertExport.cer
+```
 
 ---
 ## Test-SQLDatabase
@@ -223,78 +332,7 @@ Successful somehost.com 127.0.0.1     80  10.3 ms
 ```
 
 ---
-## Get-SMShareCapacity
-### DESCRIPTION
-Return the free disk space, and total disk space for a SMB share. Free space available will include any quota limits applied to the user running the command.
 
-### SYNTAX
-```PowerShell
-Get-SMBShareCapacity [-UNCPath] <String> [[-Unit] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
-```
-### PARAMETERS
-```-UNCPath <String>``` The path to the SMB share in UNC format. If a folder names is included in the path, the properties of the parent share will be returned (i.e. folder paths ignored if supplied)  
-```-Unit <String>``` The unit to format the free space and total space properties. Must be one of "KB", "MB", "GB", "TB". Defaults to "GB" if not supplied. 
-### EXAMPLE
-```
-Get-SMBShareCapacity \\nas\homedrives
-
-FreeSpace  TotalSpace  PercentFree Share
----------  ----------  ----------- -----
-5526.37 GB 10717.44 GB 51.56%      \\nas\homedrives\
-```
-
-### EXAMPLE
-```
-"\\nas\homedrives","\\127.0.0.1\c$" | Get-SMBShareCapacity
-
-FreeSpace  TotalSpace  PercentFree Share
----------  ----------  ----------- -----
-5526.37 GB 10717.44 GB 51.56%      \\nas\homedrives\
-714.78 GB  930.9 GB    76.78%      \\127.0.0.1\c$\
-```
-
----
-## Get-FolderSize
-### DESCRIPTION
-Return the size of each subfolder within a specified directory. Include a total size which include files within the root of the folder. Percentage values are rounded so are only approximate. Sample applies to small sizes using a large size unit - may be rounded to 0. 
-### SYNTAX
-```PowerShell
-Get-FolderSize [[-Path] <Object>] [[-Unit] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
-```
-### PARAMETERS
-```-Path <string>``` The Path of the folder to report on. If not provided, the current folder will be used.
-
-```-Unit <string>``` The size unit to use in results. Must be one of KB, MB, GB, or TB. Defaults to MB if value not supplied. 
-
-### EXAMPLE
-```
-# get the size of 'H:\git repos\PowerTools\', sizes reported in KB
-PS> Get-FolderSize 'H:\git repos\PowerTools\' -Unit KB
-
-Path                            Files Size(KB) Graph                                          Percent
-----                            ----- -------- -----                                          -------
-H:\git repos\PowerTools\private     1     3.11                                                0.8%
-H:\git repos\PowerTools\public     14    54.07 ■■■■■■■■                                       13.4%
-H:\git repos\PowerTools\.git       90   311.02 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 77.2%
-<Total>                           111   402.97
-```
-### EXAMPLE
-```
-# get the size of the current folder, defaulting to report sizes in MB
-PS> Get-FolderSize
-
-Path                                           Files Size(MB) Graph                                         Percent
-----                                           ----- -------- -----                                         -------
-C:\Program Files\Common Files\Services             1        0                                               0%
-C:\Program Files\Common Files\DESIGNER             1     0.02                                               0%
-C:\Program Files\Common Files\System              58    10.05 ■                                             1.4%
-C:\Program Files\Common Files\microsoft shared   296   157.85 ■■■■■■■■■■■■■■                                22.7%
-C:\Program Files\Common Files\Adobe              172      526 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 75.8%
-<Total>                                          528   693.93
-```
-
-
----
 ## cmdlet-name
 ### DESCRIPTION
 
