@@ -4,23 +4,26 @@ function Get-SSLCertificate {
 	based on https://gist.github.com/jstangroome/5945820
 .SYNOPSIS
 	Summarise the total size of folders (and files) for a path.
-.PARAMETER SiteName
-	The remote website name.
+.PARAMETER Hostname
+	The remote website name / servername.
 .PARAMETER Port
 	Optionally provide the TCP port number of the remote website. Defaults to 443 if omitted.
-.PARAMETER SNIName
+.PARAMETER SNIname
 	Optionally provide a SNI (Server Name Indication) name. Where a single site supports multiple certs, SNI name identifies the cert requested.
 .EXAMPLE
-	Get-SSLCertificate -SiteName www.example.com 
+	Get-SSLCertificate -Hostname www.example.com 
 .EXAMPLE
-	Get-SSLCertificate -SiteName www.example.com -SNIName www.example.com 
+	Get-SSLCertificate -Hostname www.example.com -SNIName www.example.com 
+.EXAMPLE
+	# Get LDAPS cert form a domain controller
+	Get-SSLCertificate -Hostname DC01 -port 636
 #>
 
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true, Position = 0)]
 		[Alias('ComputerName')] 
-		[string] $SiteName,
+		[string] $Hostname,
 
 		[Parameter(Mandatory = $false, Position = 1)]
 		[ValidateRange(1, 65535)]
@@ -35,7 +38,7 @@ function Get-SSLCertificate {
 		$tcpClient = New-Object -TypeName System.Net.Sockets.tcpClient
 
 		try {
-			$tcpClient.Connect($SiteName, $Port)
+			$tcpClient.Connect($Hostname, $Port)
 			$tcpStream = $tcpClient.GetStream()
 			$callback = { param($caller, $cert, $chain, $errors) return $true }
 			$sslStream = New-Object -TypeName System.Net.Security.sslStream -ArgumentList @($tcpStream, $true, $callback)
