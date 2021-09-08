@@ -10,7 +10,7 @@ function Get-SSLCertificate {
 	Optionally provide the TCP port number of the remote website. Defaults to 443 if omitted.
 .PARAMETER SNIname
 	Optionally provide a SNI (Server Name Indication) name. Where a single site supports multiple certs, SNI name identifies the cert requested.
-.PARAMETER Export
+.PARAMETER ExportFile
 	Export the certificate to a base64 encoded X.509 certificate file (.CER) 
 .EXAMPLE
 	Get-SSLCertificate -Hostname www.example.com 
@@ -20,7 +20,7 @@ function Get-SSLCertificate {
 	# Get LDAPS cert form a domain controller
 	Get-SSLCertificate -Hostname DC01 -port 636
 .EXAMPLE
-	Get-SSLCertificate -Hostname www.example.com -Export c:\temp\CertExport.cer
+	Get-SSLCertificate -Hostname www.example.com -ExportFile c:\temp\CertExport.cer
 #>
 
 	[CmdletBinding(SupportsShouldProcess = $false, PositionalBinding = $true)]
@@ -48,7 +48,7 @@ function Get-SSLCertificate {
 		[Parameter(
 			Mandatory = $false,
 			Position = 2)]
-		[string] $Export
+		[string] $ExportFile
 	)
 
 	process {
@@ -75,12 +75,12 @@ function Get-SSLCertificate {
 
 		if ($certificate) {
 			# export the certificate to a base64 encoded file
-			If ($Export) {
+			If ($ExportFile) {
 				$certBase64 = "-----BEGIN CERTIFICATE-----`n"
 				$certBase64 += [System.Convert]::ToBase64String($certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::cert), [System.Base64FormattingOptions]::InsertLineBreaks)
 				$certBase64 += "`n-----END CERTIFICATE-----"
-				Out-File -FilePath $Export -InputObject $certBase64
-				Write-Output "Base64 encoded X.509 certificate (.CER) exported to $Export"
+				Out-File -FilePath $ExportFile -InputObject $certBase64
+				Write-Output "Base64 encoded X.509 certificate (.CER) exported to $ExportFile"
 			}
 			else {
 				if ($certificate -isnot [System.Security.Cryptography.X509Certificates.X509Certificate2]) {
