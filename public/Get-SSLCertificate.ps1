@@ -47,7 +47,7 @@ function Get-SSLCertificate {
 
 		[Parameter(
 			Mandatory = $false,
-			Position = 2)]
+			Position = 3)]
 		[string] $ExportFile
 	)
 
@@ -59,7 +59,7 @@ function Get-SSLCertificate {
 		try {
 			Write-Verbose "Connecting to $($Hostname):$($Port)"
 			Write-Verbose "Timeout: $timeout ms"
-			
+
 			$tcpConnectResult = $tcpClient.ConnectAsync($Hostname, $Port).Wait($timeout)
 			if ($tcpConnectResult -eq $true) {
 				$tcpStream = $tcpClient.GetStream()
