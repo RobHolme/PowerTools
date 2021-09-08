@@ -3,7 +3,7 @@ function Get-SSLCertificate {
 .NOTES
 	based on https://gist.github.com/jstangroome/5945820
 .SYNOPSIS
-	Summarise the total size of folders (and files) for a path.
+	Retrieve SSL certificate, display properties.  
 .PARAMETER Hostname
 	The remote website name / servername.
 .PARAMETER Port
