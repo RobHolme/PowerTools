@@ -52,29 +52,48 @@ function Get-SSLCertificate {
 	)
 
 	process {
+		$timeout = 3000
 		$certificate = $null
 		$tcpClient = New-Object -TypeName System.Net.Sockets.tcpClient
 
 		try {
-			$tcpClient.Connect($Hostname, $Port)
-			$tcpStream = $tcpClient.GetStream()
-			$callback = { param($caller, $cert, $chain, $errors) return $true }
-			$sslStream = New-Object -TypeName System.Net.Security.sslStream -ArgumentList @($tcpStream, $true, $callback)
-			try {
-				# optionally provide a SNI name (where a single site supports multiple certs, SNI name identifies the cert requested)
-				$sslStream.AuthenticateAsClient($SNIname)
-				$certificate = $sslStream.RemoteCertificate
+			Write-Verbose "Connecting to $($Hostname):$($Port)"
+			Write-Verbose "Timeout: $timeout ms"
+			
+			$tcpConnectResult = $tcpClient.ConnectAsync($Hostname, $Port).Wait($timeout)
+			if ($tcpConnectResult -eq $true) {
+				$tcpStream = $tcpClient.GetStream()
+				$callback = { param($caller, $cert, $chain, $errors) return $true }
+				$sslStream = New-Object -TypeName System.Net.Security.sslStream -ArgumentList @($tcpStream, $true, $callback)
+				try {
+					# optionally provide a SNI name (where a single site supports multiple certs, SNI name identifies the cert requested)
+					$sslStream.AuthenticateAsClient($SNIname)
+					$certificate = $sslStream.RemoteCertificate
+				}
+				catch {
+					Write-Warning "Failed to retrieve certificate. Socket may not support TLS."
+					Write-Warning " $($_.Exception.InnerException.Message)"
+					Write-Debug "$($_.Exception)"
+				}
+				finally {
+					$sslStream.Dispose()
+				}
 			}
-			finally {
-				$sslStream.Dispose()
+			else {
+				Write-Warning "Failed to connect to $($Hostname):$($Port)"
 			}
 		} 
+		catch {
+			Write-Warning "Failed to connect to $($Hostname):$($Port)."
+			Write-Warning "$($_.Exception.InnerException.Message)"
+			Write-Debug "$($_.Exception)"
+		}
 		finally {
 			$tcpClient.Dispose()
 		}
 
 		if ($certificate) {
-			# export the certificate to a base64 encoded file
+			# export the certificate to a base64 encoded file (.cer)
 			If ($ExportFile) {
 				$certBase64 = "-----BEGIN CERTIFICATE-----`n"
 				$certBase64 += [System.Convert]::ToBase64String($certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::cert), [System.Base64FormattingOptions]::InsertLineBreaks)
@@ -82,6 +101,7 @@ function Get-SSLCertificate {
 				Out-File -FilePath $ExportFile -InputObject $certBase64
 				Write-Output "Base64 encoded X.509 certificate (.CER) exported to $ExportFile"
 			}
+			# write the certificate properties to the pipeline
 			else {
 				if ($certificate -isnot [System.Security.Cryptography.X509Certificates.X509Certificate2]) {
 					$certificate = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2 -ArgumentList $certificate
