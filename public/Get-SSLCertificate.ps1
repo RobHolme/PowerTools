@@ -19,17 +19,26 @@ function Get-SSLCertificate {
 	Get-SSLCertificate -Hostname DC01 -port 636
 #>
 
-	[CmdletBinding()]
+	[CmdletBinding(SupportsShouldProcess = $false,PositionalBinding = $true)]
 	param (
-		[Parameter(Mandatory = $true, Position = 0)]
+		[Parameter(
+			Mandatory = $true, 
+			ValueFromPipeline = $True, 
+			ValueFromPipelineByPropertyName = $true, 
+			Position = 0
+		)]
 		[Alias('ComputerName')] 
 		[string] $Hostname,
 
-		[Parameter(Mandatory = $false, Position = 1)]
+		[Parameter(
+			Mandatory = $false, 
+			Position = 1)]
 		[ValidateRange(1, 65535)]
 		[int] $Port = 443,
 
-		[Parameter(Mandatory = $false, Position = 2)]
+		[Parameter(
+			Mandatory = $false,
+			Position = 2)]
 		[string] $SNIname = ''
 	)
 
