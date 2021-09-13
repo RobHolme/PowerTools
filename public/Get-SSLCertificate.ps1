@@ -80,7 +80,7 @@ function Get-SSLCertificate {
 				}
 			}
 			else {
-				Write-Warning "Failed to connect to $($Hostname):$($Port)"
+				Write-Warning "Failed to connect to $($Hostname):$($Port) (Connection timed out)."
 			}
 		} 
 		catch {
