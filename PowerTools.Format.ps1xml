@@ -524,7 +524,7 @@
 						<PropertyName>Hostname</PropertyName>
 					</TableColumnItem>
 					<TableColumnItem>
-						<ScriptBlock>$_.Subject.Split(',')[0]</ScriptBlock>
+						<ScriptBlock>($_.Subject.Split(',') -match "CN").Trim()</ScriptBlock>
 					</TableColumnItem>			
 					<TableColumnItem>
 						<ScriptBlock>
