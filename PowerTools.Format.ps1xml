@@ -422,6 +422,10 @@
 			<ListEntry>
 				<ListItems>
 					<ListItem>
+						<Label>Hostname</Label>
+						<PropertyName>Hostname</PropertyName>
+					</ListItem>
+					<ListItem>
 						<Label>Subject</Label>
 						<PropertyName>Subject</PropertyName>
 					</ListItem>
@@ -492,6 +496,61 @@
 	</ListControl>
 </View>
 
+<!-- Alternate view for Get-SSLCErtificate. Simplified table view. Get-SSLCerificate -Hostname example.com | ft -view SSLCertificateTable -->	
+<View> 
+	<Name>SSLCertificateTable</Name>
+	<ViewSelectedBy>
+		<TypeName>Powertools.GetSSLCertificate.Result</TypeName>
+	</ViewSelectedBy>
+	<TableControl>
+		<TableHeaders>
+			<TableColumnHeader>
+				<Label>Hostname</Label>
+			</TableColumnHeader>
+			<TableColumnHeader>
+				<Label>CN</Label>
+			</TableColumnHeader>
+			<TableColumnHeader>
+				<Label>Verified</Label>
+			</TableColumnHeader>
+			<TableColumnHeader>
+				<Label>Expires</Label>
+			</TableColumnHeader>
+		</TableHeaders>
+		<TableRowEntries>
+			<TableRowEntry>
+				<TableColumnItems>
+					<TableColumnItem>
+						<PropertyName>Hostname</PropertyName>
+					</TableColumnItem>
+					<TableColumnItem>
+						<ScriptBlock>$_.Subject.Split(',')[0]</ScriptBlock>
+					</TableColumnItem>			
+					<TableColumnItem>
+						<ScriptBlock>
+                  			if ($_.Verified -eq $false) {
+                    			"$([char]0x1b)[1;91m$($_.Verified)$([char]0x1b)[0m"
+                  			}
+                  			else {
+                    			$_.Verified
+                  			}
+                		</ScriptBlock>
+					</TableColumnItem>
+					<TableColumnItem>
+						<ScriptBlock>
+                  				if ($_.NotAfter -lt (Get-Date)) {
+                      				"$([char]0x1b)[1;91m$($_.NotAfter)$([char]0x1b)[0m"
+                  				}
+								else {
+									$_.NotAfter
+								}
+						</ScriptBlock>
+					</TableColumnItem>		
+				</TableColumnItems>
+			</TableRowEntry>
+		</TableRowEntries>
+	</TableControl>
+</View>
 
 </ViewDefinitions>
 </Configuration>
