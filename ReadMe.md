@@ -180,6 +180,28 @@ UDP      0.0.0.0        5353                                             msedge
 ```
 
 ---
+## Get-Screenshot
+### DESCRIPTION
+Captures a screen shot. The Image defaults to being saved to the desktop, or can be saved to a file via the -SaveAs parameter.
+It defaults to capturing the primary monitor, but can also capture all monitors or the active application window instead.
+### SYNTAX
+```PowerShell
+Get-Screenshot [[-Delay] <Int32>] [-PrimaryMonitor] [-SaveAs <String>] [-RepeatCount <UInt32>] [-RepeatInterval <UInt32>] [<CommonParameters>]
+
+Get-Screenshot [[-Delay] <Int32>] [-ActiveWindow] [-SaveAs <String>] [-RepeatCount <UInt32>] [-RepeatInterval <UInt32>] [<CommonParameters>]
+
+Get-Screenshot [[-Delay] <Int32>] [-AllMonitors] [-SaveAs <String>] [-RepeatCount <UInt32>] [-RepeatInterval <UInt32>] [<CommonParameters>]
+```
+### PARAMETERS
+```-Delay <Int32>```
+
+### EXAMPLE
+```
+
+```
+
+
+---
 ## Get-SMShareCapacity
 ### DESCRIPTION
 Return the free disk space, and total disk space for a SMB share. Free space available will include any quota limits applied to the user running the command.
@@ -213,7 +235,7 @@ Share             FreeSpace  TotalSpace  PercentFree
 ---
 ## Get-SSLCertificate
 ### DESCRIPTION
-Retrieve SSL certificate, display properties or export to .cer file. 
+Retrieve SSL certificate, display properties or export to .cer file. Default view contains more details, pipe to format-table to use a condensed view that only shows certificate subject CN, expiry date, and validity. The condensed view is more suited for tables of multiple certificates, while the default list view is more suited single or few certificates (but is more detailed).
 
 ### SYNTAX
 ```PowerShell
@@ -246,6 +268,17 @@ PS> Get-SSLCertificate -Hostname DC01 -port 636
 ```
 # export certificate to c:\temp\CertExport.cer
 PS> Get-SSLCertificate -Hostname www.example.com -ExportFile c:\temp\CertExport.cer
+```
+### EXAMPLE
+```
+# pipe results to a table (condensed view)
+PS> "google.com","microsoft.com","apple.com" | Get-SSLCertificate | ft
+
+Hostname      CN                          Verified Expires
+--------      --                          -------- -------
+google.com    CN=*.google.com             True     15/11/2021 9:36:26 AM
+microsoft.com CN=*.oneroute.microsoft.com True     30/06/2022 5:35:12 AM
+apple.com     CN=images.apple.com         True     9/12/2021 11:21:27 PM
 ```
 
 ---
