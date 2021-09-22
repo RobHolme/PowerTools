@@ -449,24 +449,24 @@
                 		</ScriptBlock>
 					</ListItem>
 					<ListItem>
-						<Label>NotBefore</Label>
+						<Label>ValidFrom</Label>
 						<ScriptBlock>
-                  				if ($_.NotBefore -gt (Get-Date)) {
-                      				"$([char]0x1b)[1;91m$($_.NotBefore)$([char]0x1b)[0m"
+                  				if ($_.ValidFrom -gt (Get-Date)) {
+                      				"$([char]0x1b)[1;91m$($_.ValidFrom)$([char]0x1b)[0m"
                   				}
 								else {
-									$_.NotBefore
+									$_.ValidFrom
 								}
 						</ScriptBlock>
 					</ListItem>	
 					<ListItem>
-						<Label>NotAfter</Label>
+						<Label>ValidTo</Label>
 						<ScriptBlock>
-                  				if ($_.NotAfter -lt (Get-Date)) {
-                      				"$([char]0x1b)[1;91m$($_.NotAfter)$([char]0x1b)[0m"
+                  				if ($_.ValidTo -lt (Get-Date)) {
+                      				"$([char]0x1b)[1;91m$($_.ValidTo)$([char]0x1b)[0m"
                   				}
 								else {
-									$_.NotAfter
+									$_.ValidTo
 								}
 						</ScriptBlock>
 					</ListItem>	

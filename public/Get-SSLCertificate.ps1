@@ -114,8 +114,8 @@ function Get-SSLCertificate {
 					SubjectAlternativeNames = $certificate.DnsNameList
 					Issuer                  = $certificate.Issuer
 					Verified                = $certificate.Verify()
-					NotBefore               = $certificate.NotBefore
-					NotAfter                = $certificate.NotAfter
+					ValidFrom               = $certificate.NotBefore
+					ValidTo          	    = $certificate.NotAfter
 					SignatureAlgorithm      = $certificate.SignatureAlgorithm.FriendlyName
 					PublicKeyAlgorithm      = $certificate.PublicKey.Key.KeyExchangeAlgorithm
 					PublicKeySize           = $certificate.PublicKey.Key.KeySize
