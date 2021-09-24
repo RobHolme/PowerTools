@@ -538,11 +538,11 @@
 					</TableColumnItem>
 					<TableColumnItem>
 						<ScriptBlock>
-                  				if ($_.NotAfter -lt (Get-Date)) {
-                      				"$([char]0x1b)[1;91m$($_.NotAfter)$([char]0x1b)[0m"
+                  				if ($_.ValidTo -lt (Get-Date)) {
+                      				"$([char]0x1b)[1;91m$($_.ValidTo)$([char]0x1b)[0m"
                   				}
 								else {
-									$_.NotAfter
+									$_.ValidTo
 								}
 						</ScriptBlock>
 					</TableColumnItem>		
