@@ -1,16 +1,10 @@
 # PowerTools ReadMe
-A module containing a random collection of functions that I use occasionally. These originated as separate scripts but were merged into a module for transportability.
- - Add-SshAuthorizedKey    
+A module containing a random collection of functions that I use occasionally. These originated as separate scripts but were merged into a module for transportability.    
  - Export-Credential  
  - Get-FolderSize     
- - Get-Hash                
- - Get-Netstat             
- - Get-Screenshot     
  - Get-SMBShareCapacity    
  - Get-SSLCertificate 
- - Import-Credential       
- - Rename-FileExtension    
- - Rename-Filename         
+ - Import-Credential           
  - Start-TCPListener       
  - Test-SQLDatabase        
  - Test-TCPPort            
@@ -18,30 +12,7 @@ A module containing a random collection of functions that I use occasionally. Th
 
 
 ---
-## Add-SshAuthorizedKey
-### DESCRIPTION
-Adds a SSH public key to authorized_keys on a server.
-### SYNTAX
-```PowerShell
-Add-SshAuthorizedKey [-Path] <String[]> [-User] <String> [-Server] <String[]> [[-OverwriteExistingKeys]] [<CommonParameters>]
 
-Add-SshAuthorizedKey [-LiteralPath] <String[]> [-User] <String> [-Server] <String[]> [[-OverwriteExistingKeys]] [<CommonParameters>]
-```
-### PARAMETERS
-```-Path <String>``` The full path of the public key file. Accepts wildcards to match more than one public key.
-
-```-LiteraPath <String>``` The full path and filename of the file to export the credentials to (Literal Path).
-
-```-User <String>``` The ssh username used to connect to the server.
-
-```-Server <String>``` The ssh host to connect to.
-
-```-OverwriteExistingKeys [<SwitchParameter>]``` Overwrite all existing keys in authorized_keys file (if this isn;t set the default is to append to this file)
-### EXAMPLE
-```
-Add-SshAuthorizedKey -Path H:\Documents\.ssh\all-servers_rsa.pub -User rob -Server server1,server2,server3
-```
----
 ## Export-Credential
 ### DESCRIPTION
 Exports a password to a file (as a secure string). The file format is XML. The password is encrypted, requiring the same user and host to be able to read the password. The exported password can not be transported between hosts or users, it will fail to import.
@@ -113,98 +84,14 @@ C:\Program Files\Common Files\Adobe              172      526 ■■■■■■
 ```
 
 ---
-## Get-Hash
-### DESCRIPTION
-Generate the hash of a string or file. Supports MD5, SHA1, SHA256, SHA384, SHA512
-### SYNTAX
-```PowerShell
-Get-Hash [-Path] <String[]> [-Algorithm] <String> [<CommonParameters>]
 
-Get-Hash [-LiteralPath] <String[]> [-Algorithm] <String> [<CommonParameters>]
-
-Get-Hash [-String] <String> [-Algorithm] <String> [<CommonParameters>]
-```
-### PARAMETERS
-```-String <String>``` The string to generate the hash for.
-
-```-Path <String[]>``` The file to generate the hash for. Accepts wildcards.
-
-```-LiteralPath <String[]>``` The file to generate the hash for (Literal path).
-### EXAMPLE
-```
-PS C:\> Get-Hash -String "Some String" -Algorithm MD5
-
-Algorithm Hash
---------- ----
-MD5       83beb8c4fa4596c8f7b565d390f494e2
-```
-
-```
-PS C:\> Get-Hash -Path *.png -Algorithm SHA1
-
-Algorithm Hash                                     Filename
---------- ----                                     --------
-SHA1      5c87f9db340eec992867cd7448fc8e8518b71e95 test-1.png
-SHA1      2c59ecf75188b9a7496b13a78b5a9e1fb113fcef test-2.png
-```
----
-
-## Get-Netstat
-### DESCRIPTION
-A wrapper for netstat that resolves process ID's to process names.
-### SYNTAX
-```PowerShell
-Get-Netstat [[-ResolveIPAddress]] [<CommonParameters>]
-```
-### PARAMETERS
-```-ResolveIPAddress <SwitchParameter>``` Resolve IP addresses to hostnames (slow).
-
-### EXAMPLE
-```
-Get-Netstat
-
-```
-### EXAMPLE
-```
-PS C:\> Get-Netstat | Where-Object {$_.ProcessName -eq "msedge"}
-
-Protocol LocalIPAddress LocalPort RemoteIPAddress RemotePort State       ProcessName
--------- -------------- --------- --------------- ---------- -----       -----------
-TCP      0.0.0.0        11124     0.0.0.0         0          Bound       msedge
-TCP      0.0.0.0        10862     0.0.0.0         0          Bound       msedge
-TCP      10.168.20.173  11124     140.82.112.25   443        Established msedge
-TCP      10.168.20.173  10862     13.107.6.160    443        Established msedge
-UDP      ::             5353                                             msedge
-UDP      0.0.0.0        5353                                             msedge
-
-```
 
 ---
-## Get-Screenshot
-### DESCRIPTION
-Captures a screen shot. The Image defaults to being saved to the desktop, or can be saved to a file via the -SaveAs parameter.
-It defaults to capturing the primary monitor, but can also capture all monitors or the active application window instead.
-### SYNTAX
-```PowerShell
-Get-Screenshot [[-Delay] <Int32>] [-PrimaryMonitor] [-SaveAs <String>] [-RepeatCount <UInt32>] [-RepeatInterval <UInt32>] [<CommonParameters>]
-
-Get-Screenshot [[-Delay] <Int32>] [-ActiveWindow] [-SaveAs <String>] [-RepeatCount <UInt32>] [-RepeatInterval <UInt32>] [<CommonParameters>]
-
-Get-Screenshot [[-Delay] <Int32>] [-AllMonitors] [-SaveAs <String>] [-RepeatCount <UInt32>] [-RepeatInterval <UInt32>] [<CommonParameters>]
-```
-### PARAMETERS
-```-Delay <Int32>```
-
-### EXAMPLE
-```
-
-```
-
 
 ---
 ## Get-SMShareCapacity
 ### DESCRIPTION
-Return the free disk space, and total disk space for a SMB share. Free space available will include any quota limits applied to the user running the command.
+Return the free disk space, and total disk space for a SMB share. Free space available will include any quota limits applied to the user running the command. The user must have rights at the share level (folder rights not needed).
 
 ### SYNTAX
 ```PowerShell
@@ -284,7 +171,7 @@ apple.com     CN=images.apple.com         True     9/12/2021 11:21:27 PM
 ---
 ## Test-SQLDatabase
 ### DESCRIPTION
-Tests logon connectivity to MS SQL Database. Supports SQL user authentication, or integrated Windows authentication. Returns connections details (connection status, time to connect) on success or failure. Use ```Test-Database``` instead if you only need a true/false result. 
+Tests logon connectivity to MS SQL Database. Supports SQL user authentication, or integrated Windows authentication. Returns connections details (connection status, time to connect) on success or failure. 
 ### SYNTAX
 ```PowerShell
 Test-Database [-Server] <String> [-Database] <String> [-Username] <String> [[-Password] <SecureString>] [<CommonParameters>]
