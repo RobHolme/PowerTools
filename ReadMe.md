@@ -139,6 +139,8 @@ Share             FreeSpace  TotalSpace  PercentFree
 ### DESCRIPTION
 Retrieve SSL certificate, display properties or export to .cer file. Default view contains more details, pipe to format-table to use a condensed view that only shows certificate subject CN, expiry date, and validity. The condensed view is more suited for tables of multiple certificates, while the default list view is more suited single or few certificates (but is more detailed).
 
+The remote host does not need to be a web server, it should return the certificate of any TLS protected TCP service - such as LDAPS.
+
 ### SYNTAX
 ```PowerShell
  Get-SSLCertificate [-Hostname] <String> [[-Port] <Int32>] [[-SNIname] <String>] [[-ExportFile] <String>]
@@ -158,22 +160,23 @@ Retrieve SSL certificate, display properties or export to .cer file. Default vie
 PS> Get-SSLCertificate -Hostname www.example.com
 ```
 ### EXAMPLE
+Some websites may host multiple namespaces. Use SNIName to retrieve cert specific to a site name.
 ```
 PS> Get-SSLCertificate -Hostname www.example.com -SNIName api.example.com
 ```
 ### EXAMPLE
+Get LDAPS cert form a domain controller DC01
 ```
-# get LDAPS cert form a domain controller
 PS> Get-SSLCertificate -Hostname DC01 -port 636
 ```
 ### EXAMPLE
+export certificate to c:\temp\CertExport.cer
 ```
-# export certificate to c:\temp\CertExport.cer
 PS> Get-SSLCertificate -Hostname www.example.com -ExportFile c:\temp\CertExport.cer
 ```
 ### EXAMPLE
+pipe results to a table (condensed view)
 ```
-# pipe results to a table (condensed view)
 PS> "google.com","microsoft.com","apple.com" | Get-SSLCertificate | ft
 
 Hostname      CN                          Verified Expires
