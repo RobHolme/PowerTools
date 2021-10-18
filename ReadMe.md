@@ -1,10 +1,10 @@
 # PowerTools ReadMe
 A module containing a random collection of functions that I use occasionally. These originated as separate scripts but were merged into a module for transportability.    
  - Export-Credential  
+ - Import-Credential           
  - Get-FolderSize     
  - Get-SMBShareCapacity    
  - Get-SSLCertificate 
- - Import-Credential           
  - Start-TCPListener       
  - Test-SQLDatabase        
  - Test-TCPPort            
@@ -15,7 +15,7 @@ A module containing a random collection of functions that I use occasionally. Th
 
 ## Export-Credential
 ### DESCRIPTION
-Exports a password to a file (as a secure string). The file format is XML. The password is encrypted, requiring the same user and host to be able to read the password. The exported password can not be transported between hosts or users, it will fail to import.
+Exports a password to a file (as a secure string), may also include username and associated meta data. The password is encrypted (other items such as username are plain text), requiring the same user and host to be able to read the password. The exported password cannot be transported between hosts or users, it will fail to import. Encryption relies on Microsoft's Data Protection API (DPAPI), so this command supports Windows environments only.
 
 Use Import-Password to return the PS Credential object from file.
 
@@ -42,11 +42,30 @@ PS C:\>Export-Credential -Path c:\temp\password.xml -Credential (Get-Credential)
 
 PS C:\>Export-Credential -Path c:\temp\password.xml -Username testdomain\testuser -Password $securePassword
 ```
-
 ---
+
+## Import-Credential
+### DESCRIPTION
+Import credentials previously saved by the Export-Credential command. Credentials must be imported by the same user, and on the same workstation as they were exported from (exported credentials are not portable). Decryption relies on Microsoft's Data Protection API (DPAPI), so this command supports Windows environments only.
+### SYNTAX
+```PowerShell
+Import-Credential [-Path] <String> [<CommonParameters>]
+```
+### PARAMETERS
+```-Path <String>``` The full path and filename of the file to import the credentials from.
+
+### EXAMPLE
+```
+PS > $Cred = Import-Credential -Path c:\temp\credential.xml
+
+     $Cred.Username  # this is the domain\username
+     $Cred.GetNetworkCredential().Password  # this is the plain text Password
+```
+---
+
 ## Get-FolderSize
 ### DESCRIPTION
-Return the size of each subfolder within a specified directory. Include a total size which include files within the root of the folder. Percentage values are rounded so are only approximate. Sample applies to small sizes using a large size unit - may be rounded to 0. 
+Return the size of each subfolder within a specified directory. Include a total size which include files within the root of the folder. Percentage values are rounded so are only approximate. Same applies to small sizes using a large size unit - may be rounded to 0. 
 ### SYNTAX
 ```PowerShell
 Get-FolderSize [[-Path] <Object>] [[-Unit] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
@@ -83,10 +102,6 @@ C:\Program Files\Common Files\Adobe              172      526 ■■■■■■
 <Total>                                          528   693.93
 ```
 
----
-
-
----
 
 ---
 ## Get-SMShareCapacity
@@ -167,11 +182,33 @@ google.com    CN=*.google.com             True     15/11/2021 9:36:26 AM
 microsoft.com CN=*.oneroute.microsoft.com True     30/06/2022 5:35:12 AM
 apple.com     CN=images.apple.com         True     9/12/2021 11:21:27 PM
 ```
-
 ---
+
+## Start-TCPListener
+### DESCRIPTION
+Starts a TCP listener. The listener will stop once a connection has been made from a client. By default the port will be closed after the TCP handshake is completed. If the -WaitForData parameter is supplied the command will wait unit the client closes the connection instead.
+### SYNTAX
+```PowerShell
+Start-TCPListener [-Port] <int> [[-WaitForData]] [<CommonParameters>]
+```
+### PARAMETERS
+```-Port <int>``` The TCP port number to listen on. The port must be available.
+
+```-WaitForData [<SwitchParameter>]``` Wait for the client to send data, and wait for the client to close the connection. Without this parameter the connection is closed as soon as the TCP handshake is completed.
+
+### EXAMPLE
+```
+PS> Start-TCPListener -Port 5000
+
+Status                RemoteHost RemotePort
+------                ---------- ----------
+Connection Successful 127.0.0.1       50298
+```
+---
+
 ## Test-SQLDatabase
 ### DESCRIPTION
-Tests logon connectivity to MS SQL Database. Supports SQL user authentication, or integrated Windows authentication. Returns connections details (connection status, time to connect) on success or failure. 
+Tests logon connectivity to MS-SQL Database. Supports SQL user authentication, or integrated Windows authentication. Returns connections details (connection status, time to connect) on success or failure. 
 ### SYNTAX
 ```PowerShell
 Test-Database [-Server] <String> [-Database] <String> [-Username] <String> [[-Password] <SecureString>] [<CommonParameters>]
@@ -208,18 +245,18 @@ User        : Windows (TESTDOM\rob)
 ---
 ## Test-TCPPort
 ### DESCRIPTION
-Tests connectivity to a TCP port on a remote host. If successful, the time to connect is displayed with the endpoint details.
+Tests connectivity to a TCP port on a remote host. If successful, the time to connect is displayed with the endpoint details. Based on Test-NetConnection, but items such as ICMP checks are removed, and a shorter default timeout used to speed up tests of a large number of hosts/ports. Failed connections return quicker than Test-NetConnection. The other difference is this will show the result for all IP addresses that hostname resolves to, while Test-NetConnection only shows the first IP address to successfully respond.
 
 ### SYNTAX
 ```PowerShell
-Test-TCPPort [-Hostname] <String> [-Port] <Int32> [-Timeout] <Int32> [<CommonParameters>]
+Test-TCPPort [-Hostname] <String> [-Port] <Int32[]> [[-Timeout] <Int32>] [<CommonParameters>]
 ```
 ### PARAMETERS
 ```-Hostname <string>``` The name or IP address of the remote host to connect to.
 
-```-Port <Int32>``` The port number on the remote host to connect to. 
+```-Port <Int32[]>``` The port number on the remote host to connect to. Provide an array of ports to test multiple ports per host.
 
-```-Timeout <Int32>``` The TCP connection timeout in seconds. Defaults to 5 seconds. System TCP timeout will still apply if lower than this value. 
+```-Timeout <Int32>``` The TCP connection timeout in seconds. Defaults to 5 seconds. System TCP timeout (20 secs?) will still apply if lower than this value. 
 ### EXAMPLE
 ```
 PS C:\> Connect-TCPPort somehost.com -80
@@ -230,6 +267,7 @@ Successful somehost.com 127.0.0.1     80  10.3 ms
 
 ```
 ### EXAMPLE
+Test ports 80 and 443 for www.google.com and www.microsoft.com
 ```
 PS C:\> "www.google.com","www.microsoft.com" | Test-TCPPort -Port 80,443
 
@@ -242,28 +280,13 @@ Successful www.microsoft.com 23.194.133.122 443  9.9 ms
 
 ```
 ### EXAMPLE
+Use a short timeout (2 seconds).
 ```
 PS C:\> Connect-TCPPort somehost.com -80 -Timeout 2
 
 Connection RemoteHost   RemoteAddress Port ConnectionTime
 ---------- ----------   ------------- ---- --------------
-Successful somehost.com 127.0.0.1     80  10.3 ms
+Successful somehost.com 127.0.0.1     80   10.3 ms
 
 ```
 
----
-
-## cmdlet-name
-### DESCRIPTION
-
-### SYNTAX
-```PowerShell
-
-```
-### PARAMETERS
-```-Name <type>```
-
-### EXAMPLE
-```
-
-```
