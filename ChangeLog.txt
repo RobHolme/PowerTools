@@ -57,4 +57,4 @@ Version History
 	2.53 (05/09/2021)	Added Get-FolderSize function
 	2.54 (05/09/2021)	Changed order of properties returned in Get-SMBShareCApacity function
 	2.55 (07/09/2021)	Added Get-SSLCertificate
-	2.56 (13/10/2021)	Removed Get-NetStat, Get-Screenshot, Get-Hash, Add-SSHAuthoriszdKey, Rename-FileExtension, Rename-Filename due to lack of frequent use.
+	2.56 (13/10/2021)	Removed Get-NetStat, Test-URL, Get-Screenshot, Get-Hash, Add-SSHAuthoriszdKey, Rename-FileExtension, Rename-Filename due to lack of frequent use.
