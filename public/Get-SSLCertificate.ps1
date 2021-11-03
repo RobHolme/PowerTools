@@ -122,7 +122,7 @@ function Get-SSLCertificate {
 					Thumbprint              = $certificate.Thumbprint
 					Version                 = $certificate.Version
 					SerialNumber			= $certificate.SerialNumber
-					EnhancedKeyUsage		= $certificate.EnhancedKeyUsageList
+					EnhancedKeyUsage		= $certificate.EnhancedKeyUsageList.FriendlyName
 				}
 			}
 		}

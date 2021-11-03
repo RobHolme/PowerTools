@@ -495,8 +495,8 @@
 						<PropertyName>SerialNumber</PropertyName>
 					</ListItem>	
 					<ListItem>
-						<Label>EnhancedKeyUsageList</Label>
-						<PropertyName>EnhancedKeyUsageList</PropertyName>
+						<Label>EnhancedKeyUsage</Label>
+						<PropertyName>EnhancedKeyUsage</PropertyName>
 					</ListItem>			
 				</ListItems>
 			</ListEntry>
