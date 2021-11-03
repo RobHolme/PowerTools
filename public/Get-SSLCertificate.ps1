@@ -121,6 +121,8 @@ function Get-SSLCertificate {
 					PublicKeySize           = $certificate.PublicKey.Key.KeySize
 					Thumbprint              = $certificate.Thumbprint
 					Version                 = $certificate.Version
+					SerialNumber			= $certificate.SerialNumber
+					EnhancedKeyUsage		= $certificate.EnhancedKeyUsageList
 				}
 			}
 		}

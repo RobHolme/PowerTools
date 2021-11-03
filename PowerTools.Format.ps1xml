@@ -489,6 +489,14 @@
 					<ListItem>
 						<Label>Version</Label>
 						<PropertyName>Version</PropertyName>
+					</ListItem>	
+					<ListItem>
+						<Label>SerialNumber</Label>
+						<PropertyName>SerialNumber</PropertyName>
+					</ListItem>	
+					<ListItem>
+						<Label>EnhancedKeyUsageList</Label>
+						<PropertyName>EnhancedKeyUsageList</PropertyName>
 					</ListItem>			
 				</ListItems>
 			</ListEntry>
