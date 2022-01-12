@@ -47,7 +47,7 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 				$TargetPort,
 				$Timeout
 			)
-			Write-Progress -Activity "Connecting to $($TargetIPAddress):$($TargetPort)" -SecondsRemaining -1 -PercentComplete -1      
+			Write-Progress -Activity "Connecting to $($TargetIPAddress):$($TargetPort)" -SecondsRemaining $Timeout -PercentComplete 50 -Status "waiting for response..."    
 		
 			$Result = @{
 				Connection    = "Failed"
