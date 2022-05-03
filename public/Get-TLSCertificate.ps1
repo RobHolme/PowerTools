@@ -62,7 +62,7 @@ function Get-TLSCertificate {
 
 			$tcpConnectResult = $tcpClient.ConnectAsync($Hostname, $Port).Wait($timeout)
 			if ($tcpConnectResult -eq $true) {
-				$tcpStream = $tcpClient.GetStream().Wait($timeout)
+				$tcpStream = $tcpClient.GetStream()
 				$callback = { param($caller, $cert, $chain, $errors) return $true }
 				$sslStream = New-Object -TypeName System.Net.Security.sslStream -ArgumentList @($tcpStream, $true, $callback)
 				try {
