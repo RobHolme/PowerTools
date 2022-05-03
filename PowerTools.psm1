@@ -23,6 +23,3 @@ foreach ($file in @($public + $private)) {
 
 # export the names of the public functions. Assumes unique file for each public function with base filename matching function name.
 Export-ModuleMember -Function $public.BaseName
-
-# set alias for renamed functions
-Set-Alias -Name Get-SSLCertificate -Value Get-TLSCertificate
