@@ -1,4 +1,4 @@
-function Get-SSLCertificate {
+function Get-TLSCertificate {
 	<#
 .NOTES
 	based on https://gist.github.com/jstangroome/5945820
@@ -62,7 +62,7 @@ function Get-SSLCertificate {
 
 			$tcpConnectResult = $tcpClient.ConnectAsync($Hostname, $Port).Wait($timeout)
 			if ($tcpConnectResult -eq $true) {
-				$tcpStream = $tcpClient.GetStream()
+				$tcpStream = $tcpClient.GetStream().Wait($timeout)
 				$callback = { param($caller, $cert, $chain, $errors) return $true }
 				$sslStream = New-Object -TypeName System.Net.Security.sslStream -ArgumentList @($tcpStream, $true, $callback)
 				try {
