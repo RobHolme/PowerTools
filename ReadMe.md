@@ -255,11 +255,11 @@ Tests connectivity to a TCP port on a remote host. If successful, the time to co
 Test-TCPPort [-Hostname] <String> [-Port] <Int32[]> [[-Timeout] <Int32>] [<CommonParameters>]
 ```
 ### PARAMETERS
-```-Hostname <string>``` The name or IP address of the remote host to connect to.
+```-Hostname <string>``` The name or IP address of the remote host to connect to. Accepts only a single hostname, but an array of hostnames can be piped to the command. 
 
-```-Port <Int32[]>``` The port number on the remote host to connect to. Provide an array of ports to test multiple ports per host.
+```-Port <Int32[]>``` The port number on the remote host to connect to. Accepts a  single port, an array of ports, or a range of ports to test per host.
 
-```-Timeout <Int32>``` The TCP connection timeout in seconds. Defaults to 5 seconds. System TCP timeout (20 secs?) will still apply if lower than this value. 
+```-Timeout <Int32>``` The TCP connection timeout in seconds. Defaults to 5 seconds. System TCP timeout (20 secs?) will still apply if the timeout supplied exceeds the  system timeout. 
 ### EXAMPLE
 ```
 PS C:\> Connect-TCPPort somehost.com -Port 80
@@ -293,3 +293,20 @@ Successful somehost.com 127.0.0.1     80   10.3 ms
 
 ```
 
+### EXAMPLE
+test a range of ports from 17190 to 17198
+```
+PS C:\>  Test-TCPPort samplehost -Port (17190..17198)
+
+Connection RemoteHost RemoteAddress Port  ConnectionTime
+---------- ---------- ------------- ----  --------------
+Failed     samplehost  10.0.0.36   17190 0 ms
+Failed     samplehost  10.0.0.36   17191 0 ms
+Successful samplehost  10.0.0.36   17192 2.7 ms
+Failed     samplehost  10.0.0.36   17193 0 ms
+Failed     samplehost  10.0.0.36   17194 0 ms
+Failed     samplehost  10.0.0.36   17195 0 ms
+Successful samplehost  10.0.0.36   17196 2.6 ms
+Successful samplehost  10.0.0.36   17197 2.8 ms
+Successful samplehost  10.0.0.36   17198 2.8 ms
+```
