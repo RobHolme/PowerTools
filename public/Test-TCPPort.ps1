@@ -10,7 +10,7 @@ Tests connectivity to a TCP port on a remote host, reporting connection properti
 .DESCRIPTION
 Tests connectivity to a TCP port on a remote host. If successful, the time to connect is displayed with the endpoint details.
 .EXAMPLE
-Connect-TCPPort -Hostname 192.168.0.1 Port 25
+Test-TCPPort -Hostname 192.168.0.1 -Port 25
 .PARAMETER Hostname
 The Hostname or IP address of the host to connect to.
 .PARAMETER Port
