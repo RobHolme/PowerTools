@@ -262,7 +262,7 @@ Test-TCPPort [-Hostname] <String> [-Port] <Int32[]> [[-Timeout] <Int32>] [<Commo
 ```-Timeout <Int32>``` The TCP connection timeout in seconds. Defaults to 5 seconds. System TCP timeout (20 secs?) will still apply if lower than this value. 
 ### EXAMPLE
 ```
-PS C:\> Connect-TCPPort somehost.com -80
+PS C:\> Connect-TCPPort somehost.com -Port 80
 
 Connection RemoteHost   RemoteAddress Port ConnectionTime
 ---------- ----------   ------------- ---- --------------
@@ -285,7 +285,7 @@ Successful www.microsoft.com 23.194.133.122 443  9.9 ms
 ### EXAMPLE
 Use a short timeout (2 seconds).
 ```
-PS C:\> Connect-TCPPort somehost.com -80 -Timeout 2
+PS C:\> Connect-TCPPort somehost.com -Port 80 -Timeout 2
 
 Connection RemoteHost   RemoteAddress Port ConnectionTime
 ---------- ----------   ------------- ---- --------------
