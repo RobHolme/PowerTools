@@ -1,13 +1,13 @@
 # PowerTools ReadMe
-A module containing a random collection of functions that I use occasionally. These originated as separate scripts but were merged into a module for transportability.    
- - Export-Credential  
- - Import-Credential           
- - Get-FolderSize     
- - Get-SMBShareCapacity    
- - Get-TLSCertificate 
- - Start-TCPListener       
- - Test-SQLDatabase        
- - Test-TCPPort            
+A module containing a random collection of functions that I use occasionally. These originated as separate scripts but were merged into a module for transportability. May change over time as infrequently used functions are removed.    
+ - __Export-Credential__: Export username and password to file as a secure string. Supports Windows Powershell only, deprecated in favour of the cross platform Microsoft.PowerShell.SecretManagement Module.
+ - __Import-Credential__: Import username and password from file exported by Export-Credential. Supports Windows Powershell only, deprecated in favour of the cross platform Microsoft.PowerShell.SecretManagement Module.           
+ - __Get-FolderSize__: Graphically display the the size of each subfolder within a specified directory.    
+ - __Get-SMBShareCapacity__: Display the current capacity used by a SMB share.    
+ - __Get-TLSCertificate__: Display the TLS certificate associated with a TCP interface. 
+ - __Start-TCPListener__: Start a TCP listener on a nominated port. Used for connectivity testing.       
+ - __Test-SQLDatabase__: Test a connection to a MS-SQL Server database.        
+ - __Test-TCPPort__: Tests connectivity to a remote TCP port. Based on Test-NetConnection, but implements shorter (configurable) connection timeouts and removes ICMP connectivity tests if the TCP connection fails (intended to be faster than Test-NetConnection when testing large number of hosts).            
 
 
 
@@ -18,6 +18,8 @@ A module containing a random collection of functions that I use occasionally. Th
 Exports a password to a file (as a secure string), may also include username and associated meta data. The password is encrypted (other items such as username are plain text), requiring the same user and host to be able to read the password. The exported password cannot be transported between hosts or users, it will fail to import. Encryption relies on Microsoft's Data Protection API (DPAPI), so this command supports Windows environments only.
 
 Use Import-Password to return the PS Credential object from file.
+
+__As this function only supports PowerShell on Windows, it is recommended to use the cross platform Microsoft.PowerShell.SecretManagement Module instead of this function.__
 
 ### SYNTAX
 ```PowerShell
@@ -47,6 +49,8 @@ PS C:\>Export-Credential -Path c:\temp\password.xml -Username testdomain\testuse
 ## Import-Credential
 ### DESCRIPTION
 Import credentials previously saved by the Export-Credential command. Credentials must be imported by the same user, and on the same workstation as they were exported from (exported credentials are not portable). Decryption relies on Microsoft's Data Protection API (DPAPI), so this command supports Windows environments only.
+
+__As this function only supports PowerShell on Windows, it is recommended to use the cross platform Microsoft.PowerShell.SecretManagement Module instead of this function.__
 ### SYNTAX
 ```PowerShell
 Import-Credential [-Path] <String> [<CommonParameters>]
@@ -248,7 +252,9 @@ User        : Windows (TESTDOM\rob)
 ---
 ## Test-TCPPort
 ### DESCRIPTION
-Tests connectivity to a TCP port on a remote host. If successful, the time to connect is displayed with the endpoint details. Based on Test-NetConnection, but items such as ICMP checks are removed, and a shorter default timeout used to speed up tests of a large number of hosts/ports. Failed connections return quicker than Test-NetConnection. The other difference is this will show the result for all IP addresses that hostname resolves to, while Test-NetConnection only shows the first IP address to successfully respond.
+Tests connectivity to a TCP port on a remote host. If successful, the time to connect is displayed with the endpoint details. Based on Test-NetConnection, but items such as ICMP checks are removed, and a shorter default timeout used to speed up tests of a large number of hosts/ports. Failed connections return quicker than Test-NetConnection. Another difference is this will show the result for all IP addresses that hostname resolves to, while Test-NetConnection only shows the first IP address to successfully respond.
+
+Accepts an array of hosts to check via the pipeline (See examples). An array or range of ports can also be provided by the -Port parameter.
 
 ### SYNTAX
 ```PowerShell
@@ -270,7 +276,7 @@ Successful somehost.com 127.0.0.1     80  10.3 ms
 
 ```
 ### EXAMPLE
-Test ports 80 and 443 for www.google.com and www.microsoft.com
+Test ports 80 and 443 for www.google.com and www.microsoft.com. Use pipleline to test multiple hosts. 
 ```
 PS C:\> "www.google.com","www.microsoft.com" | Test-TCPPort -Port 80,443
 
