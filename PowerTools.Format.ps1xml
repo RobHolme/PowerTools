@@ -452,10 +452,10 @@
 						<Label>ValidFrom</Label>
 						<ScriptBlock>
                   				if ($_.ValidFrom -gt (Get-Date)) {
-                      				"$([char]0x1b)[1;91m$($_.ValidFrom)$([char]0x1b)[0m"
+                      				"$([char]0x1b)[1;91m$($_.ValidFrom.GetDateTimeFormats()[19])$([char]0x1b)[0m"
                   				}
 								else {
-									$_.ValidFrom
+									$_.ValidFrom.GetDateTimeFormats()[19]
 								}
 						</ScriptBlock>
 					</ListItem>	
@@ -463,10 +463,10 @@
 						<Label>ValidTo</Label>
 						<ScriptBlock>
                   				if ($_.ValidTo -lt (Get-Date)) {
-                      				"$([char]0x1b)[1;91m$($_.ValidTo)$([char]0x1b)[0m"
+                      				"$([char]0x1b)[1;91m$($_.ValidTo.GetDateTimeFormats()[19])$([char]0x1b)[0m"
                   				}
 								else {
-									$_.ValidTo
+									$_.ValidTo.GetDateTimeFormats()[19]
 								}
 						</ScriptBlock>
 					</ListItem>	
