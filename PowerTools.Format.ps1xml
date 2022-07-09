@@ -451,23 +451,25 @@
 					<ListItem>
 						<Label>ValidFrom</Label>
 						<ScriptBlock>
-                  				if ($_.ValidFrom -gt (Get-Date)) {
-                      				"$([char]0x1b)[1;91m$($_.ValidFrom.GetDateTimeFormats()[19])$([char]0x1b)[0m"
-                  				}
-								else {
-									$_.ValidFrom.GetDateTimeFormats()[19]
-								}
+							$formattedDateTime = "$($_.ValidFrom.ToShortDateString()) $($_.ValidFrom.ToShortTimeString())"
+                  			if ($_.ValidFrom -gt (Get-Date)) {
+                      			"$([char]0x1b)[1;91m$($formattedDateTime)$([char]0x1b)[0m"
+                  			}
+							else {
+								$formattedDateTime
+							}
 						</ScriptBlock>
 					</ListItem>	
 					<ListItem>
 						<Label>ValidTo</Label>
 						<ScriptBlock>
-                  				if ($_.ValidTo -lt (Get-Date)) {
-                      				"$([char]0x1b)[1;91m$($_.ValidTo.GetDateTimeFormats()[19])$([char]0x1b)[0m"
-                  				}
-								else {
-									$_.ValidTo.GetDateTimeFormats()[19]
-								}
+						$formattedDateTime = "$($_.ValidTo.ToShortDateString()) $($_.ValidTo.ToShortTimeString())"
+                  			if ($_.ValidTo -lt (Get-Date)) {
+                      			"$([char]0x1b)[1;91m$($formattedDateTime)$([char]0x1b)[0m"
+                  			}
+							else {
+								$formattedDateTime
+							}
 						</ScriptBlock>
 					</ListItem>	
 					<ListItem>
@@ -504,9 +506,9 @@
 	</ListControl>
 </View>
 
-<!-- Alternate view for Get-SSLCErtificate. Simplified table view. Get-SSLCerificate -Hostname example.com | ft -view SSLCertificateTable -->	
+<!-- Alternate view for Get-SSLCErtificate. Simplified table view. Get-TLSCerificate -Hostname example.com | ft -view TLSCertTable -->	
 <View> 
-	<Name>SSLCertificateTable</Name>
+	<Name>TLSCertTable</Name>
 	<ViewSelectedBy>
 		<TypeName>Powertools.GetSSLCertificate.Result</TypeName>
 	</ViewSelectedBy>
@@ -549,12 +551,12 @@
 					</TableColumnItem>
 					<TableColumnItem>
 						<ScriptBlock>
-                  				if ($_.ValidTo -lt (Get-Date)) {
-                      				"$([char]0x1b)[1;91m$($_.ValidTo.ToShortDateString())$([char]0x1b)[0m"
-                  				}
-								else {
-									$_.ValidTo.ToShortDateString()
-								}
+                  			if ($_.ValidTo -lt (Get-Date)) {
+                    			"$([char]0x1b)[1;91m$($_.ValidTo.ToShortDateString())$([char]0x1b)[0m"
+                  			}
+							else {
+								$_.ValidTo.ToShortDateString()
+							}
 						</ScriptBlock>
 					</TableColumnItem>
 					<TableColumnItem>
