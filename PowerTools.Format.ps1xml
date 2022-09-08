@@ -380,7 +380,6 @@
 	</TableControl>
 </View>
 
-
 <!-- default table view for Rename-FileExtension -->	
 <View> 
 	<Name>Powertools.RenameExtension.Result</Name>
@@ -562,6 +561,60 @@
 					<TableColumnItem>
 						<PropertyName>Issuer</PropertyName>
 					</TableColumnItem>		
+				</TableColumnItems>
+			</TableRowEntry>
+		</TableRowEntries>
+	</TableControl>
+</View>
+
+<!-- default table view for Get-SQLInstance -->	
+<View> 
+	<Name>Powertools.GetSQLInstance.Result</Name>
+	<ViewSelectedBy>
+		<TypeName>Powertools.GetSQLInstance.Result</TypeName>
+	</ViewSelectedBy>
+	<TableControl>
+		<TableHeaders>
+			<TableColumnHeader>
+				<Label>Hostname</Label>
+			</TableColumnHeader>
+			<TableColumnHeader>
+				<Label>Computername</Label>
+			</TableColumnHeader>
+			<TableColumnHeader>
+				<Label>SQLInstance</Label>
+			</TableColumnHeader>
+			<TableColumnHeader>
+				<Label>Version</Label>
+			</TableColumnHeader>
+			<TableColumnHeader>
+				<Label>IsClustered</Label>
+			</TableColumnHeader>
+			<TableColumnHeader>
+				<Label>TCPPort</Label>
+			</TableColumnHeader>
+		</TableHeaders>
+		<TableRowEntries>
+			<TableRowEntry>
+				<TableColumnItems>
+					<TableColumnItem>
+						<PropertyName>Hostname</PropertyName>
+					</TableColumnItem>
+					<TableColumnItem>
+						<PropertyName>Computername</PropertyName>
+					</TableColumnItem>		
+						<TableColumnItem>
+						<PropertyName>SQLInstance</PropertyName>
+					</TableColumnItem>
+					<TableColumnItem>
+						<PropertyName>Version</PropertyName>
+					</TableColumnItem>	
+						<TableColumnItem>
+						<PropertyName>IsClustered</PropertyName>
+					</TableColumnItem>
+					<TableColumnItem>
+						<PropertyName>TCPPort</PropertyName>
+					</TableColumnItem>			
 				</TableColumnItems>
 			</TableRowEntry>
 		</TableRowEntries>
