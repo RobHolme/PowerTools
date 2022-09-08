@@ -3,7 +3,8 @@ A module containing a random collection of functions that I use occasionally. Th
  - __Export-Credential__: Export username and password to file as a secure string. Supports Windows Powershell only, deprecated in favour of the cross platform Microsoft.PowerShell.SecretManagement Module.
  - __Import-Credential__: Import username and password from file exported by Export-Credential. Supports Windows Powershell only, deprecated in favour of the cross platform Microsoft.PowerShell.SecretManagement Module.           
  - __Get-FolderSize__: Graphically display the the size of each subfolder within a specified directory.    
- - __Get-SMBShareCapacity__: Display the current capacity used by a SMB share.    
+ - __Get-SMBShareCapacity__: Display the current capacity used by a SMB share.
+ - __Get-SQLInstance__: Query the MS-SQL Browser to retrieve SQL Instance details"    
  - __Get-TLSCertificate__: Display the TLS certificate associated with a TCP interface. 
  - __Start-TCPListener__: Start a TCP listener on a nominated port. Used for connectivity testing.       
  - __Test-SQLDatabase__: Test a connection to a MS-SQL Server database.        
@@ -136,6 +137,28 @@ Share             FreeSpace  TotalSpace  PercentFree
 -----             ---------  ----------  -----------
 \\nas\homedrives\ 5526.37 GB 10717.44 GB 51.56%      
 \\127.0.0.1\c$\   714.78 GB  930.9 GB    76.78% 
+```
+---
+## Get-SQLInstance
+### DESCRIPTION
+Query the MS-SQL browser to retrieve details of the SQL Instances on a server
+
+### SYNTAX
+```PowerShell
+Get-SQLInstance [-ComputerName] <String[]> [[-Timeout] <Int32>] [<CommonParameters>]
+```
+### PARAMETERS
+```-ComputerName <String[]>``` The hostname or IP address of the MS-SQL server. Provide a list of server names to query multiple servers. 
+
+```-Timeout <Int32>``` The time to wait (in seconds) for a response from the SQL Server Browser.
+### EXAMPLE
+```
+Get-SQLInstance -ComputerName sqlsvr01
+
+Hostname Computername SQLInstance        Version     IsClustered TCPPort
+-------- ------------ -----------        -------     ----------- -------
+sqlsvr01 SQLSVR01     SQLSVR01\SQLTEST   13.0.1601.5 False       51143
+sqlsvr01 SQLSVR01     SQLSVR01\INSTANCE2 13.0.1601.5 False       51129
 ```
 
 ---
