@@ -1,7 +1,7 @@
 function Get-SQLInstance {
 	<#
 	.SYNOPSIS
-	Requests a list of instances from the browser service.
+		Requests a list of instances from the browser service.
 	
 	.DESCRIPTION
 	    Requests a list of instances from the browser service.
@@ -18,7 +18,7 @@ function Get-SQLInstance {
 	    Contacts the browser service on sqlsvr01 and requests its instance information.
 
 	.NOTES
-	    Original Author: Eric Gruber
+	    Adapted from original author: Eric Gruber
 	#>
 			
 	[CmdletBinding()]
@@ -28,6 +28,7 @@ function Get-SQLInstance {
 			Mandatory = $true, 
 			ValueFromPipeline = $true
 		)]
+		[Alias('Hostname')]
 		[string[]] $ComputerName,
 			
 		[Parameter(
