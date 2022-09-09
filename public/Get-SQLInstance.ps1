@@ -62,7 +62,6 @@ function Get-SQLInstance {
 						SqlInstance  = "$($_.Groups[2].Value)\$($_.Groups[3].Value)"
 						InstanceName = $_.Groups[3].Value
 						Version      = $_.Groups[5].Value
-						IsClustered  = "Yes" -eq $_.Groups[4].Value
 						TCPPort      = $_.Groups[7].Value
 					}
 				}

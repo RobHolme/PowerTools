@@ -588,9 +588,6 @@
 				<Label>Version</Label>
 			</TableColumnHeader>
 			<TableColumnHeader>
-				<Label>IsClustered</Label>
-			</TableColumnHeader>
-			<TableColumnHeader>
 				<Label>TCPPort</Label>
 			</TableColumnHeader>
 		</TableHeaders>
@@ -603,15 +600,12 @@
 					<TableColumnItem>
 						<PropertyName>Computername</PropertyName>
 					</TableColumnItem>		
-						<TableColumnItem>
+					<TableColumnItem>
 						<PropertyName>SQLInstance</PropertyName>
 					</TableColumnItem>
 					<TableColumnItem>
 						<PropertyName>Version</PropertyName>
 					</TableColumnItem>	
-						<TableColumnItem>
-						<PropertyName>IsClustered</PropertyName>
-					</TableColumnItem>
 					<TableColumnItem>
 						<PropertyName>TCPPort</PropertyName>
 					</TableColumnItem>			
