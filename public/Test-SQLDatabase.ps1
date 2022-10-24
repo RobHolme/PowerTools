@@ -70,12 +70,12 @@ Use the current logged on user's credentials to authenticate using Windows authe
             $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
             $plainTextPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
             # create the connection string using SQL user authentication
-            $dbConnection.ConnectionString = "Data Source=$Server; uid=$Username; pwd=$plainTextPassword; Database=$Database;Integrated Security=False"
+            $dbConnection.ConnectionString = "Data Source=$Server; uid=$Username; pwd=$plainTextPassword; Database=$Database;Integrated Security=False;MultiSubnetFailover=True"
             $authentication = "SQL ($Username)"
         }
         else {
             # create the connection string, use logged on users credentials for authentication
-            $dbConnection.ConnectionString = "Data Source=$Server; Database=$Database;Integrated Security=True;"
+            $dbConnection.ConnectionString = "Data Source=$Server; Database=$Database;Integrated Security=True;MultiSubnetFailover=True"
             $authentication = "Windows ($env:USERDOMAIN\$env:USERNAME)"
         }
         try {
