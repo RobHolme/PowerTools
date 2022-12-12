@@ -71,9 +71,10 @@ function Get-TLSCertificate {
 					$certificate = $sslStream.RemoteCertificate
 				}
 				catch {
-					Write-Warning "Failed to retrieve certificate. Socket may not support TLS."
-					Write-Warning " $($_.Exception.InnerException.Message)"
+					Write-Warning "Failed to retrieve certificate from $($Hostname):$($Port). Socket may not support TLS."
+					Write-Warning "$($_.Exception.InnerException.Message)"
 					Write-Debug "$($_.Exception)"
+					Write-Host ""
 				}
 				finally {
 					$sslStream.Dispose()
