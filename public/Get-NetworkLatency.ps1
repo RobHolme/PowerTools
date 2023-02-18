@@ -276,6 +276,7 @@ function TestLatency() {
 	}
 }
 
+# Generate a signal graph of latency results for each host.
 function GenerateChart {
 	Param (
 		[parameter(Mandatory = $true)]
@@ -283,7 +284,6 @@ function GenerateChart {
 
 		[parameter(Mandatory = $true)]
 		[string] $Filename
-		
 	)
 
 	if (!$noGraph) {
@@ -303,17 +303,18 @@ function GenerateChart {
 		$chart = [ScottPlot.Plot]::new(1200, 900)
 		foreach ($key in $latencyTable.Keys) {
 			[void] $chart.AddSignal($latencyTable[$key],1,$null,$key.ToString())
-			#$chart.AddSignal($latencyTable[$key])
 		} 
 
 		[void] $chart.Legend($true, [ScottPlot.Alignment]::UpperLeft)
 		$chart.Title("Network Latency",$null)
 		$chart.YLabel("Latency (ms)")
 		$chart.XLabel("ICMP Requests")
-		$chart.SaveFig($Filename)
+
+		# Save the chart. If relative path provided base the location on hte current directory.
+		[System.IO.Directory]::SetCurrentDirectory($(get-location))
+		$Filename = [System.IO.Path]::GetFullPath($Filename)
+		$chartFilename = $chart.SaveFig($Filename)
+		Write-Host "Chart saved to $chartFilename" -ForegroundColor green
 	}
 }
-
- 
-
 
