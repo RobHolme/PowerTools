@@ -615,6 +615,55 @@
 	</TableControl>
 </View>
 
+<!-- default table view for Get-NetworkLatency -->	
+<View> 
+	<Name>Powertools.GetNetworkLatency.SummaryResult</Name>
+	<ViewSelectedBy>
+		<TypeName>Powertools.GetNetworkLatency.SummaryResult</TypeName>
+	</ViewSelectedBy>
+	<TableControl>
+		<TableHeaders>
+			<TableColumnHeader>
+				<Label>Destination</Label>
+			</TableColumnHeader>
+			<TableColumnHeader>
+				<Label>Average</Label>
+			</TableColumnHeader>
+			<TableColumnHeader>
+				<Label>Minimum</Label>
+			</TableColumnHeader>
+			<TableColumnHeader>
+				<Label>Maxumum</Label>
+			</TableColumnHeader>
+			<TableColumnHeader>
+				<Label>Loss</Label>
+			</TableColumnHeader>
+		</TableHeaders>
+		<TableRowEntries>
+			<TableRowEntry>
+				<TableColumnItems>
+					<TableColumnItem>
+						<PropertyName>Destination</PropertyName>
+					</TableColumnItem>
+					<TableColumnItem>
+						<PropertyName>Average</PropertyName>
+					</TableColumnItem>		
+					<TableColumnItem>
+						<PropertyName>Minimum</PropertyName>
+					</TableColumnItem>
+					<TableColumnItem>
+						<PropertyName>Maxumum</PropertyName>
+					</TableColumnItem>	
+					<TableColumnItem>
+						<PropertyName>Loss</PropertyName>
+					</TableColumnItem>			
+				</TableColumnItems>
+			</TableRowEntry>
+		</TableRowEntries>
+	</TableControl>
+</View>
+
+
 </ViewDefinitions>
 </Configuration>
 
