@@ -1,4 +1,29 @@
 function Get-NetworkLatency {
+		<#
+.NOTES
+Function Name   : Get-NetworkLatency
+Author          : Rob Holme (rob@holme.com.au)
+
+.SYNOPSIS
+Reports latency to connect to a remote host 
+.DESCRIPTION
+Tests connectivity via ICMP to a remote host. Latency stats returned, and optionally saved as a chart.
+.EXAMPLE
+Get-NetworkLatency -Hostname "www.google.com","www.microsoft.com","www.news.com.au" -Count 15 -Interval 1 -GraphResult ./test.png
+.EXAMPLE
+Get-NetworkLatency -Hostname "www.google.com" -Count 50 -Interval 2 -ShowAllResults
+.PARAMETER Hostname
+The Hostname or IP address of the host to connect to. Supply an array of hosts to test multiple hosts
+.PARAMETER Count
+The number of ICMP connection tests to perform
+.PARAMETER Interval
+The interval in seconds between tests. If the interval is less than 4 secs, the ICMP timeout will be set to match the interval (timeout remains at 4 secs for larger intervals). 
+.PARAMETER ShowAllResults
+Display the ICMP response as the tests occur (for each test). No summary stats will be provided with this option
+.PARAMETER GraphResult
+Supply a filename (.PNG) to save a chart of the latency for each test. 
+#>
+
 	[CmdletBinding()]
 	param(
 		[parameter(
