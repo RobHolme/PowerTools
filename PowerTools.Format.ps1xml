@@ -633,7 +633,7 @@
 				<Label>Minimum</Label>
 			</TableColumnHeader>
 			<TableColumnHeader>
-				<Label>Maxumum</Label>
+				<Label>Maximum</Label>
 			</TableColumnHeader>
 			<TableColumnHeader>
 				<Label>Loss</Label>
@@ -652,7 +652,7 @@
 						<PropertyName>Minimum</PropertyName>
 					</TableColumnItem>
 					<TableColumnItem>
-						<PropertyName>Maxumum</PropertyName>
+						<PropertyName>Maximum</PropertyName>
 					</TableColumnItem>	
 					<TableColumnItem>
 						<PropertyName>Loss</PropertyName>
