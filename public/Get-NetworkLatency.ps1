@@ -76,10 +76,10 @@ Supply a filename (.PNG) to save a chart of the latency for each test.
 		# Load the ScottPlot library if outputting the result as a graph
 		if ($GraphResult) {
 			try {
-				Add-Type -Path '.\lib\net6.0\ScottPlot.dll'
+				Add-Type -Path '$PSScriptRoot\lib\net6.0\ScottPlot.dll'
 			}
 			catch {
-				write-warning "Unable to load library '.\lib\net6.0\ScottPlot.dll'.`n Graphing functionality will not be available."
+				write-warning "Unable to load library '$PSScriptRoot\lib\net6.0\ScottPlot.dll'.`n Graphing functionality will not be available."
 				$noGraph = $true
 			}
 		}
