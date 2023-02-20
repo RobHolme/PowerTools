@@ -60,4 +60,5 @@ Version History
 	2.56 (13/10/2021)	Removed Get-NetStat, Test-URL, Get-Screenshot, Get-Hash, Add-SSHAuthoriszdKey, Rename-FileExtension, Rename-Filename due to lack of frequent use.
 	2.58 (08/07/2022)	Fixed issue where ps1xml view formatting changed date format
 	2.59 (08/09/2022)	Added Get-SQLInstance to return SQL instance information from SQL browser
+	2.60 (12/12/2022)   updated warning message to include hostname for Get-TlsCertificate when a certificate is not present
 	2.61 (18/02/2023)	Added Get-NetworkLatency
