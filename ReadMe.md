@@ -3,6 +3,7 @@ A module containing a random collection of functions that I use occasionally. Th
  - __Export-Credential__: Export username and password to file as a secure string. Supports Windows Powershell only, deprecated in favour of the cross platform Microsoft.PowerShell.SecretManagement Module.
  - __Import-Credential__: Import username and password from file exported by Export-Credential. Supports Windows Powershell only, deprecated in favour of the cross platform Microsoft.PowerShell.SecretManagement Module.           
  - __Get-FolderSize__: Graphically display the the size of each subfolder within a specified directory.    
+ - __Get-NetworkLatency__: Report network latency over sample period. Optionally display the results as a chart.
  - __Get-SMBShareCapacity__: Display the current capacity used by a SMB share.
  - __Get-SQLInstance__: Query the MS-SQL Browser to retrieve SQL Instance details"    
  - __Get-TLSCertificate__: Display the TLS certificate associated with a TCP interface. 
@@ -107,6 +108,27 @@ C:\Program Files\Common Files\Adobe              172      526 ■■■■■■
 <Total>                                          528   693.93
 ```
 
+---
+## Get-NetworkLatency
+### DESCRIPTION
+Report the latency to a remote host. Define the number and frequency of ICMP connections to report on. Display min, max, and average latency results. Optionally save the results to a chart. e.g:
+
+![Syntax highlighting](https://github.com/RobHolme/PowerTools/raw/master/images/latency.png)
+
+### SYNTAX
+```Powershell
+Get-NetworkLatency [-Hostname] <String[]> [[-Count] <Int32>] [[-Interval] <Int32>] [[-ShowAllResults]] [[-GraphResult] <String>] [<CommonParameters>]
+```
+### PARAMETERS
+```-Hostname <String[]>``` The Hostname or IP address of the host to connect to. Supply an array of hosts to test multiple hosts.
+
+```-Count <Int32>``` The number of ICMP connection tests to perform.
+
+```-Interval <Int32>``` The interval in seconds between tests. If the interval is less than 4 secs, the ICMP timeout will be set to match the interval (timeout remains at 4 secs for larger intervals).
+
+```-ShowAllResults```
+
+```-GraphResult <String>```
 
 ---
 ## Get-SMShareCapacity
