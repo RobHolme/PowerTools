@@ -70,19 +70,7 @@ Supply a filename (.PNG) to save a chart of the latency for each test.
 	begin {
 		# timeout defaults to 4 seconds. Make the timeout the same as the interval if the interval is less than 4 seconds
 		[int] $timeout = if ($Interval -lt 4) { $Interval } else { 4 }
-
 		[LatencyResultCollection] $latencyResultList = [LatencyResultCollection]::new()
-		
-		# Load the ScottPlot library if outputting the result as a graph
-		if ($GraphResult) {
-			try {
-				Add-Type -Path '$PSScriptRoot\lib\net6.0\ScottPlot.dll'
-			}
-			catch {
-				write-warning "Unable to load library '$PSScriptRoot\lib\net6.0\ScottPlot.dll'.`n Graphing functionality will not be available."
-				$noGraph = $true
-			}
-		}
 	}
 	
 	#--------------------------------------

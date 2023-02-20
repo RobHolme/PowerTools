@@ -21,5 +21,13 @@ foreach ($file in @($public + $private)) {
 	}
 }
 
+# load the correct assemblies, depending if the module was loaded from a powershell core (>= v6) or windows powershell (<= v5.1)
+if ($IsCoreCLR) {
+    add-type -path "$PSScriptRoot\lib\net6.0\ScottPlot.dll"
+}
+else {
+    add-type -path "$PSScriptRoot\lib\net462\ScottPlot.dll"
+}
+
 # export the names of the public functions. Assumes unique file for each public function with base filename matching function name.
 Export-ModuleMember -Function $public.BaseName
