@@ -400,7 +400,7 @@ function GenerateChart {
 		$Filename = [System.IO.Path]::GetFullPath($Filename)
 		try {
 			$chartFilename = $chart.SaveFig($Filename)
-			Write-Host "Chart saved to $chartFilename" -ForegroundColor green
+			Write-Host "Chart saved to $chartFilename `n" 
 			& $chartFilename
 		}
 		catch {
