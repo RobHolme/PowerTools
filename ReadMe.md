@@ -126,10 +126,49 @@ Get-NetworkLatency [-Hostname] <String[]> [[-Count] <Int32>] [[-Interval] <Int32
 
 ```-Interval <Int32>``` The interval in seconds between tests. If the interval is less than 4 secs, the ICMP timeout will be set to match the interval (timeout remains at 4 secs for larger intervals).
 
-```-ShowAllResults```
+```-ShowAllResults``` Show ICMP responses as they occur. This replaces the default summary report. 
 
-```-GraphResult <String>```
+```-GraphResult <String>``` Supply a filename (.PNG) to save a chart of the latency.
 
+### EXAMPLE
+```
+Get-NetworkLatency -Hostname "www.google.com" -Count 5 -Interval 2
+
+Destination    Average Minimum Maximum Loss
+-----------    ------- ------- ------- ----
+www.google.com 52 ms   49 ms   59 ms   0 (0%)
+```
+
+### EXAMPLE
+```
+Get-NetworkLatency -Hostname "www.google.com","www.microsoft.com" -Count 20 -Interval 1
+
+Destination       Average Minimum Maximum Loss
+-----------       ------- ------- ------- ----
+www.google.com    53 ms   48 ms   66 ms   0 (0%)
+www.microsoft.com 12 ms   9 ms    26 ms   0 (0%)
+```
+### EXAMPLE
+```
+Get-NetworkLatency -Hostname "www.google.com" -Count 3 -ShowAllResults
+
+Destination    Latency Status  TimeStamp
+-----------    ------- ------  ---------
+www.google.com 49 ms   Success 2023-02-20 20:01:36
+www.google.com 51 ms   Success 2023-02-20 20:01:37
+www.google.com 50 ms   Success 2023-02-20 20:01:38
+```
+### EXAMPLE
+```
+Get-NetworkLatency -Hostname "www.google.com","www.bing.com" -Interval 1 -Count 100 -GraphResult .\latency.png
+
+Chart saved to C:\Users\Rob\latency.png
+
+Destination    Average Minimum Maximum Loss
+-----------    ------- ------- ------- ----
+www.google.com 54 ms   48 ms   90 ms   0 (0%)
+www.bing.com   14 ms   9 ms    57 ms   0 (0%)
+```
 ---
 ## Get-SMShareCapacity
 ### DESCRIPTION
