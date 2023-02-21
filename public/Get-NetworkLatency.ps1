@@ -80,7 +80,9 @@ Supply a filename (.PNG) to save a chart of the latency for each test.
 		foreach ($currentHost in $Hostname) {
 			try {
 				$resolvedIP = [System.Net.Dns]::GetHostaddresses($currentHost) 
-				Write-Verbose "$currentHost resolved to $($resolvedIP.IPAddressToString)"
+				foreach  ($ip in $resolvedIP) {
+					Write-Verbose "$currentHost resolved to $($ip.IPAddressToString)"
+				}
 			}
 			catch {
 				Write-Error "Unable to resolve the Hostname: $currentHost"
