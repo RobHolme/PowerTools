@@ -1,7 +1,5 @@
 # PowerTools ReadMe
 A module containing a random collection of functions that I use occasionally. These originated as separate scripts but were merged into a module for transportability. May change over time as infrequently used functions are removed.    
- - __Export-Credential__: Export username and password to file as a secure string. Supports Windows Powershell only, deprecated in favour of the cross platform Microsoft.PowerShell.SecretManagement Module.
- - __Import-Credential__: Import username and password from file exported by Export-Credential. Supports Windows Powershell only, deprecated in favour of the cross platform Microsoft.PowerShell.SecretManagement Module.           
  - __Get-FolderSize__: Graphically display the the size of each subfolder within a specified directory.    
  - __Get-NetworkLatency__: Report network latency over sample period. Optionally display the results as a chart.
  - __Get-SMBShareCapacity__: Display the current capacity used by a SMB share.
@@ -12,61 +10,6 @@ A module containing a random collection of functions that I use occasionally. Th
  - __Test-TCPPort__: Tests connectivity to a remote TCP port. Based on Test-NetConnection, but implements shorter (configurable) connection timeouts and removes ICMP connectivity tests if the TCP connection fails (intended to be faster than Test-NetConnection when testing large number of hosts).            
 
 
-
----
-
-## Export-Credential
-### DESCRIPTION
-Exports a password to a file (as a secure string), may also include username and associated meta data. The password is encrypted (other items such as username are plain text), requiring the same user and host to be able to read the password. The exported password cannot be transported between hosts or users, it will fail to import. Encryption relies on Microsoft's Data Protection API (DPAPI), so this command supports Windows environments only.
-
-Use Import-Password to return the PS Credential object from file.
-
-__As this function only supports PowerShell on Windows, it is recommended to use the cross platform Microsoft.PowerShell.SecretManagement Module instead of this function.__
-
-### SYNTAX
-```PowerShell
-Export-Credential [-Path] <String> [-Password] <SecureString> [[-Username] <String>] [-NoClobber] [<CommonParameters>]
-
-Export-Credential [-Path] <String> [[-Credential] <PSCredential>] [-NoClobber] [<CommonParameters>]
-```
-### PARAMETERS
-```-Path <String>``` The full path and filename of the file to export the credentials to.
-
-```Password <SecureString>``` The password (as a secure string). Plain text password not allowed.
-
-```-Username <String>``` The (optional) username to store with the password.
-
-```-Credential <PSCredential>``` The credential object containing the credentials to export.
-
-```-NoClobber [<SwitchParameter>]``` Prevent to function from overwriting existing files.
-
-### EXAMPLE
-```
-PS C:\>Export-Credential -Path c:\temp\password.xml -Credential (Get-Credential)
-
-PS C:\>Export-Credential -Path c:\temp\password.xml -Username testdomain\testuser -Password $securePassword
-```
----
-
-## Import-Credential
-### DESCRIPTION
-Import credentials previously saved by the Export-Credential command. Credentials must be imported by the same user, and on the same workstation as they were exported from (exported credentials are not portable). Decryption relies on Microsoft's Data Protection API (DPAPI), so this command supports Windows environments only.
-
-__As this function only supports PowerShell on Windows, it is recommended to use the cross platform Microsoft.PowerShell.SecretManagement Module instead of this function.__
-### SYNTAX
-```PowerShell
-Import-Credential [-Path] <String> [<CommonParameters>]
-```
-### PARAMETERS
-```-Path <String>``` The full path and filename of the file to import the credentials from.
-
-### EXAMPLE
-```
-PS > $Cred = Import-Credential -Path c:\temp\credential.xml
-
-     $Cred.Username  # this is the domain\username
-     $Cred.GetNetworkCredential().Password  # this is the plain text Password
-```
 ---
 
 ## Get-FolderSize
