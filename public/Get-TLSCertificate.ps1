@@ -94,6 +94,7 @@ function Get-TLSCertificate {
 		}
 
 		if ($certificate) {
+
 			# export the certificate to a base64 encoded file (.cer)
 			If ($ExportFile) {
 				$certBase64 = "-----BEGIN CERTIFICATE-----`n"
@@ -107,14 +108,15 @@ function Get-TLSCertificate {
 				if ($certificate -isnot [System.Security.Cryptography.X509Certificates.X509Certificate2]) {
 					$certificate = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2 -ArgumentList $certificate
 				}
-
+# !! For some reason DnsNameList does not return values unless a member function is called first - moving verify() up the list ahead of the DNSNameList property seems to fix this
+# !! This did not present as an issue when dot sourced, only when ran in a module. 
 				[PSCustomObject]@{
 					PSTypeName              = "Powertools.GetSSLCertificate.Result"
 					Hostname				= $Hostname
+					Verified                = $certificate.Verify()
 					Subject                 = $certificate.Subject
 					SubjectAlternativeNames = $certificate.DnsNameList
 					Issuer                  = $certificate.Issuer
-					Verified                = $certificate.Verify()
 					ValidFrom               = $certificate.NotBefore
 					ValidTo          	    = $certificate.NotAfter
 					SignatureAlgorithm      = $certificate.SignatureAlgorithm.FriendlyName
