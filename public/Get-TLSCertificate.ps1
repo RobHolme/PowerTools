@@ -108,8 +108,9 @@ function Get-TLSCertificate {
 				if ($certificate -isnot [System.Security.Cryptography.X509Certificates.X509Certificate2]) {
 					$certificate = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2 -ArgumentList $certificate
 				}
-# !! For some reason DnsNameList does not return values unless a member function is called first - moving verify() up the list ahead of the DNSNameList property seems to fix this
-# !! This did not present as an issue when dot sourced, only when ran in a module. 
+# For some reason DnsNameList does not return values unless a member function is called first - moving verify() up the list ahead of the DNSNameList property seems to fix this
+# This did not present as an issue when dot sourced, only when ran in a module. 
+# !! Not working again. Arrrgh.
 				[PSCustomObject]@{
 					PSTypeName              = "Powertools.GetSSLCertificate.Result"
 					Hostname				= $Hostname
