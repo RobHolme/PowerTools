@@ -108,15 +108,24 @@ function Get-TLSCertificate {
 				if ($certificate -isnot [System.Security.Cryptography.X509Certificates.X509Certificate2]) {
 					$certificate = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2 -ArgumentList $certificate
 				}
-# For some reason DnsNameList does not return values unless a member function is called first - moving verify() up the list ahead of the DNSNameList property seems to fix this
-# This did not present as an issue when dot sourced, only when ran in a module. 
-# !! Not working again. Arrrgh.
+
+				# For some reason $certificate.DnsNameList does not return values all of the time. The following workaround obtains the DNS and IP SANs from the certificate extensions.
+				foreach ($extension in $certificate.Extensions) {
+					[System.Security.Cryptography.AsnEncodedData] $asnData =  [System.Security.Cryptography.AsnEncodedData]::new($extension.Oid, $extension.RawData)
+					# SAN OID value
+					if ($asnData.Oid.Value -eq "2.5.29.17") {
+						$subjectAlternativeNames = $asnData.Format($true) -replace "DNS Name=" -replace "IP Address=" -replace "RFC822 Name=" -replace "URL="
+						$subjectAlternativeNames = $subjectAlternativeNames.Split([System.Environment]::NewLine, [System.StringSplitOptions]::RemoveEmptyEntries)
+					}
+				}
+
 				[PSCustomObject]@{
 					PSTypeName              = "Powertools.GetSSLCertificate.Result"
 					Hostname				= $Hostname
 					Verified                = $certificate.Verify()
 					Subject                 = $certificate.Subject
-					SubjectAlternativeNames = $certificate.DnsNameList
+					SubjectAlternativeNames = $subjectAlternativeNames
+#					SubjectAlternativeNames = $certificate.DnsNameList
 					Issuer                  = $certificate.Issuer
 					ValidFrom               = $certificate.NotBefore
 					ValidTo          	    = $certificate.NotAfter
