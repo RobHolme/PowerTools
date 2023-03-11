@@ -63,3 +63,5 @@ Version History
 	2.60 (12/12/2022)   updated warning message to include hostname for Get-TlsCertificate when a certificate is not present
 	2.61 (18/02/2023)	Added Get-NetworkLatency
 	2.62 (21/02/2023)	Removed Export-Credential and Import-Credential from module. Deprecated in favour of the MS Secrets Module.
+	2.63 (10/03/2023)	Fixed issue with SubjectAlternativeName not being reported.
+	2.64 (11/02/2023)	Fixed issue with EnahancedKeyUsage not being reported.
