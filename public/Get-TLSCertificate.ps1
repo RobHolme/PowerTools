@@ -110,6 +110,7 @@ function Get-TLSCertificate {
 				}
 
 				# For some reason $certificate.DnsNameList does not return values all of the time. The following workaround obtains the DNS and IP SANs from the certificate extensions.
+				# Seems to be an issue with properties of the type "ScriptProperty" - also impacted $certificate.EnhancedKeyUsageList property.
 				foreach ($extension in $certificate.Extensions) {
 					[System.Security.Cryptography.AsnEncodedData] $asnData =  [System.Security.Cryptography.AsnEncodedData]::new($extension.Oid, $extension.RawData)
 					# SAN OID value
@@ -125,17 +126,16 @@ function Get-TLSCertificate {
 					Verified                = $certificate.Verify()
 					Subject                 = $certificate.Subject
 					SubjectAlternativeNames = $subjectAlternativeNames
-#					SubjectAlternativeNames = $certificate.DnsNameList
 					Issuer                  = $certificate.Issuer
 					ValidFrom               = $certificate.NotBefore
 					ValidTo          	    = $certificate.NotAfter
 					SignatureAlgorithm      = $certificate.SignatureAlgorithm.FriendlyName
-					PublicKeyAlgorithm      = $certificate.PublicKey.Key.KeyExchangeAlgorithm
+					PublicKeyAlgorithm      = $certificate.PublicKey.EncodedKeyValue.Oid.FriendlyName 
 					PublicKeySize           = $certificate.PublicKey.Key.KeySize
 					Thumbprint              = $certificate.Thumbprint
 					Version                 = $certificate.Version
 					SerialNumber			= $certificate.SerialNumber
-					EnhancedKeyUsage		= $certificate.EnhancedKeyUsageList.FriendlyName
+					EnhancedKeyUsage		= $certificate.Extensions.EnhancedKeyUsages.FriendlyName
 				}
 			}
 		}
