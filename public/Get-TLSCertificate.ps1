@@ -51,6 +51,12 @@ function Get-TLSCertificate {
 		[string] $ExportFile
 	)
 
+	begin {
+		if ($PSEdition -ne "Core") {
+			Write-Warning "For best results use PowerShell v7+. Earlier versions (Windows PowerShell v5.x) may fail to negotiate TLS in some situations."
+		}
+	}
+
 	process {
 		$timeout = 3000
 		$certificate = $null
@@ -71,7 +77,7 @@ function Get-TLSCertificate {
 					$certificate = $sslStream.RemoteCertificate
 				}
 				catch {
-					Write-Warning "Failed to retrieve certificate from $($Hostname):$($Port). Socket may not support TLS."
+					Write-Warning "Failed to retrieve certificate from $($Hostname):$($Port). Socket may not support TLS, or client settings may have prevented TLS negotiation."
 					Write-Warning "$($_.Exception.InnerException.Message)"
 					Write-Debug "$($_.Exception)"
 					Write-Host ""
