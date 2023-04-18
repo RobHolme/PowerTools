@@ -71,11 +71,25 @@ Supply a filename (.PNG) to save a chart of the latency for each test.
 		# timeout defaults to 4 seconds. Make the timeout the same as the interval if the interval is less than 4 seconds
 		[int] $timeout = if ($Interval -lt 4) { $Interval } else { 4 }
 		[LatencyResultCollection] $latencyResultList = [LatencyResultCollection]::new()
+
+		# confirm the filename supplied has a .png extension, otherwise saving the results as an image will fail
+		if ($GraphResult) {
+			if ($GraphResult -notmatch "\.png") {
+				write-warning "The -GraphResult parameter must specify a filename with a '.png' file extension."
+				$abortProcessing = $true
+			}
+		}
 	}
 	
 	#--------------------------------------
 	# process each object from the pipeline
 	process {
+		# exit the processing pipeline if prerequisites have not been met 
+		if ($abortProcessing) {
+			$noGraph = $true
+			return
+		}
+
 		# Catch hostname resolution failure. Move onto next host in the input pipeline.
 		foreach ($currentHost in $Hostname) {
 			try {
