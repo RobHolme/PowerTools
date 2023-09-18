@@ -65,3 +65,5 @@ Version History
 	2.62 (21/02/2023)	Removed Export-Credential and Import-Credential from module. Deprecated in favour of the MS Secrets Module.
 	2.63 (10/03/2023)	Fixed issue with SubjectAlternativeName not being reported.
 	2.64 (11/02/2023)	Fixed issue with EnahancedKeyUsage not being reported.
+	2.65 (18/09/2023)	Formatting now uses a yellow warning colour where expiry dates are < 30 days away
+						Removed test-SQLDatabase from the module
