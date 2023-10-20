@@ -145,14 +145,14 @@ Share             FreeSpace  TotalSpace  PercentFree
 ---
 ## Get-SQLInstance
 ### DESCRIPTION
-Query the MS-SQL browser to retrieve details of the SQL Instances on a server
+Query the MS-SQL browser to retrieve details of the SQL Instances on a server. For cases where a DNS name resolves to multiple IPs (such as for a AG listener), an attempt will be made to connect to all IPs. In the case of an AG listener, it is expected that only the connection to the active listener IP will respond. 
 
 ### SYNTAX
 ```PowerShell
 Get-SQLInstance [-ComputerName] <String[]> [[-Timeout] <Int32>] [<CommonParameters>]
 ```
 ### PARAMETERS
-```-ComputerName <String[]>``` The hostname or IP address of the MS-SQL server. Provide a list of server names to query multiple servers. 
+```-ComputerName <String[]>``` The hostname or IP address of the MS-SQL server. Provide a list of server names to query multiple servers. If a hostname resolves to multiple IPs (such as an AG listener), all IPs will be contacted.
 
 ```-Timeout <Int32>``` The time to wait (in seconds) for a response from the SQL Server Browser.
 ### EXAMPLE
@@ -240,43 +240,6 @@ Connection Successful 127.0.0.1       50298
 ```
 ---
 
-## Test-SQLDatabase
-### DESCRIPTION
-Tests logon connectivity to MS-SQL Database. Supports SQL user authentication, or integrated Windows authentication. Returns connections details (connection status, time to connect) on success or failure. 
-### SYNTAX
-```PowerShell
-Test-Database [-Server] <String> [-Database] <String> [-Username] <String> [[-Password] <SecureString>] [<CommonParameters>]
-
-Test-Database [-Server] <String> [-Database] <String> [[-UseWindowsAuthentication]] [<CommonParameters>]
-```
-### PARAMETERS
-```-Server <String>```
-The Hostname or IP address of the SQL server to connect to. If connecting to a named instance, include the instance name e.g. server\instance. If connecting to a SQL Availability Group you can use the name of the Availability Group Listener for this parameter.
-
-```-Database <String>```
-The name of the database to connect to.
-
-```-Username <String>```
-The SQL user account used to authenticate to the database.
-
-```-Password <SecureString>```
-The password associated with the SQL user account. Must be a Secure String. Omit this parameter to be prompted for the password (if the -SQLUser parameter has been supplied).
-
-```-UseWindowsAuthentication [<SwitchParameter>]```
-Use the current logged on user's credentials to authenticate using Windows authentication. This is the default action if no SQL user credentials are provided.
-
-### EXAMPLE
-```
-PS C:\> Test-Database -Server sqlserver01\SQLInst01 -Database testdb -UseWindowsAuthentication
-
-Connection  : Successful
-ElapsedTime : 0.0208364
-Server      : sqlserver01\SQLInst01
-Database    : testdb
-User        : Windows (TESTDOM\rob)
-```
-
----
 ## Test-TCPPort
 ### DESCRIPTION
 Tests connectivity to a TCP port on a remote host. If successful, the time to connect is displayed with the endpoint details. Based on Test-NetConnection, but items such as ICMP checks are removed, and a shorter default timeout used to speed up tests of a large number of hosts/ports. Failed connections return quicker than Test-NetConnection. Another difference is this will show the result for all IP addresses that hostname resolves to, while Test-NetConnection only shows the first IP address to successfully respond.

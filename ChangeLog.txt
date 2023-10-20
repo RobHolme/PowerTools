@@ -67,3 +67,4 @@ Version History
 	2.64 (11/02/2023)	Fixed issue with EnahancedKeyUsage not being reported.
 	2.65 (18/09/2023)	Formatting now uses a yellow warning colour where expiry dates are < 30 days away
 						Removed test-SQLDatabase from the module
+	2.66 (20/10/2023)	Updated Get-SQLInstance to attempt to connect to all IPs where a hostname returns multiple A records (e.g. an AG Listener) 
