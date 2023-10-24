@@ -37,7 +37,7 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 			Position = 2,
 			Mandatory = $False)]
 		[ValidateRange(1, 20)]
-		[int] $Timeout = 5
+		[int] $Timeout = 3
 	)
 
 	Begin {
