@@ -20,6 +20,9 @@ function Get-TLSCertificate {
 	# Get LDAPS cert form a domain controller
 	Get-SSLCertificate -Hostname DC01 -port 636
 .EXAMPLE
+	# provide a full URL as a hostname
+	Get-SSLCertificate Hostname https://www.example.com:8443
+.EXAMPLE
 	Get-SSLCertificate -Hostname www.example.com -ExportFile c:\temp\CertExport.cer
 #>
 
@@ -51,6 +54,7 @@ function Get-TLSCertificate {
 		[string] $ExportFile
 	)
 
+
 	begin {
 		if ($PSEdition -ne "Core") {
 			Write-Warning "For best results use PowerShell v7+. Earlier versions (Windows PowerShell v5.x) may fail to negotiate TLS in some situations."
@@ -58,6 +62,17 @@ function Get-TLSCertificate {
 	}
 
 	process {
+
+
+		# strip any HTTP/S schemes from the hostname if included 
+		$Hostname = $Hostname -replace('(HTTPS|HTTP)\://','')
+		# extract the port number from the hostname string if supplied instead of using -Port switch (eg https://www.server.com:8443)
+		$splitHostname = $Hostname -split ':'
+		if ($splitHostname.Count -gt 1) {
+			$Hostname = $splitHostname[0]
+			$Port = $splitHostname[1]
+		}
+
 		$timeout = 3000
 		$certificate = $null
 		$tcpClient = New-Object -TypeName System.Net.Sockets.tcpClient
