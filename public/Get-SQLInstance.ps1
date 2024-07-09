@@ -4,7 +4,7 @@ function Get-SQLInstance {
 		Requests a list of instances from the browser service.
 	
 	.DESCRIPTION
-	    Requests a list of instances from the browser service.
+	    Requests a list of instances from the browser service. Sends a UDP packet to the MS-SQL browser service, requires network access to 1434 UDP.
 
 	.PARAMETER ComputerName
 	    Computer name or IP address to enumerate SQL Instance from.
