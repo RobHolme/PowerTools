@@ -19,7 +19,7 @@ param (
 )
 
 begin {  
-    function GetModuleVersion() {
+    function Get-ModuleVersion() {
         try {
             $moduleFile = Get-ChildItem *.psd1
         }
@@ -61,17 +61,106 @@ begin {
         }
     }
 
-    
-}
+    # Get the module path based on scope and platform
+function Get-PSModulePath {
+    param (
+        [ValidateSet("CurrentUser", "AllUsers")]
+        [string] $Scope = "CurrentUser"
+    )
 
-process {
-    $moduleVersion = GetModuleVersion
-    if ($null -ne $moduleVersion){
-        # copy all files, exclude .git folder
-        # Copy-Item -Path -Destination -Recurse -Exclude '.git'
+    $psCmdlet = $MyInvocation.MyCommand
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) {
+        $powerShellType = if ($psCmdlet.Host.Version -ge 6) { 
+            "PowerShell" 
+        } 
+        else { 
+            "WindowsPowerShell" 
+        }
+            $localUserDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)) $powerShellType
+            $allUsersDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFiles)) $powerShellType
+        
+    }
+    else {
+        # Paths are the same for both Linux and macOS
+        $localUserDir = Join-Path (Get-HomeOrCreateTempHome) ".local/share/powershell"
+        # Create the default data directory if it doesn't exist.
+        if (-not (Test-Path -PathType Container $localUserDir.Value)) {
+            New-Item -ItemType Directory -Path $localUserDir.Value | Out-Null
+        }
+        $allUsersDir = "/usr/local/share/powershell"
+    }
+    if ($Scope -eq "AllUsers") {
+        return $allUsersDir
+    }
+    else {
+        return $localUserDir
     }
     
 }
 
+# Helper function to get home directory
+function Get-HomeOrCreateTempHome {
+    $envHome = [System.Environment]::GetEnvironmentVariable("HOME") ?? $null
+
+    if ($null -ne $envHome) {
+        return $envHome
+    }
+    # Return an empty string in this case so the process working directory will be used.
+    else {
+        return ""
+    }
+}
+
+
+    
+}
+
+process {
+    $moduleVersion = Get-ModuleVersion
+    $moduleRootPath =  Get-HomeOrCreateTempHome
+    if ($null -ne $moduleVersion){
+        # copy all files, exclude .git folder
+        # Copy-Item -Path -Destination -Recurse -Exclude '.*'
+    }
+    
+}
+
+
+
+
+
+# Example usage
+#$localUserDir = ""
+#$allUsersDir = ""
+#Get-StandardPlatformPaths -psCmdlet $MyInvocation.MyCommand -localUserDir ([ref] $localUserDir) -allUsersDir ([ref] $allUsersDir)
+#Write-Host "Local User Dir: $localUserDir"
+#Write-Host "All Users Dir: $allUsersDir"
+
+<#
+
+private static void GetStandardPlatformPaths(
+    PSCmdlet psCmdlet,
+    out string localUserDir,
+    out string allUsersDir)
+{
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+    {
+        string powerShellType = (psCmdlet.Host.Version >= PSVersion6) ? "PowerShell" : "WindowsPowerShell";
+        localUserDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), powerShellType);
+        allUsersDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), powerShellType);
+    }
+    else
+    {
+        // paths are the same for both Linux and macOS
+        localUserDir = Path.Combine(GetHomeOrCreateTempHome(), ".local", "share", "powershell");
+        // Create the default data directory if it doesn't exist.
+        if (!Directory.Exists(localUserDir)) {
+            Directory.CreateDirectory(localUserDir);
+        }
+
+        allUsersDir = System.IO.Path.Combine("/usr", "local", "share", "powershell");
+    }
+}
+#>
 
 
