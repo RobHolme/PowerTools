@@ -1,3 +1,16 @@
+<#  Rob Holme  11/07/2024
+.SYNOPSIS
+    Copy the module files from the current folder to the PowerShell module home.
+.DESCRIPTION
+    Copy the module files from the current folder to the PowerShell module home. Ignore dot folders (such as .git).
+.PARAMETER Scope
+    Install the module to either the current user module path or the all users module path
+.EXAMPLE
+    Install-Module -Scope CurrentUser
+.EXAMPLE
+    Install-Module -Scope AllUsers    
+#>
+
 [CmdletBinding()]
 param (
     [Parameter(
@@ -7,30 +20,14 @@ param (
         ValueFromPipelineByPropertyName = $True
     )]
     [ValidateSet("CurrentUser", "AllUsers")]
-    [string] $Scope = "CurrentUser",
-
-    [Parameter(
-        Position = 1,
-        Mandatory = $false,
-        ValueFromPipeline = $false,
-        ValueFromPipelineByPropertyName = $false
-    )]
-    [switch] $NoClobber
+    [string] $Scope = "CurrentUser"
 )
 
-
+# Get the module version number from the module manifest file.
+# Return $null if the module version can not be parsed.
 function Get-ModuleVersion() {
-    try {
-        $moduleFile = Get-ChildItem *.psd1
-    }
-    catch {
-        Write-Error "Exception raised while detecting module file, exiting. Use -Debug switch to view exception" 
-        Write-Debug $_.Exception
-        return $null
-    }
-        
-    # Make sure only one module file is found, otherwise exit.
-    if ($moduleFile.Count -eq 1) {
+    $moduleManifestFile = Get-ModuleManifestFile
+    if ($null -ne $moduleManifestFile) {
         $versionElement = Get-Content $moduleFile | Select-String "ModuleVersion(\s){0,}=(\s){0,}('|"")\d{1,}(\.{1}\d{1,}){0,}"
         if ($versionElement.Matches.Count -ne 1) {
             Write-Error "ModuleVersion element not detected in manifest"
@@ -46,17 +43,28 @@ function Get-ModuleVersion() {
                 return $null
             }
         }
-    } 
-    elseif ($moduleFile.Count -eq 0) {
-        Write-Error "Module .psd file not found, exiting."
-        return $null
-    } 
-    elseif ($moduleFile.Count -gt 1) {
-        Write-Error "More than 1 .psd file found, exiting."
+    }
+    return $null
+}
+
+# Get the module manifest file
+# Return $null if not found, or more than 1 manaifest file present in the current directory. 
+function Get-ModuleManifestFile {
+    try {
+        $moduleFile = Get-ChildItem *.psd1
+    }
+    catch {
+        Write-Error "Exception raised while detecting module file, exiting. Use -Debug switch to view exception" 
+        Write-Debug $_.Exception
         return $null
     }
+
+    # Make sure only one module file is found, otherwise exit.
+    if ($moduleFile.Count -eq 1) {
+        return $moduleFile
+    } 
     else {
-        Write-Error "Unknown issue detecting module file, exiting." 
+        Write-Error "Single module manifest file expected, none or more than 1 found." 
         return $null
     }
 }
@@ -68,9 +76,8 @@ function Get-PSModulePath {
         [string] $Scope = "CurrentUser"
     )
 
-    $psCmdlet = $MyInvocation.MyCommand
     if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) {
-        $powerShellType = if ($psCmdlet.Host.Version -ge 6) { 
+        $powerShellType = if ($MyInvocation.MyCommand.Host.Version -ge 6) { 
             "PowerShell" 
         } 
         else { 
@@ -82,7 +89,7 @@ function Get-PSModulePath {
     }
     else {
         # Paths are the same for both Linux and macOS
-        $localUserDir = Join-Path (Get-HomeOrCreateTempHome) ".local/share/powershell"
+        $localUserDir = Join-Path (Get-HomeFolder) ".local/share/powershell"
         # Create the default data directory if it doesn't exist.
         if (-not (Test-Path -PathType Container $localUserDir.Value)) {
             New-Item -ItemType Directory -Path $localUserDir.Value | Out-Null
@@ -99,7 +106,7 @@ function Get-PSModulePath {
 }
 
 # Helper function to get home directory
-function Get-HomeOrCreateTempHome {
+function Get-HomeFolder {
     $envHome = [System.Environment]::GetEnvironmentVariable("HOME") ?? $null
 
     if ($null -ne $envHome) {
@@ -111,13 +118,28 @@ function Get-HomeOrCreateTempHome {
     }
 }
 
+function Get-ModuleName {
+    $moduleManifestFile = Get-ModuleManifestFile
+    if ($null -ne $moduleManifestFile) {
+        return $moduleManifestFile.BaseName
+    }
+    return $null
+}
+
 
 
 $moduleVersion = Get-ModuleVersion
 $moduleRootPath = Get-PSModulePath
-if ($null -ne $moduleVersion) {
-    # copy all files, exclude .git folder
-    # Copy-Item -Path -Destination -Recurse -Exclude '.*'
+$moduleName = Get-ModuleName
+if (($null -ne $moduleVersion) -and ($null -ne $moduleRootPath) -and ($null -ne $moduleName)) {
+    # construct the module path ($env:psmodulepath\modulename\version)
+    $destinationPath = Join-Path -Path $moduleRootPath -ChildPath $moduleName -AdditionalChildPath $moduleVersion
+    # create the folder if it does not already exist
+    if (!Test-Path -Path $destinationPath) {
+        New-Item $destinationPath.DirectoryName
+    } 
+    # copy all files, exclude dot folders (e.g. .git)
+    Copy-Item -Path (Get-Location).Path -Destination $destinationPath -Recurse -Exclude '.*'
 }
     
 
