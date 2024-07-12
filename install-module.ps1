@@ -15,7 +15,7 @@
 param (
     [Parameter(
         Position = 0,
-        Mandatory = $True,
+        Mandatory = $False,
         ValueFromPipeline = $false,
         ValueFromPipelineByPropertyName = $True
     )]
@@ -28,7 +28,7 @@ param (
 function Get-ModuleVersion() {
     $moduleManifestFile = Get-ModuleManifestFile
     if ($null -ne $moduleManifestFile) {
-        $versionElement = Get-Content $moduleFile | Select-String "ModuleVersion(\s){0,}=(\s){0,}('|"")\d{1,}(\.{1}\d{1,}){0,}"
+        $versionElement = Get-Content $moduleManifestFile | Select-String "ModuleVersion(\s){0,}=(\s){0,}('|"")\d{1,}(\.{1}\d{1,}){0,}"
         if ($versionElement.Matches.Count -ne 1) {
             Write-Error "ModuleVersion element not detected in manifest"
             return $null
@@ -36,7 +36,7 @@ function Get-ModuleVersion() {
         else {
             # match version number string
             $moduleVersionMatch = ([regex]::Match($versionElement, "\d{1,}(\.{1}\d{1,}){0,}"))
-            if (moduleVersionMatch.Success) {
+            if ($moduleVersionMatch.Success) {
                 return $moduleVersionMatch[0].Value
             }
             else {
@@ -72,16 +72,22 @@ function Get-ModuleManifestFile {
 # Get the module path based on scope and platform
 function Get-PSModulePath {
     param (
+        [Parameter(
+            Position = 0,
+            Mandatory = $True,
+            ValueFromPipeline = $False,
+            ValueFromPipelineByPropertyName = $False
+        )]
         [ValidateSet("CurrentUser", "AllUsers")]
-        [string] $Scope = "CurrentUser"
+        [string] $moduleScope
     )
 
     if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) {
-        $powerShellType = if ($MyInvocation.MyCommand.Host.Version -ge 6) { 
-            "PowerShell" 
+        if ($IsCoreCLR) { 
+            $powerShellType = "PowerShell" 
         } 
         else { 
-            "WindowsPowerShell" 
+            $powerShellType = "WindowsPowerShell" 
         }
         $localUserDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)) $powerShellType
         $allUsersDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFiles)) $powerShellType
@@ -96,7 +102,7 @@ function Get-PSModulePath {
         }
         $allUsersDir = "/usr/local/share/powershell"
     }
-    if ($Scope -eq "AllUsers") {
+    if ($moduleScope -eq "AllUsers") {
         return $allUsersDir
     }
     else {
@@ -129,17 +135,37 @@ function Get-ModuleName {
 
 
 $moduleVersion = Get-ModuleVersion
-$moduleRootPath = Get-PSModulePath
+$moduleRootPath = Join-Path -Path (Get-PSModulePath -moduleScope $Scope) -ChildPath "Modules"
 $moduleName = Get-ModuleName
+Write-Verbose "Module name:`t`t $($moduleName)"
+Write-Verbose "Module path:`t`t $($moduleRootPath)"
+Write-Verbose "Module version:`t $($moduleVersion)"
+
 if (($null -ne $moduleVersion) -and ($null -ne $moduleRootPath) -and ($null -ne $moduleName)) {
     # construct the module path ($env:psmodulepath\modulename\version)
     $destinationPath = Join-Path -Path $moduleRootPath -ChildPath $moduleName -AdditionalChildPath $moduleVersion
     # create the folder if it does not already exist
-    if (!Test-Path -Path $destinationPath) {
-        New-Item $destinationPath.DirectoryName
+    if (!(Test-Path -Path $destinationPath)) {
+        Write-Verbose "Creating folder $destinationPath"
+        try {
+            New-Item $destinationPath -ItemType Directory -ErrorAction Stop| Out-Null
+        }
+        catch {
+            Write-Error "Unable to create directory $destinationPath. Use -Debug switch for details"
+            Write-Debug $_.Exception
+            exit
+        }
     } 
     # copy all files, exclude dot folders (e.g. .git)
-    Copy-Item -Path (Get-Location).Path -Destination $destinationPath -Recurse -Exclude '.*'
+    Write-Host "Installing module to $destinationPath"
+    try {
+        Copy-Item -Path (Join-Path -Path (Get-Location).Path -ChildPath '*') -Recurse -Destination $destinationPath.ToString() -Exclude '.*','images' -Force -ErrorAction Stop
+    }
+    catch {
+        Write-Error "Unable to copy files to $destinationPath. Use -Debug switch for details"
+        Write-Debug $_.Exception
+        exit
+    }
 }
     
 
