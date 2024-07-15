@@ -5,14 +5,10 @@
     Copy the module files from the current folder to the PowerShell module home. Ignore dot folders (such as .git).
 .PARAMETER Scope
     Install the module to either the current user module path or the all users module path
-.PARAMETER PromptForModulePath
-    Prompt the user to select the install location from existing module paths. This overrides the -Scope parameter.
 .EXAMPLE
-    ./Install.ps1 -Scope CurrentUser
+    Install-Module -Scope CurrentUser
 .EXAMPLE
-    ./Install.ps1 -Scope AllUsers    
-.EXAMPLE
-    ./Install.ps1  -PromptForModulePath    
+    Install-Module -Scope AllUsers    
 #>
 
 [CmdletBinding()]
@@ -20,20 +16,11 @@ param (
     [Parameter(
         Position = 0,
         Mandatory = $False,
-        ValueFromPipeline = $False,
+        ValueFromPipeline = $false,
         ValueFromPipelineByPropertyName = $True
     )]
     [ValidateSet("CurrentUser", "AllUsers")]
-    [string] $Scope = "CurrentUser",
-
-    [Parameter(
-        Position = 0,
-        Mandatory = $False,
-        ValueFromPipeline = $False,
-        ValueFromPipelineByPropertyName = $False
-    )]
-    [switch] $PromptForModulePath 
-
+    [string] $Scope = "CurrentUser"
 )
 
 # Get the module version number from the module manifest file.
@@ -120,32 +107,6 @@ function Get-PSModulePath {
     
 }
 
-# Get the module path based on scope and platform
-function Select-PSModulePath {
-    $allModules = $env:PSModulePath -Split ';'
-    for ($i = 1; $i -le $allModules.Count; $i++) {
-        Write-Host "`t($i) .... $($allModules[$i-1])"
-    }
-    
-
-    # confirm the repsonse is valid, if not return null.
-    try {
-        [Int32]$selection = Read-Host -Prompt "Select install path for module (1 to $($allModules.Count))"
-        
-        if (($selection -gt 0) -and ($selection -le $allModules.Count)) {
-            return $allModules[$selection - 1]
-        }
-        else {
-            Write-Warning "Selection is out of range. Select from 1 to $($allModules.Count)."
-            return $null
-        }
-    }
-    catch {
-        Write-Warning "Select a number corresponding to the host to connect to (from 1 to $($allModules.Count))."
-        return $null
-    }
-}
-
 # Helper function to get home directory
 function Get-HomeFolder {
     $envHome = [System.Environment]::GetEnvironmentVariable("HOME") ?? $null
@@ -168,16 +129,9 @@ function Get-ModuleName {
 }
 
 
-# Prompt user to select modile if -PromptForModulePath swtich provided, otherwise use AllUsers or CurrentUser path based on supplied parameter 
-# Defaults to CurrentUser if no prameters supplied
-if($PromptForModulePath) {
-    $moduleRootPath = Select-PSModulePath
-}
-else {
-    $moduleRootPath = Join-Path -Path (Get-PSModulePath -moduleScope $Scope) -ChildPath "Modules"
-}
 
 $moduleVersion = Get-ModuleVersion
+$moduleRootPath = Join-Path -Path (Get-PSModulePath -moduleScope $Scope) -ChildPath "Modules"
 $moduleName = Get-ModuleName
 Write-Verbose "Module name:`t`t $($moduleName)"
 Write-Verbose "Module path:`t`t $($moduleRootPath)"
