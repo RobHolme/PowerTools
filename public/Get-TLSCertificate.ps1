@@ -62,15 +62,21 @@ function Get-TLSCertificate {
 	}
 
 	process {
-
-
 		# strip any HTTP/S schemes from the hostname if included 
 		$Hostname = $Hostname -replace('(HTTPS|HTTP)\://','')
 		# extract the port number from the hostname string if supplied instead of using -Port switch (eg https://www.server.com:8443)
 		$splitHostname = $Hostname -split ':'
 		if ($splitHostname.Count -gt 1) {
 			$Hostname = $splitHostname[0]
-			$Port = $splitHostname[1]
+			# remove any path from the URL, extract the port number. Confirm extracted port value is an int.
+			try {
+				$splitPort = $splitHostname[1] -split "/"
+				$Port = [convert]::ToInt32($splitPort[0]) 
+			}
+			catch{
+				Write-Error "Unable to extract port number from URL"
+				return
+			}
 		}
 
 		$timeout = 3000
