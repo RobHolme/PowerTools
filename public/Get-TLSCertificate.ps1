@@ -68,7 +68,7 @@ function Get-TLSCertificate {
 		$splitHostname = $Hostname -split ':'
 		if ($splitHostname.Count -gt 1) {
 			$Hostname = $splitHostname[0]
-			# remove any path from the URL, extract the port number. Confirm extracted port value is an int.
+			# remove path from the URL, extract the port number. Confirm extracted port value is an int.
 			try {
 				$splitPort = $splitHostname[1] -split "/"
 				$Port = [convert]::ToInt32($splitPort[0]) 
@@ -78,6 +78,11 @@ function Get-TLSCertificate {
 				return
 			}
 		}
+		else {
+			# remove  path from the URL
+			$Hostname = ($Hostname -split "/")[0]
+		}
+
 
 		$timeout = 3000
 		$certificate = $null
