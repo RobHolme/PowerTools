@@ -68,3 +68,4 @@ Version History
 	2.65 (18/09/2023)	Formatting now uses a yellow warning colour where expiry dates are < 30 days away
 						Removed test-SQLDatabase from the module
 	2.66 (20/10/2023)	Updated Get-SQLInstance to attempt to connect to all IPs where a hostname returns multiple A records (e.g. an AG Listener) 
+	2.67 (31/07/2024)	Get-TLSCertificate now extracts the hostname (and port) if a URL is provided.
