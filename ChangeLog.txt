@@ -69,3 +69,4 @@ Version History
 						Removed test-SQLDatabase from the module
 	2.66 (20/10/2023)	Updated Get-SQLInstance to attempt to connect to all IPs where a hostname returns multiple A records (e.g. an AG Listener) 
 	2.67 (31/07/2024)	Get-TLSCertificate now extracts the hostname (and port) if a URL is provided.
+	2.68 (30/08/2024)	Test-TcpPort will report 0 ms connection time if the connection failed (previously the timeout value was reported)
