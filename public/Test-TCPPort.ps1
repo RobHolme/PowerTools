@@ -51,7 +51,7 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 		
 			$Result = @{
 				Connection    = "Failed"
-				ElapsedTime   = "0 ms"
+				ElapsedTime   = 0
 				RemoteHost    = $Hostname
 				RemoteAddress = $TargetIPAddress
 				Port          = $TargetPort
@@ -63,7 +63,7 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 			try {
 				$connectionTime = measure-command { $tcpConnectResult = $TCPClient.ConnectAsync($TargetIPAddress, $TargetPort).Wait($Timeout*1000)			}
 				Write-Verbose "Result: $tcpConnectResult"
-					if ($tcpConnectResult -eq $True) {
+				if ($tcpConnectResult -eq $True) {
 					$Result.Connection = "Successful"
 				}
 			}
@@ -71,7 +71,11 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 				Write-Debug "TCP connect to ($TargetIPAddress : $TargetPort) threw exception: $($_.Exception.Message)"
 			}
 			finally {
-				$Result.ElapsedTime = $connectionTime.TotalMilliseconds
+				# only report the connection time if it was successful
+				if ($tcpConnectResult -eq $True) {
+					$Result.ElapsedTime = $connectionTime.TotalMilliseconds
+				}
+				
 				$TCPClient.Dispose()
 			}
 			return $Result
