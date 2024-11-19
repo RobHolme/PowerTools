@@ -83,6 +83,13 @@ function Get-TLSCertificate {
 			$Hostname = ($Hostname -split "/")[0]
 		}
 
+		# Detect if the hostname is a FQDN, is so then set the SNI Name to be the same value.
+		# Very basic FQDN detection, anything ending in a 2 or more letter TLD is accepted.
+		If ($SNIname -eq $null) -and ($Hostname -match "\.[a-z]{2,}$") {
+			$SNIname = $Hostname
+			Write-Verbose "Setting SNI name to $Hostname"
+		}
+
 
 		$timeout = 3000
 		$certificate = $null
