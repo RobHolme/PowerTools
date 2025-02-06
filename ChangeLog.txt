@@ -71,4 +71,4 @@ Version History
 	2.67 (31/07/2024)	Get-TLSCertificate now extracts the hostname (and port) if a URL is provided.
 	2.68 (30/08/2024)	Test-TcpPort will report 0 ms connection time if the connection failed (previously the timeout value was reported)
 	2.69 (19/11/2024)	Now sets the SNIName to be the same as hostname if a FQDN hostname is provided (and no SNIName parameter provided)
-	
+	2.70 (06/02/2025)	Timeout parameter added to Get-TlsCertificate (defaults to 3 seconds)
