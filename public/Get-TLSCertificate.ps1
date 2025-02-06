@@ -51,7 +51,12 @@ function Get-TLSCertificate {
 		[Parameter(
 			Mandatory = $false,
 			Position = 3)]
-		[string] $ExportFile
+		[string] $ExportFile,
+
+		[Parameter (
+			Mandatory=$false,
+			Position=4 )]
+		[int] $Timeout = 3
 	)
 
 
@@ -91,15 +96,15 @@ function Get-TLSCertificate {
 		}
 
 
-		$timeout = 3000
+		$timeoutMilliseconds = $Timeout * 1000
 		$certificate = $null
 		$tcpClient = New-Object -TypeName System.Net.Sockets.tcpClient
 
 		try {
 			Write-Verbose "Connecting to $($Hostname):$($Port)"
-			Write-Verbose "Timeout: $timeout ms"
+			Write-Verbose "Timeout: $timeoutMilliseconds ms"
 
-			$tcpConnectResult = $tcpClient.ConnectAsync($Hostname, $Port).Wait($timeout)
+			$tcpConnectResult = $tcpClient.ConnectAsync($Hostname, $Port).Wait($timeoutMilliseconds)
 			if ($tcpConnectResult -eq $true) {
 				$tcpStream = $tcpClient.GetStream()
 				$callback = { param($caller, $cert, $chain, $errors) return $true }
