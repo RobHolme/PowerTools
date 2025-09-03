@@ -539,7 +539,7 @@
 						<PropertyName>Hostname</PropertyName>
 					</TableColumnItem>
 					<TableColumnItem>
-						<ScriptBlock>($_.Subject.Split(',') -match "CN").Trim()</ScriptBlock>
+						<ScriptBlock>($_.Subject.Split(',') -match "CN").Trim().Replace('CN=','')</ScriptBlock>
 					</TableColumnItem>			
 					<TableColumnItem>
 						<ScriptBlock>
