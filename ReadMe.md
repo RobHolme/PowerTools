@@ -182,7 +182,8 @@ The remote host does not need to be a web server, it should return the certifica
 
 ```-Port <int>``` The TCP port number of the remote site. Optional, will default to 443 TCP if omitted.
 
-```-SNIname <string>``` Optionally provide a SNI (Server Name Indication) name. Where a single site supports multiple certs, SNI name identifies the cert requested. By default the Hostname parameter is provided as the SNI name, this paramter can be used to override this behaviour.
+```-SNIname <string>``` Optionally provide a SNI (Server Name Indication) name. Where a single site supports multiple certs, SNI name identifies the cert requested. By default the Hostname parameter is provided as the SNI name, this parameter can be used to override this behavior. 
+Use ```-SNIname ' '``` (single space) to disable use of SNI Name.
 
 ```-ExportFile <string>``` Export the certificate to a base64 encoded X.509 certificate file (.CER).
 ### EXAMPLE
