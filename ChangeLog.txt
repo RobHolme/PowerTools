@@ -73,3 +73,4 @@ Version History
 	2.69 (19/11/2024)	Now sets the SNIName to be the same as hostname if a FQDN hostname is provided (and no SNIName parameter provided)
 	2.70 (06/02/2025)	Timeout parameter added to Get-TlsCertificate (defaults to 3 seconds)
 	2.71 (03/09/2025)	Fixed formatting of 'CN' field in table view of Get-TLSCertificate
+	2.72 (04/09/2025)	Fixed issue with SNI names when hostnames piped into function.
