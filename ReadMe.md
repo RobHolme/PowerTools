@@ -210,11 +210,11 @@ pipe results to a table (condensed view)
 ```
 PS> "google.com","microsoft.com","apple.com" | Get-TLSCertificate | ft
 
-Hostname      CN                          Verified Expires
---------      --                          -------- -------
-google.com    *.google.com             True     15/11/2021 9:36:26 AM
-microsoft.com *.oneroute.microsoft.com True     30/06/2022 5:35:12 AM
-apple.com     images.apple.com         True     9/12/2021 11:21:27 PM
+Hostname       CN                          Verified Expires
+--------       --                          -------- -------
+google.com     *.google.com                True     15/11/2021 9:36:26 AM
+microsoft.com  microsoft.com    True     30/06/2022 5:35:12 AM
+apple.com      apple.com                  True     9/12/2021 11:21:27 PM
 ```
 ---
 
