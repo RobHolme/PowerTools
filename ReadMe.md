@@ -54,7 +54,7 @@ C:\Program Files\Common Files\Adobe              172      526 ■■■■■■
 ---
 ## Get-NetworkLatency
 ### DESCRIPTION
-Report the latency to a remote host. Define the number and frequency of ICMP connections to report on. Display min, max, and average latency results. Optionally save the results to a chart. e.g:
+Report the round trip latency to a remote host. Define the number and frequency of ICMP connections to report on. Display min, max, and average latency results. Optionally save the results to a chart. e.g:
 
 ![Syntax highlighting](https://github.com/RobHolme/PowerTools/raw/master/images/latency.png)
 
