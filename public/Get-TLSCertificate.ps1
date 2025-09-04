@@ -9,7 +9,8 @@ function Get-TLSCertificate {
 .PARAMETER Port
 	Optionally provide the TCP port number of the remote website. Defaults to 443 if omitted.
 .PARAMETER SNIname
-	Optionally provide a SNI (Server Name Indication) name. Where a single site supports multiple certs, SNI name identifies the cert requested.
+	Optionally provide a SNI (Server Name Indication) name. Where a single site supports multiple certs, SNI name identifies the cert requested. 
+	Will default to using the hostname as the SNI name if not provided. Use a SNI name with a single space to force not using SNI (-SNIName ' ').
 .PARAMETER ExportFile
 	Export the certificate to a base64 encoded X.509 certificate file (.CER) 
 .EXAMPLE
@@ -46,7 +47,7 @@ function Get-TLSCertificate {
 		[Parameter(
 			Mandatory = $false,
 			Position = 2)]
-		[string] $SNIname = '',
+		[string] $SNIname,
 
 		[Parameter(
 			Mandatory = $false,
@@ -88,11 +89,24 @@ function Get-TLSCertificate {
 			$Hostname = ($Hostname -split "/")[0]
 		}
 
-		# Detect if the hostname is a FQDN, is so then set the SNI Name to be the same value.
+		# Use a SNI Name if provided. 
+		# If not SNI name provided, detect if the hostname is a FQDN, is so then set the SNI Name to be the same value.
 		# Very basic FQDN detection, anything ending in a 2 or more letter TLD is accepted.
-		if (($SNIname -eq '') -and ($Hostname -match "\.[a-z]{2,}$")) {
-			$SNIname = $Hostname
-			Write-Verbose "Setting SNI name to $Hostname"
+		# To force not using SNI name, use a string with a single space ' '
+		[string] $SniNameValue
+		if ($SNIname) {
+			$SniNameValue = $SNIname
+			write-Verbose "Setting SNI name to $SNIname"
+		}
+		else {
+			if ($Hostname -match "\.[a-z]{2,}$") {
+				$SniNameValue = $Hostname
+				write-Verbose "Setting SNI name to $Hostname"
+			}
+			else {
+				write-Verbose "No SNI name set"
+				$SniNameValue = ' '
+			}
 		}
 
 
@@ -111,7 +125,7 @@ function Get-TLSCertificate {
 				$sslStream = New-Object -TypeName System.Net.Security.sslStream -ArgumentList @($tcpStream, $true, $callback)
 				try {
 					# optionally provide a SNI name (where a single site supports multiple certs, SNI name identifies the cert requested)
-					$sslStream.AuthenticateAsClient($SNIname)
+					$sslStream.AuthenticateAsClient($SniNameValue)
 					$certificate = $sslStream.RemoteCertificate
 				}
 				catch {
