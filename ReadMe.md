@@ -5,8 +5,7 @@ A module containing a random collection of functions that I use occasionally. Th
  - __Get-SMBShareCapacity__: Display the current capacity used by a SMB share.
  - __Get-SQLInstance__: Query the MS-SQL Browser to retrieve SQL Instance details"    
  - __Get-TLSCertificate__: Display the TLS certificate associated with a TCP interface. 
- - __Start-TCPListener__: Start a TCP listener on a nominated port. Used for connectivity testing.       
- - __Test-SQLDatabase__: Test a connection to a MS-SQL Server database.        
+ - __Start-TCPListener__: Start a TCP listener on a nominated port. Used for connectivity testing.            
  - __Test-TCPPort__: Tests connectivity to a remote TCP port. Based on Test-NetConnection, but implements shorter (configurable) connection timeouts and removes ICMP connectivity tests if the TCP connection fails (intended to be faster than Test-NetConnection when testing large number of hosts).            
 
 
