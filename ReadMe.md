@@ -8,7 +8,7 @@ A module containing a random collection of functions that I use occasionally. Th
  - __Start-TCPListener__: Start a TCP listener on a nominated port. Used for connectivity testing.            
  - __Test-TCPPort__: Tests connectivity to a remote TCP port. Based on Test-NetConnection, but implements shorter (configurable) connection timeouts and removes ICMP connectivity tests if the TCP connection fails (intended to be faster than Test-NetConnection when testing large number of hosts).            
 
-
+run ./install.ps1 to install the module locally. Defaults to using local users path from $env:psmodulepath, use the -Scope parameter values ("CurrentUser", "AllUsers", "PromptForModulePath") to install elsewhere.
 ---
 
 ## Get-FolderSize
