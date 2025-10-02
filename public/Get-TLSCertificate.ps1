@@ -185,7 +185,7 @@ function Get-TLSCertificate {
 					ValidTo          	    = $certificate.NotAfter
 					SignatureAlgorithm      = $certificate.SignatureAlgorithm.FriendlyName
 					PublicKeyAlgorithm      = $certificate.PublicKey.EncodedKeyValue.Oid.FriendlyName 
-					PublicKeySize           = $certificate.PublicKey.Key.KeySize
+#					PublicKeySize           = $certificate.PublicKey.Key.KeySize  # get not supported under Linux (supports set only)
 					Thumbprint              = $certificate.Thumbprint
 					Version                 = $certificate.Version
 					SerialNumber			= $certificate.SerialNumber
