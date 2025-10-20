@@ -107,7 +107,7 @@ function Get-SourceIpFromRoute {
     
         # Get the routing table
         $Routes = Find-NetRoute -RemoteIPAddress $DestinationIP -ErrorAction SilentlyContinue
-        if ($Routes -eq $null) {
+        if ($null -eq $Routes) {
             Write-Warning "No route found for destination '$DestinationIP'."
             return $null
         }
@@ -119,14 +119,14 @@ function Get-SourceIpFromRoute {
     # if running Linux, use ip route
     elseif ($isLinux) {
         $Routes = ip route get $DestinationIP
-        if ($Routes -eq $null) {
+        if ($null -eq $Routes) {
             Write-Warning "No route found for destination '$DestinationIP'."
             return $null
         }
 
         # Extract the source IP address from the output
-        if ($Routes -match '\b((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\b') {
-            return $matches[1]
+        if ($Routes[0] -match '(?<=src )\b((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\b') {
+            return $matches[0]
         } else {
             Write-Warning "Could not extract source IP address from routing table."
             return $null
