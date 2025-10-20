@@ -243,9 +243,12 @@ Connection Successful 127.0.0.1       50298
 
 ## Test-TCPPort
 ### DESCRIPTION
+
 Tests connectivity to a TCP port on a remote host. If successful, the time to connect is displayed with the endpoint details. Based on Test-NetConnection, but items such as ICMP checks are removed, and a shorter default timeout used to speed up tests of a large number of hosts/ports. Failed connections return quicker than Test-NetConnection. Another difference is this will show the result for all IP addresses that hostname resolves to, while Test-NetConnection only shows the first IP address to successfully respond.
 
 Accepts an array of hosts to check via the pipeline (See examples). An array or range of ports can also be provided by the -Port parameter.
+
+> Supports IPv4 only.
 
 ### SYNTAX
 ```PowerShell
