@@ -145,7 +145,8 @@ function Get-SourceIpFromRoute {
 		# resolve the hostname to an IP address
 		$Addresses = $null
 		try {
-			$Addresses = [System.Net.Dns]::GetHostAddressesAsync($Hostname).GetAwaiter().GetResult()
+			# filter to only IPv4 addresses
+			$Addresses = [System.Net.Dns]::GetHostAddressesAsync($Hostname).GetAwaiter().GetResult() | Where-Object {$_.AddressFamily -eq 'InterNetwork'}
 		}
 		catch {
 			Write-Debug "Name resolution of $Hostname threw exception: $($_.Exception.Message)"
