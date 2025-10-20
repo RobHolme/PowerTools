@@ -52,6 +52,7 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 			$Result = @{
 				Connection    = "Failed"
 				ElapsedTime   = 0
+				SourceAddress = $null
 				RemoteHost    = $Hostname
 				RemoteAddress = $TargetIPAddress
 				Port          = $TargetPort
@@ -63,8 +64,14 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 			try {
 				$connectionTime = measure-command { $tcpConnectResult = $TCPClient.ConnectAsync($TargetIPAddress, $TargetPort).Wait($Timeout*1000)			}
 				Write-Verbose "Result: $tcpConnectResult"
+				# capture the source IP address if the connection was successful, and update status to "Successful"
 				if ($tcpConnectResult -eq $True) {
+					$Result.SourceAddress = $TCPClient.Client.LocalEndPoint.Address.ToString()
 					$Result.Connection = "Successful"
+				}
+				# generate the source IP address from the routing table if the connection was not successful
+				else {
+					$Result.SourceAddress = Get-SourceIpFromRoute -DestinationIP $TargetIPAddress
 				}
 			}
 			catch {
@@ -80,6 +87,56 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 			}
 			return $Result
 		}
+
+		#--------------------------------------------------
+# Get the source IP address from the routing table for the specified destination
+function Get-SourceIpFromRoute {
+    param (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string] $DestinationIP
+    )
+
+    # Ensure the destination is a valid IP address or hostname
+    if (-not [System.Net.IPAddress]::TryParse($DestinationIP, [ref]$null)) {
+        Write-Warning "Invalid destination IP address: '$DestinationIP'."
+        return $null
+    }
+
+    # if running Windows, use Get-NetRoute
+    if ($isWindows) {
+    
+        # Get the routing table
+        $Routes = Get-NetRoute -Destination $DestinationIP 
+        if ($Routes -eq $null) {
+            Write-Warning "No route found for destination '$DestinationIP'."
+            return $null
+        }
+
+        # Return the source IP address from the route
+        return $Routes.SourceAddress
+    }   
+
+    # if running Linux, use ip route
+    elseif ($isLinux) {
+        $Routes = ip route get $DestinationIP
+        if ($Routes -eq $null) {
+            Write-Warning "No route found for destination '$DestinationIP'."
+            return $null
+        }
+
+        # Extract the source IP address from the output
+        if ($Routes -match '\b((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\b') {
+            return $matches[1]
+        } else {
+            Write-Warning "Could not extract source IP address from routing table."
+            return $null
+        }
+    }
+
+    # MacOS is not supported - unable to test
+    Write-Warning "Unsupported operating system for routing table lookup."
+    return $null
+}
 	}
 
 	# establish a TCP connection. If the connection fails an exception will be raised.
@@ -102,6 +159,7 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 				[PSCustomObject]@{
 					PSTypeName     = "Powertools.TestTCPPort.Result"
 					Connection     = "Failed"
+					SourceAddress = $null
 					ConnectionTime = "0 ms"
 					RemoteHost     = $Hostname
 					RemoteAddress  = ""
@@ -116,6 +174,7 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 					[PSCustomObject]@{
 						PSTypeName     = "Powertools.TestTCPPort.Result"
 						Connection     = $ConnectionResult.Connection
+						SourceAddress  = $ConnectionResult.SourceAddress
 						ConnectionTime = "$([Math]::Round($ConnectionResult.ElapsedTime,1)) ms"
 						RemoteHost     = $Hostname
 						RemoteAddress  = $ConnectionResult.RemoteAddress
