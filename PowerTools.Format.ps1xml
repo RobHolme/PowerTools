@@ -15,6 +15,9 @@
 					<Label>Connection</Label>
 				</TableColumnHeader>
 				<TableColumnHeader>
+					<Label>SourceAddress</Label>
+				</TableColumnHeader>
+				<TableColumnHeader>
 					<Label>RemoteHost</Label>
 				</TableColumnHeader>
 				<TableColumnHeader>
@@ -40,6 +43,9 @@
                   			}
                 			</ScriptBlock>
               			</TableColumnItem>
+						<TableColumnItem>
+							<PropertyName>SourceAddress</PropertyName>
+						</TableColumnItem>
 						<TableColumnItem>
 							<PropertyName>RemoteHost</PropertyName>
 						</TableColumnItem>
