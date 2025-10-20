@@ -106,14 +106,14 @@ function Get-SourceIpFromRoute {
     if ($isWindows) {
     
         # Get the routing table
-        $Routes = Get-NetRoute -Destination $DestinationIP 
+        $Routes = Find-NetRoute -RemoteIPAddress $DestinationIP -ErrorAction SilentlyContinue
         if ($Routes -eq $null) {
             Write-Warning "No route found for destination '$DestinationIP'."
             return $null
         }
 
         # Return the source IP address from the route
-        return $Routes.SourceAddress
+        return $Routes[0].IpAddress
     }   
 
     # if running Linux, use ip route
