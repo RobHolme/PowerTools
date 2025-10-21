@@ -58,11 +58,12 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 				Port          = $TargetPort
 			}
 
+			Write-Verbose "$($TargetIPAddress.AddressFamily) detected for target IP address $TargetIPAddress"
 			$TCPClient = [System.Net.Sockets.TcpClient]::new($TargetIPAddress.AddressFamily)
 			$connectionTime = $null
 
 			try {
-				$connectionTime = measure-command { $tcpConnectResult = $TCPClient.ConnectAsync($TargetIPAddress, $TargetPort).Wait($Timeout*1000)			}
+				$connectionTime = measure-command { $tcpConnectResult = $TCPClient.ConnectAsync($TargetIPAddress, $TargetPort).Wait($Timeout * 1000) }
 				Write-Verbose "Result: $tcpConnectResult"
 				# capture the source IP address if the connection was successful, and update status to "Successful"
 				if ($tcpConnectResult -eq $True) {
@@ -89,54 +90,62 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 		}
 
 		#--------------------------------------------------
-# Get the source IP address from the routing table for the specified destination
-function Get-SourceIpFromRoute {
-    param (
-        [Parameter(Mandatory = $true, Position = 0)]
-        [string] $DestinationIP
-    )
+		# Get the source IP address from the routing table for the specified destination
+		function Get-SourceIpFromRoute {
+			param (
+				[Parameter(Mandatory = $true, Position = 0)]
+				[string] $DestinationIP
+			)
 
-    # Ensure the destination is a valid IP address or hostname
-    if (-not [System.Net.IPAddress]::TryParse($DestinationIP, [ref]$null)) {
-        Write-Warning "Invalid destination IP address: '$DestinationIP'."
-        return $null
-    }
+			# Ensure the destination is a valid IP address or hostname
+			if (-not [System.Net.IPAddress]::TryParse($DestinationIP, [ref]$null)) {
+				Write-Warning "Invalid destination IP address: '$DestinationIP'."
+				return $null
+			}
 
-    # if running Windows, use Get-NetRoute
-    if ($isWindows) {
-    
-        # Get the routing table
-        $Routes = Find-NetRoute -RemoteIPAddress $DestinationIP -ErrorAction SilentlyContinue
-        if ($null -eq $Routes) {
-            Write-Warning "No route found for destination '$DestinationIP'."
-            return $null
-        }
+			# if running Windows, use Get-NetRoute
+			if ($isWindows) {
+				Write-Verbose "Running on Windows OS - using Get-NetRoute to find source IP address."
+				# Get the routing table
+				$Routes = Find-NetRoute -RemoteIPAddress $DestinationIP
+				if ($null -eq $Routes) {
+					Write-Warning "No route found for destination '$DestinationIP'."
+					return $null
+				}
 
-        # Return the source IP address from the route
-        return $Routes[0].IpAddress
-    }   
+				# Return the source IP address from the route
+				write-verbose "Source IP Address identified for route: $($Routes[0].IpAddress)"
+				return $Routes[0].IpAddress
+			}   
 
-    # if running Linux, use ip route
-    elseif ($isLinux) {
-        $Routes = ip route get $DestinationIP
-        if ($null -eq $Routes) {
-            Write-Warning "No route found for destination '$DestinationIP'."
-            return $null
-        }
+			# if running Linux, use ip route
+			elseif ($isLinux) {
+				Write-Verbose "Running on Linux OS - using 'ip route' to find source IP address."
+				$Routes = ip route get $DestinationIP
+				if ($null -eq $Routes) {
+					Write-Warning "No route found for destination '$DestinationIP'."
+					return $null
+				}
+				# Extract the source IPv4 address from the output
+				if ($Routes[0] -match '(?<=src )\b((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\b') {
+					Write-Verbose "IPv4 Address detected: $($matches[0])"
+					return $matches[0]
+				}
+				# Extract the source IPv6 address from the output
+				elseif ($Routes[0] -match '(?<=src )\b(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])) ') {
+					Write-Verbose "IPv6 Address detected: $($matches[0])"
+					return $matches[0].Trim()
+				}
+				else {
+					Write-Warning "Could not extract source IP address from routing table."
+					return $null
+				}
+			}
 
-        # Extract the source IP address from the output
-        if ($Routes[0] -match '(?<=src )\b((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\b') {
-            return $matches[0]
-        } else {
-            Write-Warning "Could not extract source IP address from routing table."
-            return $null
-        }
-    }
-
-    # MacOS is not supported - unable to test
-    Write-Warning "Unsupported operating system for routing table lookup."
-    return $null
-}
+			# MacOS is not supported - unable to test
+			Write-Warning "Unsupported operating system for routing table lookup."
+			return $null
+		}
 	}
 
 	# establish a TCP connection. If the connection fails an exception will be raised.
@@ -145,8 +154,8 @@ function Get-SourceIpFromRoute {
 		# resolve the hostname to an IP address
 		$Addresses = $null
 		try {
-			# filter to only IPv4 addresses
-			$Addresses = [System.Net.Dns]::GetHostAddressesAsync($Hostname).GetAwaiter().GetResult() | Where-Object {$_.AddressFamily -eq 'InterNetwork'}
+			# resolve IPv4 and IPv6 addresses
+			$Addresses = [System.Net.Dns]::GetHostAddressesAsync($Hostname).GetAwaiter().GetResult() 
 		}
 		catch {
 			Write-Debug "Name resolution of $Hostname threw exception: $($_.Exception.Message)"
@@ -160,7 +169,7 @@ function Get-SourceIpFromRoute {
 				[PSCustomObject]@{
 					PSTypeName     = "Powertools.TestTCPPort.Result"
 					Connection     = "Failed"
-					SourceAddress = $null
+					SourceAddress  = $null
 					ConnectionTime = "0 ms"
 					RemoteHost     = $Hostname
 					RemoteAddress  = ""
