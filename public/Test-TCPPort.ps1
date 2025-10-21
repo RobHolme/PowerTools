@@ -58,13 +58,13 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 				Port          = $TargetPort
 			}
 
-			Write-Verbose "$($TargetIPAddress.AddressFamily) detected for target IP address $TargetIPAddress"
+			Write-Verbose "$($TargetIPAddress.AddressFamily) detected for target IP address $TargetIPAddress".Replace("InterNetworkV6","IPv6").Replace("InterNetwork","IPv4")
 			$TCPClient = [System.Net.Sockets.TcpClient]::new($TargetIPAddress.AddressFamily)
 			$connectionTime = $null
 
 			try {
 				$connectionTime = measure-command { $tcpConnectResult = $TCPClient.ConnectAsync($TargetIPAddress, $TargetPort).Wait($Timeout * 1000) }
-				Write-Verbose "Result: $tcpConnectResult"
+				Write-Verbose "Connection result: $tcpConnectResult"
 				# capture the source IP address if the connection was successful, and update status to "Successful"
 				if ($tcpConnectResult -eq $True) {
 					$Result.SourceAddress = $TCPClient.Client.LocalEndPoint.Address.ToString()
@@ -76,7 +76,10 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 				}
 			}
 			catch {
+				# Some types of Connection failures can throw exceptions, get source IP from route
+				$Result.SourceAddress = Get-SourceIpFromRoute -DestinationIP $TargetIPAddress
 				Write-Debug "TCP connect to ($TargetIPAddress : $TargetPort) threw exception: $($_.Exception.Message)"
+				return $Result
 			}
 			finally {
 				# only report the connection time if it was successful
