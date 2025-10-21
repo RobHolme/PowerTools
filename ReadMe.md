@@ -248,14 +248,12 @@ Tests connectivity to a TCP port on a remote host. If successful, the time to co
 
 Accepts an array of hosts to check via the pipeline (See examples). An array or range of ports can also be provided by the -Port parameter.
 
-> Supports IPv4 only.
-
 ### SYNTAX
 ```PowerShell
 Test-TCPPort [-Hostname] <String> [-Port] <Int32[]> [[-Timeout] <Int32>] [<CommonParameters>]
 ```
 ### PARAMETERS
-```-Hostname <string>``` The name or IP address of the remote host to connect to. Accepts only a single hostname, but an array of hostnames can be piped to the command. 
+```-Hostname <string>``` The name or IP address (IPv4 or IPv6) of the remote host to connect to. Accepts only a single hostname, but an array of hostnames can be piped to the command. Hostname will resolve to IPv4 and IPv6 if supported.
 
 ```-Port <Int32[]>``` The port number on the remote host to connect to. Accepts a  single port, an array of ports, or a range of ports to test per host.
 
@@ -264,9 +262,9 @@ Test-TCPPort [-Hostname] <String> [-Port] <Int32[]> [[-Timeout] <Int32>] [<Commo
 ```
 PS C:\> Connect-TCPPort somehost.com -Port 80
 
-Connection RemoteHost   RemoteAddress Port ConnectionTime
----------- ----------   ------------- ---- --------------
-Successful somehost.com 127.0.0.1     80  10.3 ms
+Connection SourceAddress RemoteHost   RemoteAddress Port ConnectionTime
+---------- ------------- ----------   ------------- ---- --------------
+Successful 10.0.0.10     somehost.com 10.200.1.1     80  10.3 ms
 
 ```
 ### EXAMPLE
@@ -274,12 +272,12 @@ Test ports 80 and 443 for www.google.com and www.microsoft.com. Use pipleline to
 ```
 PS C:\> "www.google.com","www.microsoft.com" | Test-TCPPort -Port 80,443
 
-Connection RemoteHost        RemoteAddress  Port ConnectionTime                                                         
----------- ----------        -------------  ---- --------------                                                         
-Successful www.google.com    216.58.199.36  80   57.7 ms                                                                
-Successful www.google.com    216.58.199.36  443  56.6 ms                                                                
-Successful www.microsoft.com 23.194.133.122 80   9.8 ms
-Successful www.microsoft.com 23.194.133.122 443  9.9 ms
+Connection SourceAddress     RemoteHost        RemoteAddress  Port ConnectionTime                                                         
+---------- -------------     ----------        -------------  ---- --------------                                                         
+Successful 10.0.0.10         www.google.com    216.58.199.36  80   57.7 ms                                                                
+Successful 10.0.0.10         www.google.com    216.58.199.36  443  56.6 ms                                                                
+Successful 10.0.0.10         www.microsoft.com 23.194.133.122 80   9.8 ms
+Successful 10.0.0.10         www.microsoft.com 23.194.133.122 443  9.9 ms
 
 ```
 ### EXAMPLE
@@ -287,9 +285,9 @@ Use a short timeout (2 seconds).
 ```
 PS C:\> Connect-TCPPort somehost.com -Port 80 -Timeout 2
 
-Connection RemoteHost   RemoteAddress Port ConnectionTime
----------- ----------   ------------- ---- --------------
-Successful somehost.com 127.0.0.1     80   10.3 ms
+Connection SourceAddress RemoteHost   RemoteAddress Port ConnectionTime
+---------- ------------- ----------   ------------- ---- --------------
+Successful 10.0.0.10     somehost.com 10.200.1.1     80   10.3 ms
 
 ```
 
@@ -298,15 +296,15 @@ test a range of ports from 17190 to 17198
 ```
 PS C:\>  Test-TCPPort samplehost -Port (17190..17198)
 
-Connection RemoteHost RemoteAddress Port  ConnectionTime
----------- ---------- ------------- ----  --------------
-Failed     samplehost  10.0.0.36   17190 0 ms
-Failed     samplehost  10.0.0.36   17191 0 ms
-Successful samplehost  10.0.0.36   17192 2.7 ms
-Failed     samplehost  10.0.0.36   17193 0 ms
-Failed     samplehost  10.0.0.36   17194 0 ms
-Failed     samplehost  10.0.0.36   17195 0 ms
-Successful samplehost  10.0.0.36   17196 2.6 ms
-Successful samplehost  10.0.0.36   17197 2.8 ms
-Successful samplehost  10.0.0.36   17198 2.8 ms
+Connection SourceAddress RemoteHost RemoteAddress Port  ConnectionTime
+---------- ------------- ---------- ------------- ----  --------------
+Failed     10.0.0.10     samplehost  10.0.0.36   17190 0 ms
+Failed     10.0.0.10     samplehost  10.0.0.36   17191 0 ms
+Successful 10.0.0.10     samplehost  10.0.0.36   17192 2.7 ms
+Failed     10.0.0.10     samplehost  10.0.0.36   17193 0 ms
+Failed     10.0.0.10     samplehost  10.0.0.36   17194 0 ms
+Failed     10.0.0.10     samplehost  10.0.0.36   17195 0 ms
+Successful 10.0.0.10     samplehost  10.0.0.36   17196 2.6 ms
+Successful 10.0.0.10     samplehost  10.0.0.36   17197 2.8 ms
+Successful 10.0.0.10     samplehost  10.0.0.36   17198 2.8 ms
 ```
