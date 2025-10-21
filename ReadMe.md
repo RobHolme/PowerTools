@@ -258,6 +258,9 @@ Test-TCPPort [-Hostname] <String> [-Port] <Int32[]> [[-Timeout] <Int32>] [<Commo
 ```-Port <Int32[]>``` The port number on the remote host to connect to. Accepts a  single port, an array of ports, or a range of ports to test per host.
 
 ```-Timeout <Int32>``` The TCP connection timeout in seconds. Defaults to 5 seconds. System TCP timeout (20 secs?) will still apply if the timeout supplied exceeds the system timeout. 
+
+```-IpV4Only``` Set this switch parameter to ignore IPv6 addresses
+
 ### EXAMPLE
 ```
 PS C:\> Connect-TCPPort somehost.com -Port 80

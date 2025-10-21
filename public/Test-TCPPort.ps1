@@ -37,7 +37,12 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 			Position = 2,
 			Mandatory = $False)]
 		[ValidateRange(1, 20)]
-		[int] $Timeout = 3
+		[int] $Timeout = 3,
+
+		[Parameter(
+			Position = 3,
+			Mandatory = $False)]
+		[switch] $IPv4Only
 	)
 
 	Begin {
@@ -58,7 +63,11 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 				Port          = $TargetPort
 			}
 
-			Write-Verbose "$($TargetIPAddress.AddressFamily) detected for target IP address $TargetIPAddress".Replace("InterNetworkV6","IPv6").Replace("InterNetwork","IPv4")
+			Write-Verbose "$($TargetIPAddress.AddressFamily) detected for target IP address $TargetIPAddress".Replace("InterNetworkV6", "IPv6").Replace("InterNetwork", "IPv4")
+			if ($IPv4Only -and $TargetIPAddress.AddressFamily -ne 'InterNetwork') {
+				Write-Verbose "Skipping IPv6 address $TargetIPAddress due to -IPv4Only switch."
+				return $null
+			}
 			$TCPClient = [System.Net.Sockets.TcpClient]::new($TargetIPAddress.AddressFamily)
 			$connectionTime = $null
 
@@ -159,10 +168,20 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 		try {
 			# resolve IPv4 and IPv6 addresses. If IPv6 is not available, this will only return IPv4 addresses.
 			$Addresses = [System.Net.Dns]::GetHostAddressesAsync($Hostname).GetAwaiter().GetResult() 
+			# filter to only IPv4 addresses if -IPv4Only switch specified
+			if ($IPv4Only) { 
+				$Addresses = $Addresses | Where-Object { $_.AddressFamily -eq 'InterNetwork' } 
+			} 
 		}
 		catch {
 			Write-Debug "Name resolution of $Hostname threw exception: $($_.Exception.Message)"
 			Write-Warning "Failed to resolve $Hostname"
+		}
+
+		# if no addresses resolved, report and continue to next hostname
+		if ($null -eq $Addresses) {
+			Write-Warning "No IP addresses resolved for $Hostname (or IPv6 addresses only and -IPv4Only switch specified)."
+			continue
 		}
 
 		# attempt a TCP connection for all ports (for all resolved IP addresses for hostname)
@@ -184,14 +203,16 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 				$i = 0
 				while ($i -lt $Addresses.Count) {
 					$ConnectionResult = TestTCPConnection -TargetIPAddress $Addresses[$i++] -TargetPort $portNumber -Timeout $Timeout
-					[PSCustomObject]@{
-						PSTypeName     = "Powertools.TestTCPPort.Result"
-						Connection     = $ConnectionResult.Connection
-						SourceAddress  = $ConnectionResult.SourceAddress
-						ConnectionTime = "$([Math]::Round($ConnectionResult.ElapsedTime,1)) ms"
-						RemoteHost     = $Hostname
-						RemoteAddress  = $ConnectionResult.RemoteAddress
-						Port           = $portNumber
+					if ($null -ne $ConnectionResult) { # null would be returned if IPv6 address skipped due to -IPv4Only switch. Skip output in that case.
+						[PSCustomObject]@{
+							PSTypeName     = "Powertools.TestTCPPort.Result"
+							Connection     = $ConnectionResult.Connection
+							SourceAddress  = $ConnectionResult.SourceAddress
+							ConnectionTime = "$([Math]::Round($ConnectionResult.ElapsedTime,1)) ms"
+							RemoteHost     = $Hostname
+							RemoteAddress  = $ConnectionResult.RemoteAddress
+							Port           = $portNumber
+						}
 					}
 				}
 			}
