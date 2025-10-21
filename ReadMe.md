@@ -253,7 +253,7 @@ Accepts an array of hosts to check via the pipeline (See examples). An array or 
 Test-TCPPort [-Hostname] <String> [-Port] <Int32[]> [[-Timeout] <Int32>] [<CommonParameters>]
 ```
 ### PARAMETERS
-```-Hostname <string>``` The name or IP address (IPv4 or IPv6) of the remote host to connect to. Accepts only a single hostname, but an array of hostnames can be piped to the command. Hostname will resolve to IPv4 and IPv6 if supported.
+```-Hostname <string>``` The name or IP address (IPv4 or IPv6) of the remote host to connect to. Accepts only a single hostname, but an array of hostnames can be piped to the command. Hostname will resolve to IPv4 and IPv6 (Only IPv4 addresses will be resolved if IPv6 is not supported).
 
 ```-Port <Int32[]>``` The port number on the remote host to connect to. Accepts a  single port, an array of ports, or a range of ports to test per host.
 

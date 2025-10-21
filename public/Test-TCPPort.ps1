@@ -157,7 +157,7 @@ The TCP connection timeout in seconds. Defaults to 5 secs (or default system tim
 		# resolve the hostname to an IP address
 		$Addresses = $null
 		try {
-			# resolve IPv4 and IPv6 addresses
+			# resolve IPv4 and IPv6 addresses. If IPv6 is not available, this will only return IPv4 addresses.
 			$Addresses = [System.Net.Dns]::GetHostAddressesAsync($Hostname).GetAwaiter().GetResult() 
 		}
 		catch {
