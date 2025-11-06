@@ -204,14 +204,15 @@
 					</TableColumnItem>
 					<TableColumnItem>
 						<ScriptBlock>
+							$formattedDateTime = "$($_.ValidTo.ToShortDateString()) $($_.ValidTo.ToShortTimeString())"
                   			if ($_.ValidTo -lt (Get-Date)) {
-                    			"$([char]0x1b)[1;91m$($_.ValidTo.ToShortDateString())$([char]0x1b)[0m"
+                      			"$([char]0x1b)[1;91m$($formattedDateTime)$([char]0x1b)[0m"
                   			}
 							elseif ($_.ValidTo -lt (Get-Date).AddDays(30)) {
 								"$([char]0x1b)[1;93m$($formattedDateTime)$([char]0x1b)[0m"
 							}
 							else {
-								$_.ValidTo.ToShortDateString()
+								$formattedDateTime
 							}
 						</ScriptBlock>
 					</TableColumnItem>
