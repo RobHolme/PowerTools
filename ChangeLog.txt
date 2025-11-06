@@ -78,3 +78,4 @@ Version History
 	2.74 (20/10/2025)	Added source IP address to test-tcpport results. 
 	2.75 (21/10/2025)	Added IPv6 support to Test-TcpPort (if local workstation supports IPv6)
 	2.76 (21/10/2025)	Added -IPv4Only switch to Test-TCPPort to ignore testing any IPv6 addresses that are resolved 
+	2.77 (06/11/2025)	Fixed issue with Get-TlsCerticate expiry date not displayed in table view when 30 days or less from expiry date
