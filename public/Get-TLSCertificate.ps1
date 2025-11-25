@@ -144,7 +144,16 @@ function Get-TLSCertificate {
 			Write-Debug "$($_.Exception)"
 		}
 		finally {
-			$tcpClient.Dispose()
+			# release resources
+			if ($sslStream) {
+				$sslStream.Dispose()
+			}
+			if ($tcpStream) {
+				$tcpStream.Dispose()
+			}
+			if ($tcpClient) {
+				$tcpClient.Dispose()
+			}
 		}
 
 		if ($certificate) {
