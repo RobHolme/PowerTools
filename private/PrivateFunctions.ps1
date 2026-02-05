@@ -87,6 +87,7 @@ function GetPublicKeySize ($Certificate){
     # Try to get key size directly (works for RSA under windows, but not RSA under Linux for ECC (all platforms).
     try {
         if ($Certificate.PublicKey.Key -and $Certificate.PublicKey.Key.KeySize) {
+            write-verbose "Certificate public key has KeySize property, using it to determine key size."
             return $Certificate.PublicKey.Key.KeySize
         }
     }
@@ -97,16 +98,12 @@ function GetPublicKeySize ($Certificate){
     # TO DO: support for RSA-PSS, and other algorithms. For now, only RSA and ECC are supported.
 
     if ($Certificate.PublicKey.Oid.FriendlyName -eq 'RSA' -or $Certificate.PublicKey.Oid.Value -eq '1.2.840.113549.1.1.1') {
+        Write-Verbose "Certificate uses RSA algorithm, attempting to determine key size."
         return $certificate.PublicKey.GetRSAPublicKey().KeySize
-        # RSA key size can be determined from the modulus length
- #       if ($Certificate.PublicKey.EncodedKeyValue) {
- #           $modulusLength = $Certificate.PublicKey.EncodedKeyValue.RawData.Length
- #           # For RSA, the modulus is typically the key size in bytes, but may include leading zeros
- #           $KeySize = ($modulusLength * 8) - ($Certificate.PublicKey.EncodedKeyValue.RawData | Where-Object { $_ -eq 0 } | Measure-Object).Count * 8
- #       }
     }
     # For EC certificates, need alternative approach
     elseif ($Certificate.PublicKey.Oid.FriendlyName -eq 'ECC' -or $Certificate.PublicKey.Oid.Value -eq '1.2.840.10045.2.1') {
+        write-verbose "Certificate uses ECC algorithm, attempting to determine key size from encoded parameters or key data length."
         # Try to get from encoded parameters OID
         if ($Certificate.PublicKey.EncodedParameters -and $Certificate.PublicKey.EncodedParameters.Oid) {
             $Oid = $Certificate.PublicKey.EncodedParameters.Oid
@@ -124,6 +121,7 @@ function GetPublicKeySize ($Certificate){
         }
         # if still null, try to determine from the public key data length
         if (-not $KeySize -and $Certificate.PublicKey.EncodedKeyValue) {
+            write-verbose "Unable to determine ECC key size from OID, attempting to infer from public key data length."
             $KeyLength = $Certificate.PublicKey.EncodedKeyValue.RawData.Length
             # EC public keys in uncompressed format: 0x04 + X + Y coordinates
             switch ($KeyLength) {
@@ -138,9 +136,6 @@ function GetPublicKeySize ($Certificate){
         }
         return $KeySize
     }
- #   if (-not $KeySize) {
- #       throw "Unable to determine public key size for certificate with algorithm: $($Certificate.PublicKey.Oid.FriendlyName)"
-#    }
     # if key size is still null, return 0 to indicate unknown
     return 0
 }
