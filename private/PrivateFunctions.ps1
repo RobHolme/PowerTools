@@ -79,21 +79,16 @@ function CalculateHash($ByteArrayToHash, $HashAlgorithm) {
 
 #--------------------------------------------------
 # Determine the public key size of a certificate. Workarounds to support ECC certs and powershell on Linux.
-# This function based on code from Richard M Hicks -  https://www.powershellgallery.com/packages/AOVPNTools/1.9.9/Content/Functions%5CGet-TlsCertificate.ps1
-function GetPublicKeySize ($Certificate) {
+# Copied from Richard M Hicks -  https://www.powershellgallery.com/packages/AOVPNTools/1.9.9/Content/Functions%5CGet-TlsCertificate.ps1
+function GetPublicKeySize ($Certificate){
     # Determine key size based on algorithm type
     [System.Int32] $KeySize = $null
-
-    # Try to get key size directly (works for RSA). "KeySize" is only readable under Windows and not supported for ECC certs, so need workarounds for those scenarios.
-    if ($IsWindows) {
-        if ($Certificate.PublicKey.Key -and $Certificate.PublicKey.Key.KeySize) {
-            Write-Verbose "Public key size obtained directly from certificate: $($Certificate.PublicKey.Key.KeySize) bits (Algorithm: $($Certificate.PublicKey.Oid.FriendlyName))"
-            return $Certificate.PublicKey.Key.KeySize
-        }
+    # Try to get key size directly (works for RSA)
+    if ($Certificate.PublicKey.Key -and $Certificate.PublicKey.Key.KeySize) {
+        $KeySize = $Certificate.PublicKey.Key.KeySize
     }
-
     # For EC certificates, need alternative approach
-    if ($Certificate.PublicKey.Oid.FriendlyName -eq 'ECC' -or $Certificate.PublicKey.Oid.Value -eq '1.2.840.10045.2.1') {
+    elseif ($Certificate.PublicKey.Oid.FriendlyName -eq 'ECC' -or $Certificate.PublicKey.Oid.Value -eq '1.2.840.10045.2.1') {
         # Try to get from encoded parameters OID
         if ($Certificate.PublicKey.EncodedParameters -and $Certificate.PublicKey.EncodedParameters.Oid) {
             $Oid = $Certificate.PublicKey.EncodedParameters.Oid
@@ -108,27 +103,22 @@ function GetPublicKeySize ($Certificate) {
                     elseif ($Oid.FriendlyName -match '521') { $KeySize = 521 }
                 }
             }
-            if ($KeySize) {
-                Write-Verbose "Determined public key size from OID: $KeySize bits (OID: $($Oid.Value), FriendlyName: $($Oid.FriendlyName))"
-                return $KeySize
-            }   
+        }
+        # if still null, try to determine from the public key data length
+        if (-not $KeySize -and $Certificate.PublicKey.EncodedKeyValue) {
+            $KeyLength = $Certificate.PublicKey.EncodedKeyValue.RawData.Length
+            # EC public keys in uncompressed format: 0x04 + X + Y coordinates
+            switch ($KeyLength) {
+                65 { $KeySize = 256 }   # P-256: 1 + 32 + 32
+                97 { $KeySize = 384 }   # P-384: 1 + 48 + 48
+                133 { $KeySize = 521 }  # P-521: 1 + 66 + 66
+                # ASN.1 encoded versions (with header bytes)
+                { $_ -in 67, 68, 69 } { $KeySize = 256 }
+                { $_ -in 99, 100, 101 } { $KeySize = 384 }
+                { $_ -in 135, 136, 137 } { $KeySize = 521 }
+            }
         }
     }
-    # if KeySize still null, try to determine from the public key data length
-    if (-not $KeySize -and $Certificate.PublicKey.EncodedKeyValue) {
-        $KeyLength = $Certificate.PublicKey.EncodedKeyValue.RawData.Length
-        # EC public keys in uncompressed format: 0x04 + X + Y coordinates
-        switch ($KeyLength) {
-            65 { $KeySize = 256 }   # P-256: 1 + 32 + 32
-            97 { $KeySize = 384 }   # P-384: 1 + 48 + 48
-            133 { $KeySize = 521 }  # P-521: 1 + 66 + 66
-            # ASN.1 encoded versions (with header bytes)
-            { $_ -in 67, 68, 69 } { $KeySize = 256 }
-            { $_ -in 99, 100, 101 } { $KeySize = 384 }
-            { $_ -in 135, 136, 137 } { $KeySize = 521 }
-        }
-    }
-
     if (-not $KeySize) {
         throw "Unable to determine public key size for certificate with algorithm: $($Certificate.PublicKey.Oid.FriendlyName)"
     }
