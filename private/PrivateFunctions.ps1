@@ -84,7 +84,7 @@ function GetPublicKeySize ($Certificate){
     # Determine key size based on algorithm type
     [System.Int32] $KeySize = $null
     # Try to get key size directly (works for RSA)
-    if ($Certificate.PublicKey.Key -and $Certificate.PublicKey.Key.KeySize) {
+    if ($Certificate.PublicKey.Key -and $Certificate.PublicKey.Key.KeySize -and $IsWindows) {
         $KeySize = $Certificate.PublicKey.Key.KeySize
     }
     # For EC certificates, need alternative approach
