@@ -84,9 +84,12 @@ function GetPublicKeySize ($Certificate){
     # Determine key size based on algorithm type
     [System.Int32] $KeySize = $null
     # Try to get key size directly (works for RSA)
-    if ($Certificate.PublicKey.Key -and $Certificate.PublicKey.Key.KeySize -and $IsWindows) {
+    If ($IsWindows -and $Certificate.PublicKey.Key -and $Certificate.PublicKey.Key.KeySize) {
         $KeySize = $Certificate.PublicKey.Key.KeySize
     }
+  #  if ($Certificate.PublicKey.Key -and $Certificate.PublicKey.Key.KeySize) {
+  #      $KeySize = $Certificate.PublicKey.Key.KeySize
+  #  }
     # For EC certificates, need alternative approach
     elseif ($Certificate.PublicKey.Oid.FriendlyName -eq 'ECC' -or $Certificate.PublicKey.Oid.Value -eq '1.2.840.10045.2.1') {
         # Try to get from encoded parameters OID
