@@ -55,8 +55,8 @@ function Get-TLSCertificate {
 		[string] $ExportFile,
 
 		[Parameter (
-			Mandatory=$false,
-			Position=4 )]
+			Mandatory = $false,
+			Position = 4 )]
 		[int] $Timeout = 3
 	)
 
@@ -69,7 +69,7 @@ function Get-TLSCertificate {
 
 	process {
 		# strip any HTTP/S schemes from the hostname if included 
-		$Hostname = $Hostname -replace('(HTTPS|HTTP)\://','')
+		$Hostname = $Hostname -replace ('(HTTPS|HTTP)\://', '')
 		# extract the port number from the hostname string if supplied instead of using -Port switch (eg https://www.server.com:8443)
 		$splitHostname = $Hostname -split ':'
 		if ($splitHostname.Count -gt 1) {
@@ -79,7 +79,7 @@ function Get-TLSCertificate {
 				$splitPort = $splitHostname[1] -split "/"
 				$Port = [convert]::ToInt32($splitPort[0]) 
 			}
-			catch{
+			catch {
 				Write-Error "Unable to extract port number from URL"
 				return
 			}
@@ -157,7 +157,6 @@ function Get-TLSCertificate {
 		}
 
 		if ($certificate) {
-
 			# export the certificate to a base64 encoded file (.cer)
 			If ($ExportFile) {
 				$certBase64 = "-----BEGIN CERTIFICATE-----`n"
@@ -175,30 +174,40 @@ function Get-TLSCertificate {
 				# For some reason $certificate.DnsNameList does not return values all of the time. The following workaround obtains the DNS and IP SANs from the certificate extensions.
 				# Seems to be an issue with properties of the type "ScriptProperty" - also impacted $certificate.EnhancedKeyUsageList property.
 				foreach ($extension in $certificate.Extensions) {
-					[System.Security.Cryptography.AsnEncodedData] $asnData =  [System.Security.Cryptography.AsnEncodedData]::new($extension.Oid, $extension.RawData)
+					[System.Security.Cryptography.AsnEncodedData] $asnData = [System.Security.Cryptography.AsnEncodedData]::new($extension.Oid, $extension.RawData)
 					# SAN OID value
 					if ($asnData.Oid.Value -eq "2.5.29.17") {
 						$subjectAlternativeNames = $asnData.Format($true) -replace "DNS Name=" -replace "IP Address=" -replace "RFC822 Name=" -replace "URL="
 						$subjectAlternativeNames = $subjectAlternativeNames.Split([System.Environment]::NewLine, [System.StringSplitOptions]::RemoveEmptyEntries)
 					}
 				}
+				
 
+				# get the public key size 
+				[System.Int32] $newpublicKeySize = 0
+				try {
+					$newpublicKeySize = GetPublicKeySize -certificate $certificate
+				}
+				catch {
+					Write-Warning "Unable to determine public key size: $_"
+				}
+				
 				[PSCustomObject]@{
 					PSTypeName              = "Powertools.GetSSLCertificate.Result"
-					Hostname				= $Hostname
+					Hostname                = $Hostname
 					Verified                = $certificate.Verify()
 					Subject                 = $certificate.Subject
 					SubjectAlternativeNames = $subjectAlternativeNames
 					Issuer                  = $certificate.Issuer
 					ValidFrom               = $certificate.NotBefore
-					ValidTo          	    = $certificate.NotAfter
+					ValidTo                 = $certificate.NotAfter
 					SignatureAlgorithm      = $certificate.SignatureAlgorithm.FriendlyName
 					PublicKeyAlgorithm      = $certificate.PublicKey.EncodedKeyValue.Oid.FriendlyName 
-#					PublicKeySize           = $certificate.PublicKey.Key.KeySize  # get not supported under Linux (supports set only)
+					PublicKeySize           = $newpublicKeySize
 					Thumbprint              = $certificate.Thumbprint
 					Version                 = $certificate.Version
-					SerialNumber			= $certificate.SerialNumber
-					EnhancedKeyUsage		= $certificate.Extensions.EnhancedKeyUsages.FriendlyName
+					SerialNumber            = $certificate.SerialNumber
+					EnhancedKeyUsage        = $certificate.Extensions.EnhancedKeyUsages.FriendlyName
 				}
 			}
 		}
