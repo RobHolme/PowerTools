@@ -184,9 +184,9 @@ function Get-TLSCertificate {
 				
 
 				# get the public key size 
-				[System.Int32] $newpublicKeySize = 0
+				[System.Int32] $publicKeySize = 0
 				try {
-					$newpublicKeySize = GetPublicKeySize -certificate $certificate
+					$publicKeySize = GetPublicKeySize -certificate $certificate
 				}
 				catch {
 					Write-Warning "Unable to determine public key size: $_"
@@ -203,7 +203,7 @@ function Get-TLSCertificate {
 					ValidTo                 = $certificate.NotAfter
 					SignatureAlgorithm      = $certificate.SignatureAlgorithm.FriendlyName
 					PublicKeyAlgorithm      = $certificate.PublicKey.EncodedKeyValue.Oid.FriendlyName 
-					PublicKeySize           = $newpublicKeySize
+					PublicKeySize           = if ($publicKeySize -eq 0) {"Unknown"} else {$publicKeySize}
 					Thumbprint              = $certificate.Thumbprint
 					Version                 = $certificate.Version
 					SerialNumber            = $certificate.SerialNumber

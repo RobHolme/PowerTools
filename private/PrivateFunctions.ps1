@@ -80,10 +80,7 @@ function CalculateHash($ByteArrayToHash, $HashAlgorithm) {
 #--------------------------------------------------
 # Determine the public key size of a certificate. Workarounds to support ECC certs and powershell on Linux.
 # Copied from Richard M Hicks -  https://www.powershellgallery.com/packages/AOVPNTools/1.9.9/Content/Functions%5CGet-TlsCertificate.ps1
-function GetPublicKeySize {
-    [Parameter(Mandatory = $true)]
-    $Certificate
-
+function GetPublicKeySize ($Certificate){
     # Determine key size based on algorithm type
     [System.Int32] $KeySize = $null
     # Try to get key size directly (works for RSA)
