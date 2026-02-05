@@ -83,9 +83,27 @@ function CalculateHash($ByteArrayToHash, $HashAlgorithm) {
 function GetPublicKeySize ($Certificate){
     # Determine key size based on algorithm type
     [System.Int32] $KeySize = $null
-    # Try to get key size directly (works for RSA)
-    if ($Certificate.PublicKey.Key -and $Certificate.PublicKey.Key.KeySize) {
-        $KeySize = $Certificate.PublicKey.Key.KeySize
+
+    # Try to get key size directly (works for RSA under windows, but not RSA under Linux for ECC (all platforms).
+    try {
+        if ($Certificate.PublicKey.Key -and $Certificate.PublicKey.Key.KeySize) {
+            return $Certificate.PublicKey.Key.KeySize
+        }
+    }
+    catch {
+        # Ignore and try alternative methods for determining key size
+    }
+
+    # TO DO: support for RSA-PSS, and other algorithms. For now, only RSA and ECC are supported.
+
+    if ($Certificate.PublicKey.Oid.FriendlyName -eq 'RSA' -or $Certificate.PublicKey.Oid.Value -eq '1.2.840.113549.1.1.1') {
+        return $certificate.PublicKey.GetRSAPublicKey().KeySize
+        # RSA key size can be determined from the modulus length
+ #       if ($Certificate.PublicKey.EncodedKeyValue) {
+ #           $modulusLength = $Certificate.PublicKey.EncodedKeyValue.RawData.Length
+ #           # For RSA, the modulus is typically the key size in bytes, but may include leading zeros
+ #           $KeySize = ($modulusLength * 8) - ($Certificate.PublicKey.EncodedKeyValue.RawData | Where-Object { $_ -eq 0 } | Measure-Object).Count * 8
+ #       }
     }
     # For EC certificates, need alternative approach
     elseif ($Certificate.PublicKey.Oid.FriendlyName -eq 'ECC' -or $Certificate.PublicKey.Oid.Value -eq '1.2.840.10045.2.1') {
@@ -118,11 +136,11 @@ function GetPublicKeySize ($Certificate){
                 { $_ -in 135, 136, 137 } { $KeySize = 521 }
             }
         }
+        return $KeySize
     }
-    if (-not $KeySize) {
-        throw "Unable to determine public key size for certificate with algorithm: $($Certificate.PublicKey.Oid.FriendlyName)"
-    }
-    Write-Verbose "Determined public key size: $KeySize bits (Algorithm: $($Certificate.PublicKey.Oid.FriendlyName))"
-    Write-Verbose "type: $keySize is $($keySize.GetType().FullName)"
-    return $KeySize
+ #   if (-not $KeySize) {
+ #       throw "Unable to determine public key size for certificate with algorithm: $($Certificate.PublicKey.Oid.FriendlyName)"
+#    }
+    # if key size is still null, return 0 to indicate unknown
+    return 0
 }
