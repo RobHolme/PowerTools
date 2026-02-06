@@ -174,7 +174,7 @@ The remote host does not need to be a web server, it should return the certifica
 
 ### SYNTAX
 ```PowerShell
- Get-TLSCertificate [-Hostname] <String> [[-Port] <Int32>] [[-SNIname] <String>] [[-ExportFile] <String>]
+ Get-TLSCertificate [-Hostname] <String> [[-Port] <Int32>] [[-SNIname] <String>] [[-Timeout] <Int32>] [[-ExportFile] <String>]
     [<CommonParameters>]
 ```
 ### PARAMETERS
@@ -186,6 +186,9 @@ The remote host does not need to be a web server, it should return the certifica
 Use ```-SNIname ' '``` (single space) to disable use of SNI Name.
 
 ```-ExportFile <string>``` Export the certificate to a base64 encoded X.509 certificate file (.CER).
+
+```-Timeout <int>``` Timeout in seconds. Cancel the request if no response received before timeout.
+
 ### EXAMPLE
 ```
 # get the certificate from www.example.com (default to port 443)
@@ -221,7 +224,7 @@ apple.com      apple.com                   True     9/12/2021 11:21:27 PM
 
 ## Start-TCPListener
 ### DESCRIPTION
-Starts a TCP listener. The listener will stop once a connection has been made from a client. By default the port will be closed after the TCP handshake is completed. If the -WaitForData parameter is supplied the command will wait unit the client closes the connection instead.
+Starts a TCP listener. The listener will stop once a connection has been made from a client. By default the port will be closed after the TCP handshake is completed. If the -WaitForData parameter is supplied the command will wait unit the client closes the connection instead. Used to test TCP connectivity requirements before installing application listeners etc.
 ### SYNTAX
 ```PowerShell
 Start-TCPListener [-Port] <int> [[-WaitForData]] [<CommonParameters>]
@@ -250,16 +253,16 @@ Accepts an array of hosts to check via the pipeline (See examples). An array or 
 
 ### SYNTAX
 ```PowerShell
-Test-TCPPort [-Hostname] <String> [-Port] <Int32[]> [[-Timeout] <Int32>] [<CommonParameters>]
+Test-TCPPort [-Hostname] <String> [-Port] <Int32[]> [[-Timeout] <Int32>] [[-IPv4Only]] [<CommonParameters>]
 ```
 ### PARAMETERS
-```-Hostname <string>``` The name or IP address (IPv4 or IPv6) of the remote host to connect to. Accepts only a single hostname, but an array of hostnames can be piped to the command. Hostname will resolve to IPv4 and IPv6 (Only IPv4 addresses will be resolved if IPv6 is not supported).
+```-Hostname <string>``` The hostname or IP address (IPv4 or IPv6) of the remote host to connect to. The parameter accepts only a single hostname, but an array of hostnames can be piped to the command. Hostname will resolve both IPv4 and IPv6 (if IPv6 is supported/available).
 
 ```-Port <Int32[]>``` The port number on the remote host to connect to. Accepts a  single port, an array of ports, or a range of ports to test per host.
 
 ```-Timeout <Int32>``` The TCP connection timeout in seconds. Defaults to 5 seconds. System TCP timeout (20 secs?) will still apply if the timeout supplied exceeds the system timeout. 
 
-```-IpV4Only``` Set this switch parameter to ignore IPv6 addresses
+```-IpV4Only``` Set this switch parameter to ignore any IPv6 addresses that are resolved from the hostname.
 
 ### EXAMPLE
 ```
