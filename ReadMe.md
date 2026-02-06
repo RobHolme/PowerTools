@@ -8,23 +8,37 @@ A module containing a random collection of functions that I use occasionally. Th
  - __Start-TCPListener__: Start a TCP listener on a nominated port. Used for connectivity testing.            
  - __Test-TCPPort__: Tests connectivity to a remote TCP port. Based on Test-NetConnection, but implements shorter (configurable) connection timeouts and removes ICMP connectivity tests if the TCP connection fails (intended to be faster than Test-NetConnection when testing large number of hosts).            
 
->run .\install.ps1 to install the module locally. Defaults to user's module path from $env:psmodulepath, use the -Scope parameter values ("CurrentUser", "AllUsers", "PromptForModulePath") to install elsewhere.
 
----
+# Install instructions
+1. Clone the repo.
+2. Open a PowerShell console, navigate to the cloned repo folder and run ```install.ps1```. This will copy the module to your PSmodulePath. Use the following parameter to control which module path is used:
+
+``` install.ps1  [[-Scope] <string>]```
+
+    
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```-Scope <string>``` Accepts one of the following strings: **AllUsers**, **CurrentUser**, **PromptForModulePath**. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```AllUsers``` will install to the default PSModulePath for the local computer.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```CurrentUser``` will install to the default PSModulePath for the current user. This is the default if no parameters are supplied.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```PromptForModulePath``` will list all available paths present in $env:psmodulepath and prompt for selection of the path to use.
+
+# Command Details
 
 ## Get-FolderSize
-### DESCRIPTION
+### Description
 Return the size of each subfolder within a specified directory. Include a total size which include files within the root of the folder. Percentage values are rounded so are only approximate. Same applies to small sizes using a large size unit - may be rounded to 0. 
-### SYNTAX
+### Syntax
 ```PowerShell
 Get-FolderSize [[-Path] <Object>] [[-Unit] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
-### PARAMETERS
+### Parameters
 ```-Path <string>``` The Path of the folder to report on. If not provided, the current folder will be used.
 
 ```-Unit <string>``` The size unit to use in results. Must be one of KB, MB, GB, or TB. Defaults to MB if value not supplied. 
 
-### EXAMPLE
+### Example
 ```
 # get the size of 'H:\git repos\PowerTools\', sizes reported in KB
 PS> Get-FolderSize 'H:\git repos\PowerTools\' -Unit KB
@@ -36,7 +50,7 @@ H:\git repos\PowerTools\public     14    54.07 ■■■■■■■■         
 H:\git repos\PowerTools\.git       90   311.02 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 77.2%
 <Total>                           111   402.97
 ```
-### EXAMPLE
+### Example
 ```
 # get the size of the current folder, defaulting to report sizes in MB
 PS> Get-FolderSize
@@ -53,16 +67,16 @@ C:\Program Files\Common Files\Adobe              172      526 ■■■■■■
 
 ---
 ## Get-NetworkLatency
-### DESCRIPTION
+### Description
 Report the round trip latency to a remote host. Define the number and frequency of ICMP connections to report on. Display min, max, and average latency results. Optionally save the results to a chart. e.g:
 
 ![Syntax highlighting](https://github.com/RobHolme/PowerTools/raw/master/images/latency.png)
 
-### SYNTAX
+### Syntax
 ```Powershell
 Get-NetworkLatency [-Hostname] <String[]> [[-Count] <Int32>] [[-Interval] <Int32>] [[-ShowAllResults]] [[-GraphResult] <String>] [<CommonParameters>]
 ```
-### PARAMETERS
+### Parameters
 ```-Hostname <String[]>``` The Hostname or IP address of the host to connect to. Supply an array of hosts to test multiple hosts.
 
 ```-Count <Int32>``` The number of ICMP connection tests to perform.
@@ -73,7 +87,7 @@ Get-NetworkLatency [-Hostname] <String[]> [[-Count] <Int32>] [[-Interval] <Int32
 
 ```-GraphResult <String>``` Supply a filename (.PNG) to save a chart of the latency.
 
-### EXAMPLE
+### Example
 ```
 Get-NetworkLatency -Hostname "www.google.com" -Count 5 -Interval 2
 
@@ -82,7 +96,7 @@ Destination    Average Minimum Maximum Loss
 www.google.com 52 ms   49 ms   59 ms   0 (0%)
 ```
 
-### EXAMPLE
+### Example
 ```
 Get-NetworkLatency -Hostname "www.google.com","www.microsoft.com" -Count 20 -Interval 1
 
@@ -91,7 +105,7 @@ Destination       Average Minimum Maximum Loss
 www.google.com    53 ms   48 ms   66 ms   0 (0%)
 www.microsoft.com 12 ms   9 ms    26 ms   0 (0%)
 ```
-### EXAMPLE
+### Example
 ```
 Get-NetworkLatency -Hostname "www.google.com" -Count 3 -ShowAllResults
 
@@ -101,7 +115,7 @@ www.google.com 49 ms   Success 2023-02-20 20:01:36
 www.google.com 51 ms   Success 2023-02-20 20:01:37
 www.google.com 50 ms   Success 2023-02-20 20:01:38
 ```
-### EXAMPLE
+### Example
 ```
 Get-NetworkLatency -Hostname "www.google.com","www.bing.com" -Interval 1 -Count 100 -GraphResult .\latency.png
 
@@ -114,17 +128,17 @@ www.bing.com   14 ms   9 ms    57 ms   0 (0%)
 ```
 ---
 ## Get-SMShareCapacity
-### DESCRIPTION
+### Description
 Return the free disk space, and total disk space for a SMB share. Free space available will include any quota limits applied to the user running the command. The user must have rights at the share level (folder rights not needed).
 
-### SYNTAX
+### Syntax
 ```PowerShell
 Get-SMBShareCapacity [-UNCPath] <String> [[-Unit] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
-### PARAMETERS
+### Parameters
 ```-UNCPath <String>``` The path to the SMB share in UNC format. If a folder names is included in the path, the properties of the parent share will be returned (i.e. folder paths ignored if supplied)  
 ```-Unit <String>``` The unit to format the free space and total space properties. Must be one of "KB", "MB", "GB", "TB". Defaults to "GB" if not supplied. 
-### EXAMPLE
+### Example
 ```
 Get-SMBShareCapacity \\nas\homedrives
 
@@ -133,7 +147,7 @@ FreeSpace  TotalSpace  PercentFree Share
 5526.37 GB 10717.44 GB 51.56%      \\nas\homedrives\
 ```
 
-### EXAMPLE
+### Example
 ```
 "\\nas\homedrives","\\127.0.0.1\c$" | Get-SMBShareCapacity
 
@@ -144,18 +158,18 @@ Share             FreeSpace  TotalSpace  PercentFree
 ```
 ---
 ## Get-SQLInstance
-### DESCRIPTION
+### Description
 Query the MS-SQL browser to retrieve details of the SQL Instances on a server. For cases where a DNS name resolves to multiple IPs (such as for a AG listener), an attempt will be made to connect to all IPs. In the case of an AG listener, it is expected that only the connection to the active listener IP will respond. 
 
-### SYNTAX
+### Syntax
 ```PowerShell
 Get-SQLInstance [-ComputerName] <String[]> [[-Timeout] <Int32>] [<CommonParameters>]
 ```
-### PARAMETERS
+### Parameters
 ```-ComputerName <String[]>``` The hostname or IP address of the MS-SQL server. Provide a list of server names to query multiple servers. If a hostname resolves to multiple IPs (such as an AG listener), all IPs will be contacted.
 
 ```-Timeout <Int32>``` The time to wait (in seconds) for a response from the SQL Server Browser.
-### EXAMPLE
+### Example
 ```
 Get-SQLInstance -ComputerName sqlsvr01
 
@@ -167,17 +181,17 @@ sqlsvr01 SQLSVR01     SQLSVR01\INSTANCE2 13.0.1601.5 False       51129
 
 ---
 ## Get-TLSCertificate
-### DESCRIPTION
+### Description
 Retrieve TLS (SSL) certificate, display properties or export to .cer file. Default view contains more details, pipe to format-table to use a condensed view that only shows certificate subject CN, expiry date, and validity. The condensed view is more suited for tables of multiple certificates, while the default list view is more suited single or few certificates (but is more detailed).
 
 The remote host does not need to be a web server, it should return the certificate of any TLS protected TCP service - such as LDAPS.
 
-### SYNTAX
+### Syntax
 ```PowerShell
  Get-TLSCertificate [-Hostname] <String> [[-Port] <Int32>] [[-SNIname] <String>] [[-Timeout] <Int32>] [[-ExportFile] <String>]
     [<CommonParameters>]
 ```
-### PARAMETERS
+### Parameters
 ```-Hostname <string>``` The remote host to retrieve the certificate from. 
 
 ```-Port <int>``` The TCP port number of the remote site. Optional, will default to 443 TCP if omitted.
@@ -189,27 +203,27 @@ Use ```-SNIname ' '``` (single space) to disable use of SNI Name.
 
 ```-Timeout <int>``` Timeout in seconds. Cancel the request if no response received before timeout.
 
-### EXAMPLE
+### Example
 ```
 # get the certificate from www.example.com (default to port 443)
 PS> Get-TLSCertificate -Hostname www.example.com
 ```
-### EXAMPLE
+### Example
 Some websites may host multiple namespaces. Use SNIName to retrieve cert specific to a site name.
 ```
 PS> Get-TLSCertificate -Hostname www.example.com -SNIName api.example.com
 ```
-### EXAMPLE
+### Example
 Get LDAPS cert form a domain controller DC01
 ```
 PS> Get-TLSCertificate -Hostname DC01 -port 636
 ```
-### EXAMPLE
+### Example
 export certificate to c:\temp\CertExport.cer
 ```
 PS> Get-TLSCertificate -Hostname www.example.com -ExportFile c:\temp\CertExport.cer
 ```
-### EXAMPLE
+### Example
 pipe results to a table (condensed view)
 ```
 PS> "google.com","microsoft.com","apple.com" | Get-TLSCertificate | ft
@@ -223,18 +237,18 @@ apple.com      apple.com                   True     9/12/2021 11:21:27 PM
 ---
 
 ## Start-TCPListener
-### DESCRIPTION
+### Description
 Starts a TCP listener. The listener will stop once a connection has been made from a client. By default the port will be closed after the TCP handshake is completed. If the -WaitForData parameter is supplied the command will wait unit the client closes the connection instead. Used to test TCP connectivity requirements before installing application listeners etc.
-### SYNTAX
+### Syntax
 ```PowerShell
 Start-TCPListener [-Port] <int> [[-WaitForData]] [<CommonParameters>]
 ```
-### PARAMETERS
+### Parameters
 ```-Port <int>``` The TCP port number to listen on. The port must be available.
 
 ```-WaitForData [<SwitchParameter>]``` Wait for the client to send data, and wait for the client to close the connection. Without this parameter the connection is closed as soon as the TCP handshake is completed.
 
-### EXAMPLE
+### Example
 ```
 PS> Start-TCPListener -Port 5000
 
@@ -245,17 +259,17 @@ Connection Successful 127.0.0.1       50298
 ---
 
 ## Test-TCPPort
-### DESCRIPTION
+### Description
 
 Tests connectivity to a TCP port on a remote host. If successful, the time to connect is displayed with the endpoint details. Based on Test-NetConnection, but items such as ICMP checks are removed, and a shorter default timeout used to speed up tests of a large number of hosts/ports. Failed connections return quicker than Test-NetConnection. Another difference is this will show the result for all IP addresses that hostname resolves to, while Test-NetConnection only shows the first IP address to successfully respond.
 
 Accepts an array of hosts to check via the pipeline (See examples). An array or range of ports can also be provided by the -Port parameter.
 
-### SYNTAX
+### Syntax
 ```PowerShell
 Test-TCPPort [-Hostname] <String> [-Port] <Int32[]> [[-Timeout] <Int32>] [[-IPv4Only]] [<CommonParameters>]
 ```
-### PARAMETERS
+### Parameters
 ```-Hostname <string>``` The hostname or IP address (IPv4 or IPv6) of the remote host to connect to. The parameter accepts only a single hostname, but an array of hostnames can be piped to the command. Hostname will resolve both IPv4 and IPv6 (if IPv6 is supported/available).
 
 ```-Port <Int32[]>``` The port number on the remote host to connect to. Accepts a  single port, an array of ports, or a range of ports to test per host.
@@ -264,7 +278,7 @@ Test-TCPPort [-Hostname] <String> [-Port] <Int32[]> [[-Timeout] <Int32>] [[-IPv4
 
 ```-IpV4Only``` Set this switch parameter to ignore any IPv6 addresses that are resolved from the hostname.
 
-### EXAMPLE
+### Example
 ```
 PS C:\> Connect-TCPPort somehost.com -Port 80
 
@@ -273,7 +287,7 @@ Connection SourceAddress RemoteHost   RemoteAddress Port ConnectionTime
 Successful 10.0.0.10     somehost.com 10.200.1.1     80  10.3 ms
 
 ```
-### EXAMPLE
+### Example
 Test ports 80 and 443 for www.google.com and www.microsoft.com. Use pipleline to test multiple hosts. 
 ```
 PS C:\> "www.google.com","www.microsoft.com" | Test-TCPPort -Port 80,443
@@ -286,7 +300,7 @@ Successful 10.0.0.10         www.microsoft.com 23.194.133.122 80   9.8 ms
 Successful 10.0.0.10         www.microsoft.com 23.194.133.122 443  9.9 ms
 
 ```
-### EXAMPLE
+### Example
 Use a short timeout (2 seconds).
 ```
 PS C:\> Connect-TCPPort somehost.com -Port 80 -Timeout 2
@@ -297,7 +311,7 @@ Successful 10.0.0.10     somehost.com 10.200.1.1     80   10.3 ms
 
 ```
 
-### EXAMPLE
+### Example
 test a range of ports from 17190 to 17198
 ```
 PS C:\>  Test-TCPPort samplehost -Port (17190..17198)
