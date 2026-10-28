@@ -41,7 +41,7 @@ function Get-SQLInstance {
 	)
 
 	begin {
-		Write-Warning "On recent SQL version (SQL 2022+) only the RTM build# is returned, not the build# of the current CU applied".
+		Write-Warning "On recent SQL version (SQL 2022+) only the RTM build# is returned, not the build# of the current CU applied."
 	}
 	
 	process {
