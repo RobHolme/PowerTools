@@ -19,6 +19,7 @@ function Get-SQLInstance {
 
 	.NOTES
 	    Adapted from original author: Eric Gruber
+		On recent SQL versions (SQL2022+), only the RTM build number is returned, not the build number of the current CU applied. 
 	#>
 			
 	[CmdletBinding()]
@@ -38,7 +39,11 @@ function Get-SQLInstance {
 		)]
 		[int] $Timeout = 3
 	)
-				
+
+	begin {
+		Write-Warning "On recent SQL version (SQL 2022+) only the RTM build# is returned, not the build# of the current CU applied".
+	}
+	
 	process {
 		foreach ($computer in $ComputerName) {
 
