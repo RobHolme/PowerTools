@@ -56,8 +56,8 @@ function Get-SQLInstance {
 				}
 			}
 			catch {
-				Write-Warning "Failed to resolve $Hostname"
-				Write-Debug "Name resolution of $Hostname threw exception: $($_.Exception.Message)"
+				Write-Warning "Failed to resolve $ComputerName"
+				Write-Debug "Name resolution of $ComputerName threw exception: $($_.Exception.Message)"
 			}
 
 			foreach ($resolvedIpAddress in $ipAddresses) {
